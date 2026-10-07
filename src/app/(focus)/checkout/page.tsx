@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { CheckoutFlow } from "./CheckoutFlow";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata = { title: "إتمام الطلب" };
 
 export default async function CheckoutPage() {
+  const t = await getT();
   const sb = await createClient();
   const { data: u } = await sb.auth.getUser();
   const [{ data: addresses }, { data: shipping }] = await Promise.all([

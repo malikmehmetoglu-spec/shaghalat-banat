@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { CartProvider } from "@/components/CartProvider";
 import { SwRegister } from "@/components/SwRegister";
+import { LangProvider } from "@/components/LangProvider";
+import { getLang } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: { default: "شغلات بنات", template: "%s · شغلات بنات" },
@@ -19,9 +21,10 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = await getLang();
   return (
-    <html lang="ar" dir="rtl">
+    <html lang={lang} dir={lang === "en" ? "ltr" : "rtl"}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -29,9 +32,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <LangProvider lang={lang}>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </LangProvider>
         <SwRegister />
       </body>
     </html>

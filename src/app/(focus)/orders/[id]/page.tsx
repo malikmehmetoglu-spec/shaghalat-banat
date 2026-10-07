@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { createClient } from "@/lib/supabase/server";
 import { date, ORDER_STATUS, PAYMENT_LABEL, price } from "@/lib/format";
+import { getT } from "@/lib/i18n/server";
+import { PushToggle } from "@/components/PushToggle";
 
 export const metadata = { title: "تتبّع الطلب" };
 
@@ -15,6 +17,7 @@ const FLOW = [
 ];
 
 export default async function OrderPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ placed?: string }> }) {
+  const t = await getT();
   const { id } = await params;
   const { placed } = await searchParams;
   const sb = await createClient();
@@ -31,8 +34,8 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
   return (
     <main className="page tight" style={{ paddingBottom: 40 }}>
       <div className="topbar">
-        <Link href="/orders" className="icon-btn" aria-label="رجوع"><Icon name="back" stroke={2} /></Link>
-        <h1 className="h-title">{placed ? "تم استلام طلبك" : "تتبّع الطلب"}</h1>
+        <Link href="/orders" className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
+        <h1 className="h-title">{placed ? t("تم استلام طلبك") : t("تتبّع الطلب")}</h1>
         <span style={{ width: 48 }} />
       </div>
 
@@ -41,18 +44,19 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
           <span style={{ width: 80, height: 80, borderRadius: "50%", background: "var(--magenta)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 12px 28px rgba(214,3,127,.35)" }}>
             <Icon name="check" size={36} stroke={2.6} />
           </span>
-          <p className="muted" style={{ fontSize: 15, lineHeight: 1.8 }}>شكراً لتسوّقك من شغلات بنات.<br />سنرسل لك إشعاراً عند كل تحديث على طلبك.</p>
+          <p className="muted" style={{ fontSize: 15, lineHeight: 1.8 }}>{t("شكراً لتسوّقك من شغلات بنات.")}<br />{t("سنرسل لك إشعاراً عند كل تحديث على طلبك.")}</p>
+          <div style={{ width: "100%" }}><PushToggle /></div>
         </div>
       )}
 
       <div style={{ padding: 24, borderRadius: 28, background: "linear-gradient(135deg,var(--deep-berry),var(--magenta))", color: "#fff", display: "flex", flexDirection: "column", gap: 14 }}>
         <div className="row-between">
           <span className="ltr" style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>#{o.number}</span>
-          <span style={{ fontSize: 12, fontWeight: 500, lineHeight: 1, padding: "8px 12px", borderRadius: 14, background: "rgba(255,255,255,.2)" }}>{st.label}</span>
+          <span style={{ fontSize: 12, fontWeight: 500, lineHeight: 1, padding: "8px 12px", borderRadius: 14, background: "rgba(255,255,255,.2)" }}>{t(st.label)}</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <span style={{ fontSize: 13, lineHeight: 1.5, opacity: 0.9 }}>تاريخ الطلب</span>
-          <span style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.5 }}>{date(o.created_at)}</span>
+          <span style={{ fontSize: 13, lineHeight: 1.5, opacity: 0.9 }}>{t("تاريخ الطلب")}</span>
+          <span style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.5 }}>{date(o.created_at, false, t)}</span>
         </div>
       </div>
 
@@ -70,8 +74,8 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
                   {i < FLOW.length - 1 && <span className={`tl-line${i < reachedIdx ? " done" : ""}`} />}
                 </div>
                 <div className="tl-body">
-                  <span style={{ fontSize: 15, lineHeight: 1.5, fontWeight: i === reachedIdx ? 700 : done ? 600 : 400, color: i === reachedIdx ? "var(--magenta)" : done ? "var(--dark-plum)" : "var(--text-muted)" }}>{f.label}</span>
-                  <span className="caption">{at ? date(at, true) : "—"}</span>
+                  <span style={{ fontSize: 15, lineHeight: 1.5, fontWeight: i === reachedIdx ? 700 : done ? 600 : 400, color: i === reachedIdx ? "var(--magenta)" : done ? "var(--dark-plum)" : "var(--text-muted)" }}>{t(f.label)}</span>
+                  <span className="caption">{at ? date(at, true, t) : "—"}</span>
                 </div>
               </div>
             );
@@ -80,20 +84,20 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
       )}
 
       <div className="soft-card">
-        <span style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.5 }}>تفاصيل الطلب</span>
+        <span style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.5 }}>{t("تفاصيل الطلب")}</span>
         {(o.order_items as { product_name: string; variant_label: string | null; unit_price: number; qty: number }[]).map((it, i) => (
-          <div key={i} className="kv"><span>{it.product_name}{it.variant_label ? ` · ${it.variant_label}` : ""} × {it.qty}</span><span>{price(it.unit_price * it.qty)}</span></div>
+          <div key={i} className="kv"><span>{it.product_name}{it.variant_label ? ` · ${it.variant_label}` : ""} × {it.qty}</span><span>{price(it.unit_price * it.qty, t)}</span></div>
         ))}
         <hr className="divider" />
-        <div className="kv"><span className="muted">الشحن</span><span>{Number(o.shipping) ? price(o.shipping) : "مجاني"}</span></div>
-        {Number(o.discount) > 0 && <div className="kv" style={{ color: "var(--magenta)" }}><span>الخصم</span><span>- {price(o.discount)}</span></div>}
-        <div className="kv" style={{ fontSize: 16, fontWeight: 700 }}><span>الإجمالي</span><span style={{ color: "var(--magenta)" }}>{price(o.total)}</span></div>
-        <div className="kv"><span className="muted">الدفع</span><span>{PAYMENT_LABEL[o.payment_method]}</span></div>
-        {addr && <div className="kv"><span className="muted">التوصيل إلى</span><span style={{ textAlign: "left" }}>{addr.city}، {addr.street}</span></div>}
+        <div className="kv"><span className="muted">{t("الشحن")}</span><span>{Number(o.shipping) ? price(o.shipping, t) : t("مجاني")}</span></div>
+        {Number(o.discount) > 0 && <div className="kv" style={{ color: "var(--magenta)" }}><span>{t("الخصم")}</span><span>- {price(o.discount, t)}</span></div>}
+        <div className="kv" style={{ fontSize: 16, fontWeight: 700 }}><span>{t("الإجمالي")}</span><span style={{ color: "var(--magenta)" }}>{price(o.total, t)}</span></div>
+        <div className="kv"><span className="muted">{t("الدفع")}</span><span>{t(PAYMENT_LABEL[o.payment_method])}</span></div>
+        {addr && <div className="kv"><span className="muted">{t("التوصيل إلى")}</span><span style={{ textAlign: "left" }}>{addr.city}{t("،")} {addr.street}</span></div>}
       </div>
 
-      {o.status === "delivered" && <Link href={`/orders/${o.id}/return`} className="btn block" style={{ height: 56 }}>طلب إرجاع أو استبدال</Link>}
-      <Link href="/" className="btn secondary block" style={{ height: 56 }}>متابعة التسوّق</Link>
+      {o.status === "delivered" && <Link href={`/orders/${o.id}/return`} className="btn block" style={{ height: 56 }}>{t("طلب إرجاع أو استبدال")}</Link>}
+      <Link href="/" className="btn secondary block" style={{ height: 56 }}>{t("متابعة التسوّق")}</Link>
     </main>
   );
 }

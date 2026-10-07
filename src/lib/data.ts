@@ -1,12 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
+import { getLang } from "@/lib/i18n/server";
 import type { Category, Product, ProductWithVariants } from "@/lib/types";
 
-const PRODUCT_COLS = "id,slug,name,subtitle,description,price,compare_at_price,tag,images,rating,rating_count,category_id,created_at,sold_count";
+const PRODUCT_COLS = "id,slug,name,name_en,subtitle,description,price,compare_at_price,tag,images,rating,rating_count,category_id,created_at,sold_count";
+
+/** بالإنجليزية: نستخدم name_en إن وُجد */
+async function localize<T extends { name: string; name_en?: string | null }>(rows: T[]): Promise<T[]> {
+  if ((await getLang()) !== "en") return rows;
+  return rows.map((r) => (r.name_en ? { ...r, name: r.name_en } : r));
+}
 
 export async function getCategories(): Promise<(Category & { count: number })[]> {
   const sb = await createClient();
-  const { data } = await sb.from("categories").select("id,slug,name,image_url,sort_order,products(count)").order("sort_order");
-  return (data ?? []).map((c: any) => ({ ...c, count: c.products?.[0]?.count ?? 0 }));
+  const { data } = await sb.from("categories").select("id,slug,name,name_en,image_url,sort_order,products(count)").order("sort_order");
+  return localize((data ?? []).map((c: any) => ({ ...c, count: c.products?.[0]?.count ?? 0 })));
 }
 
 export type SortKey = "new" | "best" | "price_asc" | "price_desc";
@@ -27,7 +34,7 @@ export async function getProducts(opts: { categorySlug?: string; sort?: SortKey;
   }
   if (opts.limit) query = query.limit(opts.limit);
   const { data } = await query;
-  return (data ?? []) as unknown as Product[];
+  return localize((data ?? []) as unknown as Product[]);
 }
 
 export async function getProduct(slug: string): Promise<ProductWithVariants | null> {
@@ -41,8 +48,9 @@ export async function getProduct(slug: string): Promise<ProductWithVariants | nu
   const ids = (data as any).product_variants.map((v: any) => v.id);
   const { data: avail } = await sb.from("variant_availability").select("variant_id,online_available").in("variant_id", ids);
   const map = new Map((avail ?? []).map((a: any) => [a.variant_id, a.online_available]));
+  const [loc] = await localize([data as any]);
   return {
-    ...(data as any),
+    ...loc,
     product_variants: (data as any).product_variants.map((v: any) => ({ ...v, available: map.get(v.id) ?? 0 })),
   };
 }

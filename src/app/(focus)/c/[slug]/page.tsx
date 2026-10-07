@@ -4,6 +4,7 @@ import { Icon } from "@/components/Icon";
 import { ProductCard } from "@/components/ProductCard";
 import { getFavoriteIds, getProducts, type SortKey } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 
 const SORTS: { key: SortKey; label: string }[] = [
   { key: "new", label: "الأحدث" },
@@ -13,30 +14,31 @@ const SORTS: { key: SortKey; label: string }[] = [
 ];
 
 export default async function CategoryPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ sort?: string }> }) {
+  const t = await getT();
   const { slug } = await params;
   const { sort = "new" } = await searchParams;
   const sb = await createClient();
-  const { data: cat } = await sb.from("categories").select("id,name,slug").eq("slug", slug).maybeSingle();
+  const { data: cat } = await sb.from("categories").select("id,name,name_en,slug").eq("slug", slug).maybeSingle();
   if (!cat) notFound();
   const [products, favs] = await Promise.all([getProducts({ categorySlug: slug, sort: sort as SortKey }), getFavoriteIds()]);
 
   return (
     <main className="page tight" style={{ paddingBottom: 40 }}>
       <div className="topbar">
-        <Link href="/categories" className="icon-btn" aria-label="رجوع"><Icon name="back" stroke={2} /></Link>
-        <h1 className="h-title">{cat.name}</h1>
-        <Link href="/search" className="icon-btn" aria-label="بحث"><Icon name="search" stroke={2} /></Link>
+        <Link href="/categories" className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
+        <h1 className="h-title">{(t("ل.س") !== "ل.س" && cat.name_en) || cat.name}</h1>
+        <Link href="/search" className="icon-btn" aria-label={t("بحث")}><Icon name="search" stroke={2} /></Link>
       </div>
 
-      <div className="chips scr" role="tablist" aria-label="ترتيب حسب">
+      <div className="chips scr" role="tablist" aria-label={t("ترتيب حسب")}>
         {SORTS.map((s) => (
           <Link key={s.key} href={`/c/${slug}?sort=${s.key}`} className={`chip${sort === s.key ? " on" : ""}`} role="tab" aria-selected={sort === s.key}>
-            {s.label}
+            {t(s.label)}
           </Link>
         ))}
       </div>
 
-      <p className="muted">{products.length} منتج</p>
+      <p className="muted">{products.length} {t("منتج")}</p>
 
       {products.length ? (
         <div className="grid-2">
@@ -45,7 +47,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
       ) : (
         <div className="empty">
           <span className="ring"><Icon name="grid" size={40} stroke={1.6} /></span>
-          <div className="title-block"><span className="h-section">لا توجد منتجات بعد</span><span className="muted">سنضيف قطعاً جديدة قريباً</span></div>
+          <div className="title-block"><span className="h-section">{t("لا توجد منتجات بعد")}</span><span className="muted">{t("سنضيف قطعاً جديدة قريباً")}</span></div>
         </div>
       )}
     </main>

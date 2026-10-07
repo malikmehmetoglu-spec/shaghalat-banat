@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { errMsg, requireStaff } from "@/lib/admin";
+import { audienceSubs, sendToSubs } from "@/lib/push";
 
 export type ActionResult = { ok: boolean; message: string };
 const ok = (message: string): ActionResult => ({ ok: true, message });
@@ -14,9 +15,60 @@ export async function setOrderStatus(orderId: string, status: string, note?: str
   const { sb } = await requireStaff();
   const { error } = await sb.rpc("admin_set_order_status", { order_id: orderId, new_status: status, note: note || null });
   if (error) return fail(errMsg(error));
+  await notifyOrderStatus(sb, orderId, status).catch(() => {});
   revalidatePath("/admin/orders");
   revalidatePath("/admin");
   return ok("تم تحديث حالة الطلب");
+}
+
+const STATUS_MSG: Record<string, [string, string, string, string]> = {
+  confirmed: ["تم تأكيد طلبك 💗", "طلبك #{n} مؤكَّد ونجهّزه الآن", "Order confirmed 💗", "Your order #{n} is confirmed"],
+  shipped: ["طلبك في الطريق 🚚", "طلبك #{n} خرج للتوصيل", "Your order is on the way 🚚", "Order #{n} is out for delivery"],
+  delivered: ["تم توصيل طلبك ✨", "نتمنى أن يعجبك طلبك #{n}", "Delivered ✨", "We hope you love order #{n}"],
+  cancelled: ["تم إلغاء الطلب", "تم إلغاء طلبك #{n}", "Order cancelled", "Your order #{n} was cancelled"],
+};
+/** إشعار داخل التطبيق + إشعار Push للعميلة عند تغيّر حالة طلبها */
+async function notifyOrderStatus(sb: Awaited<ReturnType<typeof requireStaff>>["sb"], orderId: string, status: string) {
+  const m = STATUS_MSG[status];
+  if (!m) return;
+  const { data: o } = await sb.from("orders").select("user_id,number").eq("id", orderId).maybeSingle();
+  if (!o?.user_id) return;
+  await sb.from("notifications").insert({ user_id: o.user_id, kind: "order", title: m[0], body: m[1].replace("{n}", o.number) });
+  const { data: subs } = await sb.from("push_subscriptions").select("id,kind,endpoint,keys,lang").eq("user_id", o.user_id);
+  for (const lang of ["ar", "en"]) {
+    const group = (subs ?? []).filter((s: any) => (s.lang === "en") === (lang === "en"));
+    if (group.length) await sendToSubs(sb, group as any, { title: lang === "en" ? m[2] : m[0], body: (lang === "en" ? m[3] : m[1]).replace("{n}", o.number), link: `/orders/${orderId}` });
+  }
+}
+
+// ───────── الإشعارات (حملات) ─────────
+export async function sendCampaign(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const { sb, profile } = await requireStaff();
+  const title = str(fd, "title"), body = str(fd, "body");
+  if (!title || !body) return fail("العنوان والنص مطلوبان");
+  const isTest = str(fd, "test") === "1";
+  const audience = isTest ? "test" : ["all", "buyers", "no_orders", "staff"].includes(str(fd, "audience")) ? str(fd, "audience") : "all";
+  const link = str(fd, "link") || "/";
+  const when = !isTest && str(fd, "when") === "later" ? str(fd, "scheduled_at") : "";
+  if (when) {
+    const { error } = await sb.from("push_campaigns").insert({ title, body, link, audience, scheduled_at: new Date(when).toISOString(), created_by: profile.id });
+    if (error) return fail(errMsg(error, "تعذّر الحفظ — تأكدي من تنفيذ ملف 0006_push.sql"));
+    revalidatePath("/admin/push");
+    return ok("تمت جدولة الإشعار");
+  }
+  const subs = await audienceSubs(sb, audience, profile.id);
+  const r = await sendToSubs(sb, subs, { title, body, link });
+  if (audience !== "test") {
+    await sb.from("push_campaigns").insert({ title, body, link, audience, sent_at: new Date().toISOString(), sent_count: r.sent, failed_count: r.failed, created_by: profile.id });
+    if (audience === "all" || audience === "buyers" || audience === "no_orders") {
+      // يظهر أيضاً في صفحة الإشعارات داخل التطبيق للمسجّلات
+      const ids = [...new Set(subs.map((s: any) => s.user_id).filter(Boolean))];
+      if (ids.length) await sb.from("notifications").insert(ids.map((user_id) => ({ user_id, kind: "offer", title, body })));
+    }
+  }
+  revalidatePath("/admin/push");
+  if (!subs.length) return fail(audience === "test" ? "لا يوجد اشتراك لجهازك — فعّلي الإشعارات من صفحة حسابي في التطبيق أولاً" : "لا يوجد مشتركون في هذا الجمهور بعد");
+  return ok(`تم الإرسال إلى ${r.sent} جهاز${r.failed ? ` · فشل ${r.failed}` : ""}`);
 }
 
 // ───────── المنتجات ─────────

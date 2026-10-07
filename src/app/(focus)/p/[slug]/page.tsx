@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getFavoriteIds, getProduct } from "@/lib/data";
 import { ProductView } from "./ProductView";
+import { getT } from "@/lib/i18n/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const p = await getProduct((await params).slug);
@@ -9,6 +10,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const t = await getT();
   const { slug } = await params;
   const [p, favs] = await Promise.all([getProduct(slug), getFavoriteIds()]);
   if (!p) notFound();

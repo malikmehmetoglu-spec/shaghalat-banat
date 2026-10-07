@@ -240,3 +240,8 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   body { padding: 0; }
   .app { box-shadow: 0 0 60px rgba(142,2,84,.08); }
 }
+
+/* ───── الواجهة الإنجليزية (LTR) ───── */
+[dir="ltr"] .dir-icon { transform: scaleX(-1); }
+[dir="ltr"] .search { padding: 0 6px 0 20px; }
+[dir="ltr"] .ltr { text-align: left !important; }

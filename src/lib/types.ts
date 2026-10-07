@@ -2,6 +2,7 @@ export type Category = {
   id: string;
   slug: string;
   name: string;
+  name_en?: string | null;
   image_url: string | null;
   sort_order: number;
 };
@@ -19,6 +20,7 @@ export type Product = {
   id: string;
   slug: string;
   name: string;
+  name_en?: string | null;
   subtitle: string | null;
   description: string | null;
   price: number;
@@ -40,6 +42,7 @@ export type CartLine = {
   variantId: string;
   productSlug: string;
   name: string;
+  name_en?: string | null;
   label: string;
   unitPrice: number;
   qty: number;

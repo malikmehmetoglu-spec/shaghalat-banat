@@ -8,3 +8,7 @@ out
 next-env.d.ts
 .DS_Store
 .vercel
+
+# Capacitor native projects (generated with npm run cap:android / cap:ios)
+android/
+ios/

@@ -3,10 +3,12 @@ import { Icon } from "@/components/Icon";
 import { createClient } from "@/lib/supabase/server";
 import { date } from "@/lib/format";
 import { MarkAllRead } from "./MarkAllRead";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata = { title: "الإشعارات" };
 
 export default async function NotificationsPage() {
+  const t = await getT();
   const sb = await createClient();
   const { data: u } = await sb.auth.getUser();
   const { data } = await sb.from("notifications").select("id,kind,title,body,is_read,created_at").eq("user_id", u.user!.id).order("created_at", { ascending: false }).limit(50);
@@ -14,11 +16,11 @@ export default async function NotificationsPage() {
 
   return (
     <main className="page tight">
-      <PageHeader title="الإشعارات" end={list.some((n) => !n.is_read) ? <MarkAllRead /> : undefined} />
+      <PageHeader title={t("الإشعارات")} end={list.some((n) => !n.is_read) ? <MarkAllRead /> : undefined} />
       {list.length === 0 && (
         <div className="empty">
           <span className="ring"><Icon name="bell" size={40} stroke={1.6} /></span>
-          <div className="title-block"><span className="h-section">لا توجد إشعارات بعد</span><span className="muted">ستصلك هنا تحديثات طلباتك والعروض</span></div>
+          <div className="title-block"><span className="h-section">{t("لا توجد إشعارات بعد")}</span><span className="muted">{t("ستصلك هنا تحديثات طلباتك والعروض")}</span></div>
         </div>
       )}
       {list.map((n) => (
@@ -29,7 +31,7 @@ export default async function NotificationsPage() {
           <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
             <span className="row-between" style={{ gap: 8 }}>
               <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>{n.title}</span>
-              <span className="caption" style={{ fontSize: 11, flexShrink: 0 }}>{date(n.created_at)}</span>
+              <span className="caption" style={{ fontSize: 11, flexShrink: 0 }}>{date(n.created_at, false, t)}</span>
             </span>
             {n.body && <span style={{ fontSize: 13, lineHeight: 1.7, color: "var(--neutral-fg)" }}>{n.body}</span>}
           </span>

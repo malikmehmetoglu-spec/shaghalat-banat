@@ -3,9 +3,11 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { Icon } from "./Icon";
+import { useT } from "@/components/LangProvider";
 
 /** زر القلب: يحفظ المنتج في مفضلة العميلة (يتطلب تسجيل الدخول). */
 export function FavButton({ productId, initial, className = "fav", size = 16 }: { productId: string; initial: boolean; className?: string; size?: number }) {
+  const t = useT();
   const [on, setOn] = useState(initial);
   const [pending, start] = useTransition();
   const router = useRouter();
@@ -30,7 +32,7 @@ export function FavButton({ productId, initial, className = "fav", size = 16 }: 
 
   return (
     <button type="button" className={className} onClick={toggle} disabled={pending}
-      aria-label={on ? "إزالة من المفضلة" : "أضيفي إلى المفضلة"} aria-pressed={on} style={{ color: "var(--magenta)" }}>
+      aria-label={on ? t("إزالة من المفضلة") : t("أضيفي إلى المفضلة")} aria-pressed={on} style={{ color: "var(--magenta)" }}>
       <Icon name="heart" size={size} stroke={2} fill={on ? "currentColor" : "none"} />
     </button>
   );

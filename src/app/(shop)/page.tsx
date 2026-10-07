@@ -5,8 +5,10 @@ import { SearchBar } from "@/components/SearchBar";
 import { getCategories, getFavoriteIds, getProducts, getUnreadCount } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { placeholder } from "@/lib/format";
+import { getT } from "@/lib/i18n/server";
 
 export default async function Home() {
+  const t = await getT();
   const sb = await createClient();
   const [cats, products, favs, unread, banners] = await Promise.all([
     getCategories(),
@@ -20,11 +22,11 @@ export default async function Home() {
   return (
     <main className="page">
       <div className="topbar">
-        <Link href="/categories" className="icon-btn" aria-label="الأقسام" style={{ boxShadow: "none", background: "transparent" }}>
+        <Link href="/categories" className="icon-btn" aria-label={t("الأقسام")} style={{ boxShadow: "none", background: "transparent" }}>
           <Icon name="grid" size={22} />
         </Link>
-        <img src="/icons/logo-horizontal.svg" alt="شغلات بنات" style={{ height: 36, width: "auto" }} />
-        <Link href="/notifications" className="icon-btn" aria-label="الإشعارات">
+        <img src="/icons/logo-horizontal.svg" alt={t("شغلات بنات")} style={{ height: 36, width: "auto" }} />
+        <Link href="/notifications" className="icon-btn" aria-label={t("الإشعارات")}>
           <Icon name="bell" />
           {unread > 0 && <span className="dot" />}
         </Link>
@@ -32,8 +34,8 @@ export default async function Home() {
 
       <div className="row-between">
         <div className="title-block">
-          <h1 className="h-display">اكتشفي</h1>
-          <p className="muted">تسوّقي <b style={{ color: "var(--magenta)", fontWeight: 600 }}>تشكيلتنا الجديدة</b></p>
+          <h1 className="h-display">{t("اكتشفي")}</h1>
+          <p className="muted">{t("تسوّقي")} <b style={{ color: "var(--magenta)", fontWeight: 600 }}>{t("تشكيلتنا الجديدة")}</b></p>
         </div>
       </div>
 
@@ -57,7 +59,7 @@ export default async function Home() {
           <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10 }}>
             {banner.kicker && <span className="kicker">{banner.kicker}</span>}
             <div className="t">{banner.title}</div>
-            {banner.link && <Link href={banner.link} className="go">تسوّقي الآن</Link>}
+            {banner.link && <Link href={banner.link} className="go">{t("تسوّقي الآن")}</Link>}
           </div>
           <div style={{ width: 104, height: 140, flexShrink: 0, borderRadius: 20, background: banner.image_url ? `url(${banner.image_url}) center/cover` : "rgba(255,255,255,.16)", border: "1px solid rgba(255,255,255,.3)" }} />
         </div>
@@ -65,8 +67,8 @@ export default async function Home() {
 
       <section style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div className="row-between">
-          <h2 className="h-section">وصل حديثاً</h2>
-          <Link href="/search" className="link-btn">عرض الكل</Link>
+          <h2 className="h-section">{t("وصل حديثاً")}</h2>
+          <Link href="/search" className="link-btn">{t("عرض الكل")}</Link>
         </div>
         <div className="grid-2">
           {products.map((p) => <ProductCard key={p.id} p={p} isFav={favs.has(p.id)} />)}

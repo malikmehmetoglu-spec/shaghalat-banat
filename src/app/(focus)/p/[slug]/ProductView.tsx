@@ -7,10 +7,12 @@ import { FavButton } from "@/components/FavButton";
 import { useCart } from "@/components/CartProvider";
 import { placeholder, price } from "@/lib/format";
 import type { ProductWithVariants } from "@/lib/types";
+import { useT } from "@/components/LangProvider";
 
 const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL"];
 
 export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boolean }) {
+  const t = useT();
   const router = useRouter();
   const { add, count } = useCart();
   const variants = p.product_variants;
@@ -54,20 +56,20 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
   }
 
   const tabs = [
-    { label: "الوصف", text: p.description ?? "" },
-    { label: "التوصيل", text: "التوصيل خلال 2 إلى 4 أيام عمل داخل سوريا. الشحن مجاني للطلبات فوق 300 ل.س، ويمكنك الاستبدال خلال 7 أيام من الاستلام. نغلّف طلبك بخصوصية تامة." },
-    { label: "التقييمات", text: `تقييم ${Number(p.rating).toFixed(1)} من ${p.rating_count} عميلة.` },
+    { label: t("الوصف"), text: p.description ?? "" },
+    { label: t("التوصيل"), text: t("التوصيل خلال 2 إلى 4 أيام عمل داخل سوريا. الشحن مجاني للطلبات فوق 300 ل.س، ويمكنك الاستبدال خلال 7 أيام من الاستلام. نغلّف طلبك بخصوصية تامة.") },
+    { label: t("التقييمات"), text: t("تقييم {r} من {n} عميلة.", { r: Number(p.rating).toFixed(1), n: p.rating_count }) },
   ];
 
   return (
     <main className="page tight" style={{ paddingBottom: 140 }}>
       <div style={{ position: "relative", height: 420, borderRadius: 32, overflow: "hidden", background: img ? `url(${img}) center/cover` : placeholder(p.slug), boxShadow: "0 16px 36px rgba(142,2,84,0.22)" }}>
-        {!img && <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "rgba(255,255,255,.75)" }}>[صورة المنتج]</div>}
+        {!img && <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "rgba(255,255,255,.75)" }}>{t("[صورة المنتج]")}</div>}
         <div style={{ position: "absolute", top: 16, right: 16, left: 16, display: "flex", justifyContent: "space-between" }}>
-          <button className="icon-btn" aria-label="رجوع" onClick={() => router.back()} style={{ width: 44, height: 44, background: "rgba(255,255,255,.92)" }}><Icon name="back" stroke={2} /></button>
+          <button className="icon-btn" aria-label={t("رجوع")} onClick={() => router.back()} style={{ width: 44, height: 44, background: "rgba(255,255,255,.92)" }}><Icon name="back" stroke={2} /></button>
           <div style={{ display: "flex", gap: 10 }}>
             <FavButton productId={p.id} initial={isFav} className="icon-btn" size={20} />
-            <Link href="/cart" className="icon-btn" aria-label="السلة" style={{ width: 44, height: 44, background: "rgba(255,255,255,.92)" }}>
+            <Link href="/cart" className="icon-btn" aria-label={t("السلة")} style={{ width: 44, height: 44, background: "rgba(255,255,255,.92)" }}>
               <Icon name="bag" />
               {count > 0 && <span className="badge-count">{count}</span>}
             </Link>
@@ -81,8 +83,8 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
           <p className="caption" style={{ fontSize: 13 }}>{p.subtitle}</p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-          <span style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.5, color: "var(--magenta)" }}>{price(unit)}</span>
-          {p.compare_at_price && <s className="caption">{price(p.compare_at_price)}</s>}
+          <span style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.5, color: "var(--magenta)" }}>{price(unit, t)}</span>
+          {p.compare_at_price && <s className="caption">{price(p.compare_at_price, t)}</s>}
           <span className="caption ltr">★ {Number(p.rating).toFixed(1)} ({p.rating_count})</span>
         </div>
       </div>
@@ -90,7 +92,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
       <div className="soft-card" style={{ gap: 20 }}>
         {sizes.length > 0 && sizes[0] !== "" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>المقاس</span>
+            <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>{t("المقاس")}</span>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               {sizes.map((s) => (
                 <button key={s} type="button" className={`size${size === s ? " on" : ""}`} onClick={() => { setSize(s); setQty(1); }} disabled={!sizeAvailable(s)} aria-pressed={size === s}>{s}</button>
@@ -101,7 +103,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
         {colors.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>اللون:</span>
+              <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>{t("اللون:")}</span>
               <span className="muted">{color}</span>
             </div>
             <div style={{ display: "flex", gap: 12 }}>
@@ -114,25 +116,25 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
           </div>
         )}
         <span className="caption" style={{ color: stock > 0 && stock < 4 ? "var(--warning-fg)" : stock > 0 ? "var(--success-fg)" : "var(--danger-fg)", fontWeight: 500 }}>
-          {stock <= 0 ? "غير متوفر حالياً بهذا الخيار" : stock < 4 ? `بقي ${stock} قطع فقط` : "متوفر"}
+          {stock <= 0 ? t("غير متوفر حالياً بهذا الخيار") : stock < 4 ? t("بقي {n} قطع فقط", { n: stock }) : t("متوفر")}
         </span>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div className="seg" role="tablist">
-          {tabs.map((t, i) => <button key={t.label} type="button" role="tab" aria-selected={tab === i} className={tab === i ? "on" : ""} onClick={() => setTab(i)}>{t.label}</button>)}
+          {tabs.map((tb, i) => <button key={tb.label} type="button" role="tab" aria-selected={tab === i} className={tab === i ? "on" : ""} onClick={() => setTab(i)}>{tb.label}</button>)}
         </div>
         <p style={{ fontSize: 14, lineHeight: 1.9, color: "var(--neutral-fg)" }}>{tabs[tab].text}</p>
       </div>
 
       <div className="action-bar">
         <div className="qty lg">
-          <button type="button" aria-label="زيادة الكمية" onClick={() => setQty((q) => Math.min(q + 1, Math.max(stock, 1)))}><Icon name="plus" size={16} stroke={2.4} /></button>
+          <button type="button" aria-label={t("زيادة الكمية")} onClick={() => setQty((q) => Math.min(q + 1, Math.max(stock, 1)))}><Icon name="plus" size={16} stroke={2.4} /></button>
           <span style={{ fontSize: 16 }}>{qty}</span>
-          <button type="button" aria-label="إنقاص الكمية" onClick={() => setQty((q) => Math.max(1, q - 1))}><Icon name="minus" size={16} stroke={2.4} /></button>
+          <button type="button" aria-label={t("إنقاص الكمية")} onClick={() => setQty((q) => Math.max(1, q - 1))}><Icon name="minus" size={16} stroke={2.4} /></button>
         </div>
         <button type="button" className="btn cta" style={{ flex: 1 }} onClick={addToCart} disabled={stock <= 0}>
-          {added ? "تمت الإضافة ✓" : stock <= 0 ? "غير متوفر" : "أضيفي إلى السلة"}
+          {added ? t("تمت الإضافة ✓") : stock <= 0 ? t("غير متوفر") : t("أضيفي إلى السلة")}
           {!added && stock > 0 && <Icon name="bag" stroke={2} />}
         </button>
       </div>

@@ -39,7 +39,7 @@ const paths: Record<Name, React.ReactNode> = {
 export function Icon({ name, size = 20, stroke = 1.8, fill = "none", className }: { name: Name; size?: number; stroke?: number; fill?: string; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={stroke}
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={[className, name === "back" || name === "forward" ? "dir-icon" : ""].filter(Boolean).join(" ") || undefined}>
       {paths[name]}
     </svg>
   );
