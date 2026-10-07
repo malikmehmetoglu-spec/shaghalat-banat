@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main className="page" style={{ minHeight: "100dvh", justifyContent: "center", alignItems: "center", textAlign: "center" }}>
+    <main className="page app" style={{ minHeight: "100dvh", justifyContent: "center", alignItems: "center", textAlign: "center" }}>
       <img src="/icons/logo-mark.svg" alt="" style={{ height: 96, width: "auto" }} />
       <div className="title-block" style={{ alignItems: "center" }}>
         <h1 className="h-title">الصفحة غير موجودة</h1>

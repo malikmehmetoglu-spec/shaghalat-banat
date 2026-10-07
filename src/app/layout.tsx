@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <CartProvider>
-          <div className="app">{children}</div>
+          {children}
         </CartProvider>
         <SwRegister />
       </body>
