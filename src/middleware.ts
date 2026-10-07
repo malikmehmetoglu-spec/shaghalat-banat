@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase/env";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** يحدّث جلسة Supabase مع كل طلب، ويحمي الصفحات التي تحتاج تسجيل دخول. */
@@ -8,8 +9,8 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    SUPABASE_URL,
+    SUPABASE_KEY,
     {
       cookies: {
         getAll: () => request.cookies.getAll(),
@@ -22,9 +23,10 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  const { data } = await supabase.auth.getUser();
+  let user = null;
+  try { user = (await supabase.auth.getUser()).data.user; } catch { /* لا نُسقط الموقع إن تعذّر الاتصال */ }
   const path = request.nextUrl.pathname;
-  if (!data.user && PROTECTED.some((p) => path === p || path.startsWith(p + "/"))) {
+  if (!user && PROTECTED.some((p) => path === p || path.startsWith(p + "/"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", path);
