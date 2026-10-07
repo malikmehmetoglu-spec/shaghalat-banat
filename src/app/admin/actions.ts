@@ -247,3 +247,26 @@ export async function setRole(_: ActionResult | null, fd: FormData): Promise<Act
   revalidatePath("/admin/staff");
   return ok("تم تحديث الدور");
 }
+
+// ───────── المرتجعات والمواقع ─────────
+export async function setReturnStatus(id: string, status: string) {
+  const { sb } = await requireStaff();
+  await sb.from("return_requests").update({ status }).eq("id", id);
+  revalidatePath("/admin/returns");
+}
+
+export async function saveLocation(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const { sb } = await requireStaff();
+  const name = str(fd, "name");
+  if (!name) return fail("اسم الموقع مطلوب");
+  const { error } = await sb.from("locations").insert({ name, kind: str(fd, "kind") || "warehouse", address: str(fd, "address") || null, sells_online: fd.get("sells_online") === "on" });
+  if (error) return fail(errMsg(error));
+  revalidatePath("/admin/inventory/locations");
+  return ok("تمت إضافة الموقع");
+}
+
+export async function toggleLocationOnline(id: string, value: boolean) {
+  const { sb } = await requireStaff();
+  await sb.from("locations").update({ sells_online: value }).eq("id", id);
+  revalidatePath("/admin/inventory/locations");
+}

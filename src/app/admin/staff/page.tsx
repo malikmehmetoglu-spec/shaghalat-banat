@@ -11,7 +11,7 @@ const MATRIX: [string, string[]][] = [
   ["المنتجات والأقسام والكوبونات", ["owner", "sales"]],
   ["المخزون والجرد والمشتريات", ["owner", "inventory"]],
   ["نقطة البيع في المحل", ["owner", "sales", "cashier"]],
-  ["المالية والمحاسبة (المرحلة 3)", ["owner", "accountant"]],
+  ["المالية والمحاسبة", ["owner", "accountant"]],
   ["الموظفون والأدوار", ["owner"]],
 ];
 
@@ -69,7 +69,7 @@ export default async function StaffPage() {
             </tbody>
           </table>
         </div>
-        <p className="caption" style={{ padding: "10px 14px 14px" }}>في هذه المرحلة كل أعضاء الفريق يرون كل الأقسام؛ تقييد الأقسام حسب الدور يُفعّل مع المرحلة 3.</p>
+        <p className="caption" style={{ padding: "10px 14px 14px" }}>قسم المالية متاح للمديرة والمحاسبة فقط، وقسم الموظفين للمديرة فقط؛ باقي الأقسام متاحة لكل الفريق حالياً.</p>
       </div>
     </>
   );

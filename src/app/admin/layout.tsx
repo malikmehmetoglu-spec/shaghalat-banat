@@ -8,7 +8,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { profile } = await requireStaff();
   return (
     <div className="adm">
-      <AdminSidebar name={profile.full_name || profile.email || "فريق العمل"} role={ROLE_LABEL[profile.role]} />
+      <AdminSidebar name={profile.full_name || profile.email || "فريق العمل"} role={ROLE_LABEL[profile.role]} roleKey={profile.role} />
       <main className="adm-main">{children}</main>
     </div>
   );

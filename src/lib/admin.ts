@@ -13,12 +13,15 @@ export const ROLE_LABEL: Record<string, string> = {
 };
 
 /** يتحقق أن المستخدمة من فريق العمل، ويعيد ملفها وعميل Supabase. */
-export async function requireStaff() {
+export const FINANCE_ROLES: StaffRole[] = ["owner", "accountant"];
+
+export async function requireStaff(roles?: StaffRole[]) {
   const sb = await createClient();
   const { data: u } = await sb.auth.getUser();
   if (!u.user) redirect("/login?next=/admin");
   const { data: profile } = await sb.from("profiles").select("id,full_name,role,phone,email").eq("id", u.user.id).maybeSingle();
   if (!profile || profile.role === "customer") redirect("/admin-no-access");
+  if (roles && !roles.includes(profile.role as StaffRole)) redirect("/admin?denied=1");
   return { sb, profile, user: u.user };
 }
 

@@ -92,6 +92,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
         {addr && <div className="kv"><span className="muted">التوصيل إلى</span><span style={{ textAlign: "left" }}>{addr.city}، {addr.street}</span></div>}
       </div>
 
+      {o.status === "delivered" && <Link href={`/orders/${o.id}/return`} className="btn block" style={{ height: 56 }}>طلب إرجاع أو استبدال</Link>}
       <Link href="/" className="btn secondary block" style={{ height: 56 }}>متابعة التسوّق</Link>
     </main>
   );
