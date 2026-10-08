@@ -36,12 +36,8 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
           <Link href={`/admin/barcodes/print?product=${p.id}`} className="btn" style={{ minHeight: 40 }}>اطبع الملصقات الآن</Link>
         </div>
       )}
-      <div className="split">
-        <div className="wide"><ProductForm p={p} categories={cats ?? []} locations={locations} /></div>
-        <div className="narrow">
-          <VariantsEditor productId={p.id} slug={p.slug} variants={p.product_variants} locations={locations.filter((l) => l.kind !== "transit")} />
-        </div>
-      </div>
+      <VariantsEditor productId={p.id} slug={p.slug} variants={p.product_variants} locations={locations.filter((l) => l.kind !== "transit")} />
+      <ProductForm p={p} categories={cats ?? []} locations={locations} />
     </>
   );
 }

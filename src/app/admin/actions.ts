@@ -152,6 +152,7 @@ export async function setStock(variantId: string, locationId: string, qty: numbe
   const { error } = await sb.rpc("stock_set", { variant: variantId, loc: locationId, new_qty: qty, reason, note: note || null });
   if (error) return fail(errMsg(error));
   revalidatePath("/admin/inventory");
+  revalidatePath("/admin/products", "layout");
   return ok("تم تحديث الكمية");
 }
 
