@@ -2,7 +2,8 @@ import { requireStaff } from "@/lib/admin";
 import { placeholder } from "@/lib/format";
 import { FormCard } from "../FormCard";
 import { saveBanner, saveCategory } from "../actions";
-import { BannerControls, CategoryToggle } from "./Controls";
+import { BannerControls, BannerImage, CategoryImage, CategoryToggle } from "./Controls";
+import { ImageUpload } from "../ImageUpload";
 
 export const metadata = { title: "الأقسام والبانرات" };
 
@@ -29,6 +30,7 @@ export default async function CatalogPage() {
                   <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>{c.name}</span>
                   <span className="caption">{c.products?.[0]?.count ?? 0} منتج · ترتيب {c.sort_order}{c.is_visible ? "" : " · مخفي"}</span>
                 </span>
+                <CategoryImage id={c.id} url={c.image_url} />
                 <CategoryToggle id={c.id} visible={c.is_visible} />
               </div>
             ))}
@@ -40,7 +42,7 @@ export default async function CatalogPage() {
               <label className="a-field">الترتيب<input name="sort_order" type="number" className="a-in" defaultValue={99} /></label>
               <label className="a-field">رابط مختصر<input name="slug" className="a-in ltr" placeholder="dresses" /></label>
             </div>
-            <label className="a-field">رابط الصورة (اختياري)<input name="image_url" className="a-in ltr" placeholder="https://..." /></label>
+            <ImageUpload name="image_url" folder="categories" label="صورة القسم (اختياري)" ratio="3 / 4" />
           </FormCard>
         </div>
 
@@ -59,7 +61,7 @@ export default async function CatalogPage() {
                     <span className={`pill ${b.is_active ? "tone-success" : "tone-neutral"}`} style={{ alignSelf: "flex-start" }}>{b.is_active ? "نشط" : "متوقف"}</span>
                     <span className="caption">يفتح: <span className="ltr">{b.link || "—"}</span> · ترتيب {b.sort_order}</span>
                   </div>
-                  <BannerControls id={b.id} active={b.is_active} />
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}><BannerImage id={b.id} url={b.image_url} /><BannerControls id={b.id} active={b.is_active} /></div>
                 </div>
               </div>
             ))}
@@ -71,7 +73,7 @@ export default async function CatalogPage() {
               <label className="a-field">يفتح عند الضغط<input name="link" className="a-in ltr" placeholder="/c/abayas" /></label>
               <label className="a-field">الترتيب<input name="sort_order" type="number" className="a-in" defaultValue={0} /></label>
             </div>
-            <label className="a-field">رابط الصورة (اختياري)<input name="image_url" className="a-in ltr" placeholder="https://..." /></label>
+            <ImageUpload name="image_url" folder="banners" label="صورة البانر (اختياري)" ratio="4 / 5" />
           </FormCard>
         </div>
       </div>

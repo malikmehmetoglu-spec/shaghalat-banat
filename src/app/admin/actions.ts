@@ -362,3 +362,15 @@ export async function setStaffPassword(id: string, password: string): Promise<Ac
   if (error) return fail(errMsg(error));
   return ok("تم تغيير كلمة المرور");
 }
+
+// ───────── صور الأقسام والبانرات ─────────
+export async function setCategoryImage(id: string, url: string) {
+  const { sb } = await requireStaff();
+  await sb.from("categories").update({ image_url: url }).eq("id", id);
+  revalidatePath("/admin/catalog"); revalidatePath("/", "layout");
+}
+export async function setBannerImage(id: string, url: string) {
+  const { sb } = await requireStaff();
+  await sb.from("banners").update({ image_url: url }).eq("id", id);
+  revalidatePath("/admin/catalog"); revalidatePath("/", "layout");
+}

@@ -1,4 +1,5 @@
 "use client";
+import { ImageUpload } from "../ImageUpload";
 import { useActionState } from "react";
 import { saveProduct, type ActionResult } from "../actions";
 
@@ -34,10 +35,7 @@ export function ProductForm({ p = {}, categories }: { p?: P; categories: { id: s
         <label className="a-field">سعر التكلفة<input name="cost" type="number" min="0" step="0.01" className="a-in" defaultValue={p.cost ?? ""} placeholder="للمحاسبة" /></label>
         <label className="a-field">شارة<input name="tag" className="a-in" defaultValue={p.tag ?? ""} placeholder="جديد، الأكثر مبيعاً…" /></label>
       </div>
-      <label className="a-field">روابط الصور (رابط في كل سطر — الأول هو الرئيسي)
-        <textarea name="images" className="a-in ltr" style={{ textAlign: "left", height: 84 }} defaultValue={(p.images ?? []).join("\n")} placeholder="https://..." />
-        <span className="caption" style={{ fontWeight: 400 }}>رفع الصور مباشرة من الجهاز سيُضاف لاحقاً. حالياً يمكن رفعها إلى Supabase Storage ولصق الرابط.</span>
-      </label>
+      <ImageUpload name="images" folder="products" multiple label="صور المنتج" initial={p.images ?? []} />
       <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}><input type="checkbox" name="is_online" defaultChecked={p.is_online ?? true} style={{ width: 18, height: 18, accentColor: "var(--magenta)" }} /> ظاهر في المتجر الإلكتروني</label>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}><input type="checkbox" name="is_in_store" defaultChecked={p.is_in_store ?? true} style={{ width: 18, height: 18, accentColor: "var(--magenta)" }} /> متوفر في المحل</label>

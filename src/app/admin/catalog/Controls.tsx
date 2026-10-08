@@ -1,6 +1,8 @@
 "use client";
 import { useOptimistic, useTransition } from "react";
-import { deleteBanner, toggleBanner, toggleCategory } from "../actions";
+import { deleteBanner, setBannerImage, setCategoryImage, toggleBanner, toggleCategory } from "../actions";
+import { uploadImage } from "../ImageUpload";
+import { useRef, useState } from "react";
 import { Switch } from "../Switch";
 
 export function CategoryToggle({ id, visible }: { id: string; visible: boolean }) {
@@ -19,3 +21,22 @@ export function BannerControls({ id, active }: { id: string; active: boolean }) 
     </div>
   );
 }
+
+/** زر صغير لتغيير صورة قسم/بانر موجود */
+function ChangeImage({ folder, url, save }: { folder: string; url: string | null; save: (u: string) => Promise<void> }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  return (
+    <>
+      <button type="button" className="btn soft" disabled={busy} onClick={() => ref.current?.click()}>{busy ? "جارٍ الرفع…" : url ? "تغيير الصورة" : "رفع صورة"}</button>
+      <input ref={ref} type="file" accept="image/*" hidden onChange={async (e) => {
+        const f = e.target.files?.[0]; if (!f) return;
+        setBusy(true);
+        try { await save(await uploadImage(f, folder)); } catch { alert("تعذّر رفع الصورة، حاولي مجدداً"); }
+        setBusy(false); e.target.value = "";
+      }} />
+    </>
+  );
+}
+export const CategoryImage = ({ id, url }: { id: string; url: string | null }) => <ChangeImage folder="categories" url={url} save={(u) => setCategoryImage(id, u)} />;
+export const BannerImage = ({ id, url }: { id: string; url: string | null }) => <ChangeImage folder="banners" url={url} save={(u) => setBannerImage(id, u)} />;
