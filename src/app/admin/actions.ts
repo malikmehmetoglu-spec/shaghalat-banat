@@ -102,12 +102,15 @@ export async function saveProduct(_: ActionResult | null, fd: FormData): Promise
   if (id) {
     const { error } = await sb.from("products").update(row).eq("id", id);
     if (error) return fail(errMsg(error));
+    await applyVariantsBulk(sb, id, str(fd, "variants_json"), str(fd, "stock_location"));
     revalidatePath(`/admin/products/${id}`);
     revalidatePath("/admin/products");
     return ok("تم حفظ المنتج");
   }
   const { data, error } = await sb.from("products").insert({ ...row, slug: slugify(str(fd, "name_en") || name) }).select("id").single();
   if (error || !data) return fail(errMsg(error));
+  await applyVariantsBulk(sb, data.id, str(fd, "variants_json"), str(fd, "stock_location"));
+  revalidatePath("/admin/products");
   redirect(`/admin/products/${data.id}?created=1`);
 }
 
@@ -373,4 +376,36 @@ export async function setBannerImage(id: string, url: string) {
   const { sb } = await requireStaff();
   await sb.from("banners").update({ image_url: url }).eq("id", id);
   revalidatePath("/admin/catalog"); revalidatePath("/", "layout");
+}
+
+// ───────── إضافة ألوان ومقاسات وكميات دفعة واحدة ─────────
+type BulkColor = { color: string; hex: string; sizes: { size: string; qty: number }[] };
+async function applyVariantsBulk(sb: Awaited<ReturnType<typeof requireStaff>>["sb"], productId: string, raw: string, locId: string) {
+  let list: BulkColor[] = [];
+  try { list = JSON.parse(raw || "[]"); } catch { return 0; }
+  if (!list.length) return 0;
+  const { data: prod } = await sb.from("products").select("slug").eq("id", productId).single();
+  const prefix = ((prod?.slug ?? "sb").replace(/[^a-z0-9]/gi, "").slice(0, 6) || "SB").toUpperCase();
+  const { data: existing } = await sb.from("product_variants").select("id,size,color_name,stock_levels(location_id,on_hand)").eq("product_id", productId);
+  let made = 0;
+  for (const [ci, c] of list.entries()) {
+    for (const s of c.sizes) {
+      const size = s.size === "مقاس واحد" ? null : s.size;
+      let v = (existing ?? []).find((e: any) => (e.color_name ?? "") === c.color && (e.size ?? null) === size) as any;
+      if (!v) {
+        const sku = `${prefix}-${ci + 1}${(size ?? "OS").replace(/[^a-z0-9]/gi, "").toUpperCase() || "X"}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+        const { data: nv } = await sb.from("product_variants").insert({ product_id: productId, sku, size, color_name: c.color, color_hex: c.hex }).select("id").single();
+        if (!nv) continue;
+        v = { id: nv.id, stock_levels: [] };
+        made++;
+      } else if (c.hex) {
+        await sb.from("product_variants").update({ color_hex: c.hex }).eq("id", v.id);
+      }
+      if (s.qty > 0 && locId) {
+        const cur = (v.stock_levels ?? []).find((l: any) => l.location_id === locId)?.on_hand ?? 0;
+        await sb.rpc("stock_set", { variant: v.id, loc: locId, new_qty: cur + s.qty, reason: "in", note: "إدخال بضاعة" });
+      }
+    }
+  }
+  return made;
 }

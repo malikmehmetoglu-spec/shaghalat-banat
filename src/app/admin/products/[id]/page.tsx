@@ -29,7 +29,7 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
       </div>
       {created && <div className="a-flash tone-success">تم إنشاء المنتج. أضيفي الآن المقاسات والألوان وكمياتها.</div>}
       <div className="split">
-        <div className="wide"><ProductForm p={p} categories={cats ?? []} /></div>
+        <div className="wide"><ProductForm p={p} categories={cats ?? []} locations={locations} /></div>
         <div className="narrow">
           <VariantsEditor productId={p.id} slug={p.slug} variants={p.product_variants} locations={locations.filter((l) => l.kind !== "transit")} />
         </div>

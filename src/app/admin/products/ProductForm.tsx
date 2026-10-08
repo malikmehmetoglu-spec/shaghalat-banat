@@ -1,5 +1,6 @@
 "use client";
 import { ImageUpload } from "../ImageUpload";
+import { ColorsBuilder } from "./ColorsBuilder";
 import { useActionState } from "react";
 import { saveProduct, type ActionResult } from "../actions";
 
@@ -9,7 +10,7 @@ type P = {
   images?: string[]; is_online?: boolean; is_in_store?: boolean;
 };
 
-export function ProductForm({ p = {}, categories }: { p?: P; categories: { id: string; name: string }[] }) {
+export function ProductForm({ p = {}, categories, locations = [] }: { p?: P; categories: { id: string; name: string }[]; locations?: { id: string; name: string; kind: string }[] }) {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(saveProduct, null);
   return (
     <form action={action} className="acard" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -36,6 +37,7 @@ export function ProductForm({ p = {}, categories }: { p?: P; categories: { id: s
         <label className="a-field">شارة<input name="tag" className="a-in" defaultValue={p.tag ?? ""} placeholder="جديد، الأكثر مبيعاً…" /></label>
       </div>
       <ImageUpload name="images" folder="products" multiple label="صور المنتج" initial={p.images ?? []} />
+      <ColorsBuilder key={state?.message ?? "c"} locations={locations} title={p.id ? "إضافة ألوان أو كميات جديدة" : "الألوان والمقاسات والكميات"} />
       <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}><input type="checkbox" name="is_online" defaultChecked={p.is_online ?? true} style={{ width: 18, height: 18, accentColor: "var(--magenta)" }} /> ظاهر في المتجر الإلكتروني</label>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}><input type="checkbox" name="is_in_store" defaultChecked={p.is_in_store ?? true} style={{ width: 18, height: 18, accentColor: "var(--magenta)" }} /> متوفر في المحل</label>
