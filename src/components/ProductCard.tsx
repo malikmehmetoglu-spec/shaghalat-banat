@@ -5,7 +5,7 @@ import type { Product } from "@/lib/types";
 import { FavButton } from "./FavButton";
 import { useT } from "@/components/LangProvider";
 
-/** بطاقة المنتج: الصورة بإطار عمودي، والمعلومات تحتها على الأبيض */
+/** بطاقة المنتج: الصورة تملأ البطاقة، ولوح زجاجي شفاف فوقها فيه الاسم والسعر والتقييم */
 export function ProductCard({ p, isFav = false }: { p: Product; isFav?: boolean; height?: number }) {
   const t = useT();
   const img = p.images?.[0];
@@ -16,14 +16,17 @@ export function ProductCard({ p, isFav = false }: { p: Product; isFav?: boolean;
         {!img && <span className="ph">{t("[صورة المنتج]")}</span>}
         {p.tag && <span className="tag">{p.tag}</span>}
         <FavButton productId={p.id} initial={isFav} />
-      </div>
-      <div className="pc-info">
-        <span className="pc-name">{p.name}</span>
-        {p.subtitle && <span className="pc-sub">{p.subtitle}</span>}
-        <span className="pc-price">
-          <b>{price(p.price, t)}</b>
-          {off && <s>{price(p.compare_at_price, t)}</s>}
-        </span>
+        <div className="pc-glass">
+          <span className="pc-name">{p.name}</span>
+          <span className="pc-row">
+            <span className="pc-sub">{p.subtitle}</span>
+            {Number(p.rating) > 0 && <span className="pc-rate ltr">★ {Number(p.rating).toFixed(1)}</span>}
+          </span>
+          <span className="pc-price">
+            <b>{price(p.price, t)}</b>
+            {off && <s>{price(p.compare_at_price, t)}</s>}
+          </span>
+        </div>
       </div>
       <Link href={`/p/${p.slug}`} className="pc-link" aria-label={p.name} />
     </div>
