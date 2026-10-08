@@ -1,0 +1,51 @@
+/* صفحة الـ QR المطبوع على الأكياس والكروت — للجوال أولاً */
+.qr {
+  position: relative; overflow: hidden; min-height: 100dvh; padding: 44px 22px 32px;
+  display: flex; flex-direction: column; align-items: center; gap: 30px;
+  background:
+    radial-gradient(420px 320px at 100% 0%, rgba(255,255,255,.28), transparent 70%),
+    radial-gradient(380px 380px at 0% 100%, rgba(58,42,48,.35), transparent 70%),
+    linear-gradient(165deg, #F06AAE 0%, #D6037F 48%, #8E0254 100%);
+  color: #fff;
+}
+.qr-mark { position: absolute; height: 78vh; max-height: 640px; width: auto; inset-inline-start: -30%; bottom: -14%; opacity: .1; filter: brightness(0) invert(1); pointer-events: none; }
+.qr-head { position: relative; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
+.qr-arch {
+  width: 168px; aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center;
+  border-radius: 50% 50% 28px 28px / 40% 40% 28px 28px;
+  background: rgba(255,255,255,.16); border: 1.5px solid rgba(255,255,255,.45);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 24px 50px rgba(58,42,48,.28), inset 0 1px 0 rgba(255,255,255,.4);
+}
+.qr-arch img { height: 132px; width: auto; filter: brightness(0) invert(1); margin-top: 14px; }
+.qr-tag { font-size: 17px; font-weight: 500; line-height: 1.6; opacity: .95; }
+
+.qr-links { position: relative; width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 14px; }
+.qr-btn {
+  display: flex; align-items: center; gap: 14px; padding: 12px 14px 12px 18px; min-height: 76px; border-radius: 26px;
+  background: rgba(255,255,255,.95); color: var(--dark-plum);
+  box-shadow: 0 14px 30px rgba(58,42,48,.22);
+  animation: qr-in .55s cubic-bezier(.2,.8,.2,1) both;
+  transition: transform .15s ease;
+}
+.qr-btn:active { transform: scale(.98); }
+.qr-btn.primary { background: linear-gradient(135deg, #3A2A30, #5A3D49); color: #fff; }
+.qr-btn.disabled { opacity: .6; }
+.qr-ic { width: 50px; height: 50px; flex-shrink: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; }
+.qr-ic-wa { background: linear-gradient(135deg, #3DDC84, #128C4B); }
+.qr-ic-ig { background: radial-gradient(circle at 30% 110%, #FFD776 0%, #F77737 30%, #E1306C 60%, #833AB4 100%); }
+.qr-ic-fb { background: linear-gradient(135deg, #3B82F6, #1D4ED8); }
+.qr-ic-shop { background: linear-gradient(135deg, #F06AAE, #D6037F); }
+.qr-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; text-align: right; }
+.qr-txt b { font-size: 16px; font-weight: 700; line-height: 1.5; }
+.qr-txt small { font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
+.qr-btn.primary .qr-txt small { color: rgba(255,255,255,.78); }
+.qr-go { flex-shrink: 0; color: var(--magenta); }
+.qr-btn.primary .qr-go { color: #fff; }
+[dir="ltr"] .qr-go { transform: scaleX(-1); }
+
+.qr-foot { position: relative; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12.5px; line-height: 1.6; opacity: .88; text-align: center; }
+
+@keyframes qr-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .qr-btn { animation: none; } }
+@media (min-width: 700px) { .qr { padding-top: 70px; } .qr-arch { width: 190px; } .qr-arch img { height: 150px; } }

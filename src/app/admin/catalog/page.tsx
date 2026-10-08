@@ -1,7 +1,7 @@
 import { requireStaff } from "@/lib/admin";
 import { placeholder } from "@/lib/format";
 import { FormCard } from "../FormCard";
-import { saveBanner, saveCategory } from "../actions";
+import { saveBanner, saveCategory, saveStoreProfile } from "../actions";
 import { BannerControls, BannerImage, CategoryImage, CategoryToggle } from "./Controls";
 import { ImageUpload } from "../ImageUpload";
 
@@ -9,8 +9,9 @@ export const metadata = { title: "الأقسام والبانرات" };
 
 export default async function CatalogPage() {
   const { sb } = await requireStaff();
-  const [{ data: cats }, { data: banners }] = await Promise.all([
+  const [{ data: cats }, { data: profileRow }, { data: banners }] = await Promise.all([
     sb.from("categories").select("id,name,slug,image_url,is_visible,sort_order,products(count)").order("sort_order"),
+    sb.from("store_profile").select("whatsapp,facebook_url,instagram_url,tagline").eq("id", 1).maybeSingle(),
     sb.from("banners").select("id,kicker,title,link,image_url,is_active,sort_order").order("sort_order"),
   ]);
 
@@ -74,6 +75,15 @@ export default async function CatalogPage() {
               <label className="a-field">الترتيب<input name="sort_order" type="number" className="a-in" defaultValue={0} /></label>
             </div>
             <ImageUpload name="image_url" folder="banners" label="صورة البانر (اختياري)" ratio="4 / 5" />
+          </FormCard>
+          <FormCard title="روابط التواصل (صفحة الـ QR)" action={saveStoreProfile} submitLabel="حفظ الروابط" resetOnSuccess={false}>
+            <span className="caption">تظهر في صفحة <a href="/qr" target="_blank" className="ltr">shaghalat-banat.com/qr</a> التي يفتحها رمز QR المطبوع على الأكياس والكروت.</span>
+            <div className="a-grid">
+              <label className="a-field">رقم واتساب (مع رمز الدولة)<input name="whatsapp" className="a-in ltr" defaultValue={profileRow?.whatsapp ?? ""} placeholder="+963 9XX XXX XXX" /></label>
+              <label className="a-field">رابط صفحة إنستغرام<input name="instagram_url" className="a-in ltr" defaultValue={profileRow?.instagram_url ?? ""} placeholder="instagram.com/..." /></label>
+              <label className="a-field">رابط صفحة فيسبوك<input name="facebook_url" className="a-in ltr" defaultValue={profileRow?.facebook_url ?? ""} placeholder="facebook.com/..." /></label>
+              <label className="a-field">الجملة تحت الشعار<input name="tagline" className="a-in" defaultValue={profileRow?.tagline ?? ""} /></label>
+            </div>
           </FormCard>
         </div>
       </div>

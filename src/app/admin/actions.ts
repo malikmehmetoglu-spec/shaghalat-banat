@@ -435,3 +435,19 @@ export async function archiveProduct(id: string): Promise<ActionResult> {
   revalidatePath("/", "layout");
   return ok("تم حذف المنتج");
 }
+
+// ───────── روابط التواصل (صفحة /qr) ─────────
+export async function saveStoreProfile(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const { sb } = await requireStaff();
+  const url = (v: string) => (v && !/^https?:\/\//.test(v) ? `https://${v}` : v) || null;
+  const { error } = await sb.from("store_profile").update({
+    whatsapp: str(fd, "whatsapp").replace(/[^\d+]/g, "") || null,
+    facebook_url: url(str(fd, "facebook_url")),
+    instagram_url: url(str(fd, "instagram_url")),
+    tagline: str(fd, "tagline") || null,
+    updated_at: new Date().toISOString(),
+  }).eq("id", 1);
+  if (error) return fail(errMsg(error));
+  revalidatePath("/qr");
+  return ok("تم حفظ روابط التواصل");
+}
