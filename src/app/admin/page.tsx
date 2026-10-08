@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { canAccess } from "@/lib/access";
 import { requireStaff } from "@/lib/admin";
 import { date, ORDER_STATUS, price, num } from "@/lib/format";
 
 export const metadata = { title: "لوحة المؤشرات" };
 
-export default async function AdminHome() {
+export default async function AdminHome({ searchParams }: { searchParams: Promise<{ denied?: string }> }) {
+  const { denied } = await searchParams;
   const { sb, profile } = await requireStaff();
   const startToday = new Date(); startToday.setHours(0, 0, 0, 0);
   const start7 = new Date(startToday); start7.setDate(start7.getDate() - 6);
@@ -50,14 +52,15 @@ export default async function AdminHome() {
 
   return (
     <>
+      {denied && <div className="a-flash tone-warning">هذا القسم غير متاح لدورك. تواصل مع المدير العام إن كنت تحتاجه.</div>}
       <div className="adm-top">
         <div className="title-block">
           <h1 className="adm-h1">مرحباً{profile.full_name ? `، ${profile.full_name}` : ""}</h1>
           <span className="adm-sub">ملخّص أداء المتجر اليوم، {date(new Date())}</span>
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <Link href="/admin/pos" className="btn">نقطة البيع</Link>
-          <Link href="/admin/products/new" className="btn secondary">إضافة منتج</Link>
+          {canAccess(profile.role, "/admin/pos") && <Link href="/admin/pos" className="btn">نقطة البيع</Link>}
+          {canAccess(profile.role, "/admin/products") && <Link href="/admin/products/new" className="btn secondary">إضافة منتج</Link>}
         </div>
       </div>
 

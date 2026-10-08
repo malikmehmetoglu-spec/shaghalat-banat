@@ -4,6 +4,7 @@ import { getLocations, requireStaff } from "@/lib/admin";
 import { Icon } from "@/components/Icon";
 import { ProductForm } from "../ProductForm";
 import { VariantsEditor } from "./VariantsEditor";
+import { DeleteProduct } from "../DeleteProduct";
 
 export const metadata = { title: "تعديل منتج" };
 
@@ -28,6 +29,7 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
         <div style={{ display: "flex", gap: 8 }}>
           <Link href={`/admin/barcodes/print?product=${p.id}`} className="btn">طباعة ملصقات الباركود</Link>
           <Link href={`/p/${p.slug}`} className="btn secondary" target="_blank">عرضه في المتجر</Link>
+          <DeleteProduct id={p.id} name={p.name} redirectTo="/admin/products" />
         </div>
       </div>
       {created && (

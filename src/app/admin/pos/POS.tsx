@@ -2,18 +2,21 @@
 import { useMemo, useState, useTransition } from "react";
 import { posSale } from "../actions";
 import { placeholder, price } from "@/lib/format";
+import { code128 } from "../barcodes/code128";
 
 type Item = { id: string; name: string; label: string; sku: string; barcode: string | null; price: number; image: string | null; slug: string; stock: number };
 type Line = Item & { qty: number };
 
-export function POS({ items, storeName, cashier }: { items: Item[]; storeName: string; cashier: string }) {
+type Shop = { address: string; phone: string; footer: string; taxNumber: string };
+
+export function POS({ items, storeName, cashier, shop, shift }: { items: Item[]; storeName: string; cashier: string; shop: Shop; shift?: React.ReactNode }) {
   const [q, setQ] = useState("");
   const [cart, setCart] = useState<Line[]>([]);
   const [discount, setDiscount] = useState(0);
   const [phone, setPhone] = useState("");
   const [payment, setPayment] = useState<"cash" | "card">("cash");
   const [msg, setMsg] = useState<{ ok: boolean; message: string } | null>(null);
-  const [receipt, setReceipt] = useState<{ number: string; total: number; lines: Line[]; discount: number } | null>(null);
+  const [receipt, setReceipt] = useState<{ number: string; total: number; lines: Line[]; discount: number; payment: string; at: string } | null>(null);
   const [pending, start] = useTransition();
 
   const results = useMemo(() => {
@@ -44,7 +47,7 @@ export function POS({ items, storeName, cashier }: { items: Item[]; storeName: s
     start(async () => {
       const r = await posSale(cart.map((l) => ({ variant_id: l.id, qty: l.qty })), payment, discount, phone);
       if (!r.ok) { setMsg(r); return; }
-      setReceipt({ number: r.number!, total: r.total!, lines: cart, discount });
+      setReceipt({ number: r.number!, total: r.total!, lines: cart, discount, payment, at: new Date().toISOString() });
       setCart([]); setDiscount(0); setPhone(""); setMsg(null);
     });
   }
@@ -72,8 +75,9 @@ export function POS({ items, storeName, cashier }: { items: Item[]; storeName: s
             ))}
           </div>
         </div>
-        <div className="narrow">
-          <div className="acard" style={{ display: "flex", flexDirection: "column", gap: 12, position: "sticky", top: 16 }}>
+        <div className="narrow" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {shift}
+          <div className="acard" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <h2 className="adm-h2">الفاتورة</h2>
             {!cart.length && <span className="caption">لم تُضف منتجات بعد</span>}
             {cart.map((l) => (
@@ -106,21 +110,61 @@ export function POS({ items, storeName, cashier }: { items: Item[]; storeName: s
       </div>
 
       {receipt && (
-        <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(58,42,48,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 50 }}>
-          <div className="acard receipt" style={{ width: 340, maxWidth: "100%", display: "flex", flexDirection: "column", gap: 10 }}>
-            <img src="/icons/logo-horizontal.svg" alt="شغلات بنات" style={{ height: 36, alignSelf: "center" }} />
-            <span className="caption" style={{ textAlign: "center" }}>فاتورة <span className="ltr">#{receipt.number}</span> · {new Date().toLocaleString("en-GB")}</span>
-            {receipt.lines.map((l) => <div key={l.id} className="kv" style={{ fontSize: 13 }}><span>{l.name} × {l.qty}</span><span>{price(l.qty * l.price)}</span></div>)}
-            {receipt.discount > 0 && <div className="kv" style={{ fontSize: 13 }}><span>خصم</span><span>−{price(receipt.discount)}</span></div>}
-            <div className="kv" style={{ fontSize: 16 }}><b>الإجمالي</b><b>{price(receipt.total)}</b></div>
-            <span className="caption" style={{ textAlign: "center" }}>شكراً لزيارتك 💗</span>
-            <div className="no-print" style={{ display: "flex", gap: 8 }}>
-              <button className="btn" style={{ flex: 1 }} onClick={() => window.print()}>طباعة</button>
-              <button className="btn soft" style={{ flex: 1 }} onClick={() => setReceipt(null)}>بيع جديد</button>
+        <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(58,42,48,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 50, overflowY: "auto" }}>
+          {/* ورق طابعة الفواتير الحرارية 80 مم: عرض الطباعة الفعلي ≈ 72 مم */}
+          <style>{`@media print { @page { margin: 0; } html, body { background: #fff !important; } .receipt-paper { width: 72mm !important; margin: 0 auto !important; padding: 2mm 0 6mm !important; box-shadow: none !important; border-radius: 0 !important; } }`}</style>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+            <Receipt r={receipt} shop={shop} cashier={cashier} storeName={storeName} />
+            <div className="no-print" style={{ display: "flex", gap: 8, width: "100%", maxWidth: 340 }}>
+              <button className="btn" style={{ flex: 1 }} onClick={() => window.print()}>طباعة الفاتورة</button>
+              <button className="btn soft" style={{ flex: 1, height: 48 }} onClick={() => setReceipt(null)}>بيع جديد</button>
             </div>
           </div>
         </div>
       )}
     </>
+  );
+}
+
+const PAY: Record<string, string> = { cash: "نقداً", card: "بطاقة" };
+
+/** فاتورة حرارية بعرض 80 مم: أسود على أبيض، خطوط واضحة، وباركود رقم الفاتورة */
+function Receipt({ r, shop, cashier, storeName }: { r: { number: string; total: number; lines: Line[]; discount: number; payment: string; at: string }; shop: Shop; cashier: string; storeName: string }) {
+  const sub = r.lines.reduce((s, l) => s + l.qty * l.price, 0);
+  const d = new Date(r.at);
+  const { bars, width } = code128(r.number);
+  const row: React.CSSProperties = { display: "flex", justifyContent: "space-between", gap: "2mm", fontSize: "11pt", lineHeight: 1.45 };
+  const rule = <div style={{ borderTop: "1px dashed #000", margin: "2mm 0" }} />;
+  return (
+    <div className="receipt-paper" style={{ width: 340, maxWidth: "100%", background: "#fff", color: "#000", padding: "18px 16px", borderRadius: 12, boxShadow: "0 20px 50px rgba(0,0,0,.25)", fontFamily: "Rubik, sans-serif" }}>
+      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "1mm" }}>
+        <img src="/icons/logo-stacked.svg" alt="شغلات بنات" style={{ height: 70, width: "auto", filter: "grayscale(1) brightness(0)" }} />
+        {shop.address && <span style={{ fontSize: "9.5pt", lineHeight: 1.4 }}>{shop.address}</span>}
+        {shop.phone && <span className="ltr" style={{ fontSize: "9.5pt", lineHeight: 1.4 }}>{shop.phone}</span>}
+        {shop.taxNumber && <span style={{ fontSize: "9pt", lineHeight: 1.4 }}>الرقم الضريبي: {shop.taxNumber}</span>}
+      </div>
+      {rule}
+      <div style={{ ...row, fontSize: "10pt" }}><span>فاتورة رقم</span><b className="ltr">{r.number}</b></div>
+      <div style={{ ...row, fontSize: "10pt" }}><span>التاريخ</span><span className="ltr">{d.toLocaleDateString("en-GB")} {d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span></div>
+      <div style={{ ...row, fontSize: "10pt" }}><span>{storeName}</span><span>{cashier}</span></div>
+      {rule}
+      {r.lines.map((l) => (
+        <div key={l.id} style={{ marginBottom: "1.5mm" }}>
+          <div style={{ fontSize: "11pt", fontWeight: 600, lineHeight: 1.4 }}>{l.name}{l.label ? ` — ${l.label}` : ""}</div>
+          <div style={{ ...row, fontSize: "10pt" }}><span className="ltr">{l.qty} × {price(l.price)}</span><b>{price(l.qty * l.price)}</b></div>
+        </div>
+      ))}
+      {rule}
+      <div style={row}><span>المجموع</span><span>{price(sub)}</span></div>
+      {r.discount > 0 && <div style={row}><span>الخصم</span><span>−{price(r.discount)}</span></div>}
+      <div style={{ ...row, fontSize: "14pt", fontWeight: 700, marginTop: "1mm" }}><span>الإجمالي</span><span>{price(r.total)}</span></div>
+      <div style={{ ...row, fontSize: "10pt" }}><span>طريقة الدفع</span><span>{PAY[r.payment] ?? r.payment}</span></div>
+      {rule}
+      <svg viewBox={`0 0 ${width} 30`} width="100%" height="12mm" preserveAspectRatio="none" shapeRendering="crispEdges" aria-hidden="true">
+        {bars.map((b, i) => <rect key={i} x={b.x} y={0} width={b.w} height={30} fill="#000" />)}
+      </svg>
+      <div style={{ textAlign: "center", fontSize: "10.5pt", lineHeight: 1.5, marginTop: "2mm" }}>{shop.footer}</div>
+      <div style={{ textAlign: "center", fontSize: "8.5pt", lineHeight: 1.5 }}>الاستبدال خلال 7 أيام مع الفاتورة</div>
+    </div>
   );
 }

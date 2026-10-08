@@ -424,3 +424,14 @@ export async function addStock(variantId: string, locationId: string, delta: num
   revalidatePath("/admin/products", "layout");
   return { ...ok(`تمت إضافة ${Math.floor(delta)} قطعة — المجموع الآن ${next}`), qty: next };
 }
+
+/** حذف منتج: يُؤرشف فيختفي من المتجر واللوحة والمخزون، وتبقى الطلبات والفواتير السابقة سليمة */
+export async function archiveProduct(id: string): Promise<ActionResult> {
+  const { sb, profile } = await requireStaff();
+  if (!["owner", "sales"].includes(profile.role)) return fail("حذف المنتجات متاح للمدير العام ومشرفة المبيعات");
+  const { error } = await sb.from("products").update({ archived_at: new Date().toISOString(), is_online: false, is_in_store: false }).eq("id", id);
+  if (error) return fail(errMsg(error));
+  revalidatePath("/admin/products", "layout");
+  revalidatePath("/", "layout");
+  return ok("تم حذف المنتج");
+}

@@ -20,7 +20,7 @@ export type SortKey = "new" | "best" | "price_asc" | "price_desc";
 
 export async function getProducts(opts: { categorySlug?: string; sort?: SortKey; q?: string; limit?: number } = {}): Promise<Product[]> {
   const sb = await createClient();
-  let query = sb.from("products").select(opts.categorySlug ? `${PRODUCT_COLS},categories!inner(slug)` : PRODUCT_COLS);
+  let query = sb.from("products").select(opts.categorySlug ? `${PRODUCT_COLS},categories!inner(slug)` : PRODUCT_COLS).is("archived_at", null);
   if (opts.categorySlug) query = query.eq("categories.slug", opts.categorySlug);
   if (opts.q) {
     const term = opts.q.replace(/[%,()]/g, " ").trim();
@@ -43,6 +43,7 @@ export async function getProduct(slug: string): Promise<ProductWithVariants | nu
     .from("products")
     .select(`${PRODUCT_COLS},product_variants(id,sku,size,color_name,color_hex,price_override)`)
     .eq("slug", slug)
+    .is("archived_at", null)
     .maybeSingle();
   if (!data) return null;
   const ids = (data as any).product_variants.map((v: any) => v.id);

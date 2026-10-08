@@ -59,9 +59,9 @@ textarea.a-in { height: 100px; padding: 12px 14px; line-height: 1.7; resize: ver
   .label-sheet { display: flex; flex-wrap: wrap; gap: 3mm; }
   .label-sheet ~ * , .split.no-print { display: none !important; }
   .label-card { border-color: #ccc; }
-  body:has(.receipt) .adm-main > *:not([role=dialog]) { display: none !important; }
+  body:has(.receipt-paper) .adm-main > *:not([role=dialog]) { display: none !important; }
   [role=dialog] { position: static !important; background: none !important; }
-  .receipt { box-shadow: none !important; }
+  [role=dialog] .no-print { display: none !important; }
   .no-print { display: none !important; }
   .adm-side { display: none !important; }
   .adm-main { padding: 0 !important; }

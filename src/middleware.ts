@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase/env";
 import { NextResponse, type NextRequest } from "next/server";
+import { canAccess } from "@/lib/access";
 
 /** يحدّث جلسة Supabase مع كل طلب، ويحمي الصفحات التي تحتاج تسجيل دخول. */
 const PROTECTED = ["/admin", "/checkout", "/orders", "/account", "/favorites", "/notifications"];
@@ -31,6 +32,15 @@ export async function middleware(request: NextRequest) {
     url.pathname = path.startsWith("/admin") ? "/admin-login" : "/login";
     url.searchParams.set("next", path);
     return NextResponse.redirect(url);
+  }
+  // صلاحيات أقسام لوحة الإدارة حسب الدور
+  if (user && (path.startsWith("/admin/") )) {
+    const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+    if (prof?.role && prof.role !== "customer" && !canAccess(prof.role, path)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin"; url.search = "?denied=1";
+      return NextResponse.redirect(url);
+    }
   }
   return response;
 }

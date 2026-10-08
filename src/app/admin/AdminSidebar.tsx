@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { AdminLogout } from "./AdminLogout";
+import { canAccess } from "@/lib/access";
 
 type Item = { href: string; label: string; icon: Parameters<typeof Icon>[0]["name"]; exact?: boolean };
 const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean }[] = [
@@ -37,7 +38,7 @@ const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean
     { href: "/admin/finance/reports", label: "تقرير الأرباح", icon: "star" },
     { href: "/admin/finance/settings", label: "الإعدادات", icon: "shield" },
   ] },
-  { title: "النظام", owner: true, items: [{ href: "/admin/staff", label: "الموظفون والأدوار", icon: "shield" }] },
+  { title: "النظام", items: [{ href: "/admin/staff", label: "الموظفون والأدوار", icon: "shield" }] },
 ];
 
 export function AdminSidebar({ name, role, roleKey }: { name: string; role: string; roleKey: string }) {
@@ -49,7 +50,7 @@ export function AdminSidebar({ name, role, roleKey }: { name: string; role: stri
         <img src="/icons/logo-stacked.svg" alt="شغلات بنات" className="adm-brand-logo" />
         <span className="adm-brand-tag">لوحة الإدارة</span>
       </div>
-      {GROUPS.filter((g) => (!g.finance || ["owner", "accountant"].includes(roleKey)) && (!g.owner || roleKey === "owner")).map((g) => (
+      {GROUPS.map((g) => ({ ...g, items: g.items.filter((it) => canAccess(roleKey, it.href)).map((it) => (it.href === "/admin/staff" && roleKey !== "owner" ? { ...it, label: "تغيير كلمة المرور" } : it)) })).filter((g) => g.items.length).map((g) => (
         <div key={g.title} style={{ display: "contents" }}>
           <span className="adm-ng">{g.title}</span>
           {g.items.map((it) => {

@@ -36,3 +36,5 @@ export function errMsg(e: { message?: string } | null | undefined, fallback = "�
   // رسائل الدوال عربية أصلاً؛ رسائل النظام الإنجليزية نستبدلها برسالة عامة
   return /[؀-ۿ]/.test(e.message) ? e.message : fallback;
 }
+
+export { canAccess } from "./access";

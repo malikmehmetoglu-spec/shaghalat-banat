@@ -11,7 +11,8 @@ export type VariantRow = {
 export async function loadVariants(sb: SupabaseClient): Promise<VariantRow[]> {
   const { data } = await sb
     .from("product_variants")
-    .select("id,sku,barcode,size,color_name,price_override,product:products(id,name,slug,price,images),stock_levels(location_id,on_hand,reserved,reorder_point)")
+    .select("id,sku,barcode,size,color_name,price_override,product:products!inner(id,name,slug,price,images,archived_at),stock_levels(location_id,on_hand,reserved,reorder_point)")
+    .is("product.archived_at", null)
     .order("sku");
   return (data ?? []).map((v: any) => ({
     id: v.id, sku: v.sku, barcode: v.barcode, size: v.size, color_name: v.color_name,
