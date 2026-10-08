@@ -36,7 +36,7 @@ async function fcmAccess(): Promise<{ token: string; project: string } | null> {
 
 /** يرسل لمجموعة اشتراكات، ويحذف المنتهية. يعيد عدد الناجح والفاشل. */
 export async function sendToSubs(sb: SupabaseClient, subs: Sub[], msg: PushMsg) {
-  if (VAPID_PRIVATE) webpush.setVapidDetails("mailto:hello@shaghalatbanat.com", VAPID_PUBLIC, VAPID_PRIVATE);
+  if (VAPID_PRIVATE) webpush.setVapidDetails("mailto:hello@shaghalat-banat.com", VAPID_PUBLIC, VAPID_PRIVATE);
   const fcm = subs.some((s) => s.kind === "fcm") ? await fcmAccess() : null;
   let sent = 0, failed = 0;
   const dead: string[] = [];

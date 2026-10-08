@@ -9,7 +9,7 @@ const config: CapacitorConfig = {
   appName: "شغلات بنات",
   webDir: "cap-shell",
   server: {
-    url: process.env.CAP_SERVER_URL || "https://shaghalat-banat.vercel.app",
+    url: process.env.CAP_SERVER_URL || "https://shaghalat-banat.com",
     cleartext: false,
   },
   backgroundColor: "#FBE6E7",
