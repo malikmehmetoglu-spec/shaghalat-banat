@@ -250,6 +250,7 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 /* ═════════ هوية الواجهة: العقد الدمشقي ═════════
    الإطار المقوّس (عقد) هو العنصر المميّز الوحيد: في الواجهة الرئيسية، الأقسام، وصورة المنتج.
    كل ما حوله هادئ: أبيض، خط Rubik بتباين أوزان واضح، وألوان الهوية فقط. */
+/* العقد: نصف دائرة حقيقية في الأعلى — نصف القطر العمودي = نصف العرض، لذلك نثبّت نسبة الأبعاد لكل إطار */
 .arch { border-radius: 50% 50% 28px 28px / 40% 40% 28px 28px; position: relative; overflow: hidden; flex-shrink: 0; }
 
 .hero { position: relative; overflow: hidden; border-radius: 36px; background: var(--light-blush); padding: 24px 22px 26px; display: flex; flex-direction: column-reverse; gap: 22px; }
@@ -258,14 +259,14 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 .hero-kicker { font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--magenta); }
 .hero-title { margin: 0; font-size: 32px; font-weight: 800; line-height: 1.4; color: var(--dark-plum); letter-spacing: -0.3px; }
 .hero-cta { padding: 0 28px; margin-top: 4px; }
-.hero-arch { width: 72%; align-self: center; height: 280px; box-shadow: 0 24px 48px rgba(142,2,84,.25); }
+.hero-arch { width: 72%; max-width: 300px; align-self: center; aspect-ratio: 4 / 5; box-shadow: 0 24px 48px rgba(142,2,84,.25); }
 
 .sec { display: flex; flex-direction: column; gap: 16px; }
 .sec-title { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.5; color: var(--dark-plum); }
 
 .cat-row { display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px; padding: 2px 20px 4px; }
 .cat-tile { display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; width: 92px; color: var(--dark-plum); }
-.cat-arch { width: 92px; height: 120px; display: flex; align-items: center; justify-content: center; border-radius: 50% 50% 20px 20px / 38% 38% 20px 20px; }
+.cat-arch { width: 92px; aspect-ratio: 3 / 4; display: flex; align-items: center; justify-content: center; border-radius: 50% 50% 20px 20px / 37.5% 37.5% 20px 20px; }
 .cat-letter { font-size: 30px; font-weight: 800; line-height: 1.4; color: rgba(255,255,255,.9); }
 .cat-name { font-size: 13px; font-weight: 500; line-height: 1.5; text-align: center; }
 
@@ -295,19 +296,20 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .hero-text { flex: 1; gap: 22px; }
   .hero-title { font-size: 56px; line-height: 1.4; max-width: 12ch; }
   .hero-kicker { font-size: 15px; }
-  .hero-arch { width: 340px; height: 420px; }
+  .hero-arch { width: 340px; max-width: none; }
   .hero-mark { width: 420px; inset-inline-start: auto; inset-inline-end: 30%; bottom: -120px; }
   .sec { gap: 22px; }
   .sec-title { font-size: 28px; }
   .cat-row { margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 24px; overflow: visible; }
   .cat-tile { width: auto; }
-  .cat-arch { width: 100%; height: 190px; border-radius: 50% 50% 24px 24px / 38% 38% 24px 24px; }
+  .cat-arch { width: 100%; border-radius: 50% 50% 24px 24px / 37.5% 37.5% 24px 24px; }
   .cat-name { font-size: 15px; }
   .pc-name { font-size: 15px; }
   .pc-price b { font-size: 16px; }
   .promise { flex-direction: row; padding: 36px 48px; gap: 40px; }
   .promise-item { flex: 1; }
-  .pv-media { border-radius: 50% 50% 32px 32px / 34% 34% 32px 32px !important; }
+  .pv-actions { top: auto !important; bottom: 18px; right: 18px !important; left: 18px !important; }
+  .pv-media { height: auto !important; aspect-ratio: 4 / 5; width: 100%; max-width: 540px; justify-self: center; border-radius: 50% 50% 32px 32px / 40% 40% 32px 32px !important; }
 }
 
 /* ═════════ الديسكتوب (1024px فأكثر): واجهة متجر كاملة العرض ═════════ */
@@ -352,7 +354,6 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 
   /* صفحة المنتج: عمودان */
   .pv { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; padding-bottom: 72px !important; }
-  .pv-media { height: 600px !important; }
 
   /* الدخول */
   .login-d { width: 100%; max-width: 560px; margin: 40px auto 72px; min-height: 0 !important; border-radius: 40px; overflow: hidden; box-shadow: 0 20px 60px rgba(142,2,84,.12); padding-bottom: 32px; }
