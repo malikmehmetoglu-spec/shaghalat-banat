@@ -32,7 +32,7 @@ export default async function StaffPage() {
                 {(data ?? []).map((s) => (
                   <tr key={s.id}>
                     <td style={{ fontWeight: 600 }}>{s.full_name || "—"}{s.id === profile.id ? " (أنتِ)" : ""}</td>
-                    <td className="caption ltr" style={{ textAlign: "right" }}>{s.email || s.phone}</td>
+                    <td className="caption ltr" style={{ textAlign: "right" }}>{s.phone ? "+" + s.phone.replace(/^\+/, "") : "—"}</td>
                     <td><span className="pill tone-brand">{ROLE_LABEL[s.role]}</span></td>
                     <td className="caption">{date(s.created_at)}</td>
                   </tr>
@@ -44,8 +44,8 @@ export default async function StaffPage() {
         <div className="narrow">
           {profile.role === "owner" ? (
             <FormCard title="إضافة موظفة أو تغيير دور" action={setRole} submitLabel="حفظ">
-              <span className="caption">تسجّل الموظفة دخولها في التطبيق مرة واحدة أولاً، ثم تضيفينها هنا ببريدها أو رقمها. لإزالة صلاحية موظفة اختاري «عميلة».</span>
-              <label className="a-field">البريد أو رقم الهاتف<input name="who" className="a-in ltr" required placeholder="name@email.com أو +9639…" /></label>
+              <span className="caption">تسجّل الموظفة دخولها في التطبيق مرة واحدة أولاً، برقم هاتفها، ثم تضيفينها هنا بنفس الرقم. لإزالة صلاحية موظفة اختاري «عميلة».</span>
+              <label className="a-field">رقم هاتف الموظفة<input name="who" type="tel" className="a-in ltr" required placeholder="09XX XXX XXX" /></label>
               <label className="a-field">الدور
                 <select name="role" className="a-in" defaultValue="sales">
                   {[...roles, "customer"].map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}

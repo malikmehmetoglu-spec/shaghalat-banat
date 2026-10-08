@@ -290,12 +290,15 @@ export async function toggleCoupon(code: string, active: boolean) {
 export async function setRole(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
   const { sb, profile } = await requireStaff();
   if (profile.role !== "owner") return fail("تغيير الأدوار للمديرة فقط");
-  const who = str(fd, "who");
   const role = str(fd, "role");
-  const col = who.includes("@") ? "email" : "phone";
-  const { data, error } = await sb.from("profiles").update({ role }).eq(col, who).select("id");
+  // الحسابات مرتبطة برقم الهاتف: نوحّد الصيغة إلى 963XXXXXXXXX (كما يخزّنها نظام الدخول)
+  let digits = str(fd, "who").replace(/\D/g, "").replace(/^00/, "");
+  if (digits.startsWith("0")) digits = "963" + digits.slice(1);
+  else if (!digits.startsWith("963")) digits = "963" + digits;
+  if (digits.length < 11) return fail("أدخلي رقم هاتف صحيحاً");
+  const { data, error } = await sb.from("profiles").update({ role }).in("phone", [digits, "+" + digits]).select("id");
   if (error) return fail(errMsg(error));
-  if (!data?.length) return fail("لم نجد حساباً بهذا البريد أو الرقم — يجب أن تسجّل الموظفة دخولها مرة أولاً");
+  if (!data?.length) return fail("لم نجد حساباً بهذا الرقم — يجب أن تسجّل الموظفة دخولها برقم هاتفها مرة أولاً");
   revalidatePath("/admin/staff");
   return ok("تم تحديث الدور");
 }

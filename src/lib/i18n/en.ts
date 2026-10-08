@@ -286,4 +286,8 @@ export const EN: Record<string, string> = {
   "خلال 2 إلى 4 أيام داخل سوريا، والدفع عند الاستلام": "2–4 days across Syria, pay on delivery",
   "استبدال خلال 7 أيام": "Exchange within 7 days",
   "بحالة المنتج الأصلية": "In original condition",
+  "تعذّر إرسال رمز التحقق حالياً، حاولي بعد قليل": "Couldn't send the code right now, try again shortly",
+  "أرسلنا رمز التحقق عبر واتساب إلى {x}": "We sent a verification code via WhatsApp to {x}",
+  "سجّلي دخولك برقم هاتفك لمتابعة طلباتك ومفضلتك": "Sign in with your phone number to track your orders and favorites",
+  "سيصلك رمز التحقق برسالة واتساب على هذا الرقم.": "You'll receive the code in a WhatsApp message on this number.",
 };

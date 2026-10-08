@@ -6,46 +6,28 @@ import { Icon } from "@/components/Icon";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { useT } from "@/components/LangProvider";
 
-type Mode = "phone" | "email";
-
-/** الدخول برقم الهاتف (رمز SMS) أو بالبريد (رابط دخول). لا كلمات مرور. */
+/** الدخول برقم الهاتف فقط + رمز تحقق (OTP) يصل عبر واتساب. لا بريد ولا كلمات مرور. */
 export function LoginFlow({ next, initialError }: { next: string; initialError: string }) {
   const t = useT();
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>("phone");
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [step, setStep] = useState<"enter" | "verify" | "sent">("enter");
+  const [step, setStep] = useState<"enter" | "verify">("enter");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(initialError);
 
   const fullPhone = () => "+963" + phone.replace(/\D/g, "").replace(/^0+/, "");
 
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    setErr(""); setBusy(true);
-    const sb = getBrowserClient();
-    if (mode === "phone") {
-      if (phone.replace(/\D/g, "").length < 8) { setBusy(false); setErr(t("أدخلي رقم هاتف صحيحاً")); return; }
-      const { error } = await sb.auth.signInWithOtp({ phone: fullPhone() });
-      setBusy(false);
-      if (error) {
-        setErr(t("تعذّر إرسال الرسالة النصية حالياً. يمكنك الدخول بالبريد الإلكتروني بدلاً من ذلك."));
-        return;
-      }
-      setStep("verify");
-    } else {
-      if (!/^\S+@\S+\.\S+$/.test(email)) { setBusy(false); setErr(t("أدخلي بريداً إلكترونياً صحيحاً")); return; }
-      const { error } = await sb.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
-      });
-      setBusy(false);
-      if (error) { setErr(t("تعذّر إرسال الرابط، حاولي بعد قليل")); return; }
-      setStep("sent");
-    }
+  async function requestCode() {
+    setErr("");
+    if (phone.replace(/\D/g, "").length < 8) { setErr(t("أدخلي رقم هاتف صحيحاً")); return; }
+    setBusy(true);
+    const { error } = await getBrowserClient().auth.signInWithOtp({ phone: fullPhone() });
+    setBusy(false);
+    if (error) { setErr(t("تعذّر إرسال رمز التحقق حالياً، حاولي بعد قليل")); return; }
+    setStep("verify");
   }
+  async function send(e: React.FormEvent) { e.preventDefault(); await requestCode(); }
 
   async function verify(e: React.FormEvent) {
     e.preventDefault();
@@ -57,8 +39,8 @@ export function LoginFlow({ next, initialError }: { next: string; initialError: 
     router.refresh();
   }
 
-  const title = step === "verify" ? t("رمز التحقق") : step === "sent" ? t("تفقّدي بريدك") : t("أهلاً بكِ");
-  const sub = step === "verify" ? t("أدخلي الرمز المرسل إلى {x}", { x: fullPhone() }) : step === "sent" ? t("أرسلنا رابط الدخول إلى {x}", { x: email }) : t("سجّلي دخولك لمتابعة طلباتك ومفضلتك");
+  const title = step === "verify" ? t("رمز التحقق") : t("أهلاً بكِ");
+  const sub = step === "verify" ? t("أرسلنا رمز التحقق عبر واتساب إلى {x}", { x: fullPhone() }) : t("سجّلي دخولك برقم هاتفك لمتابعة طلباتك ومفضلتك");
 
   return (
     <main className="login-d" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
@@ -78,25 +60,16 @@ export function LoginFlow({ next, initialError }: { next: string; initialError: 
       <div style={{ padding: "32px 24px 36px", display: "flex", flexDirection: "column", gap: 20, flex: 1 }}>
         {step === "enter" && (
           <>
-            <div className="seg" role="tablist">
-              <button type="button" role="tab" aria-selected={mode === "phone"} className={mode === "phone" ? "on" : ""} onClick={() => { setMode("phone"); setErr(""); }}>{t("رقم الهاتف")}</button>
-              <button type="button" role="tab" aria-selected={mode === "email"} className={mode === "email" ? "on" : ""} onClick={() => { setMode("email"); setErr(""); }}>{t("البريد الإلكتروني")}</button>
-            </div>
             <form onSubmit={send} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              {mode === "phone" ? (
                 <label className="field">{t("رقم الهاتف")}
                   <span className="ltr" style={{ display: "flex", alignItems: "center", gap: 10, height: 60, padding: "0 6px", borderRadius: 22, border: "1.5px solid var(--rosy-gray)" }}>
                     <span style={{ height: 46, padding: "0 14px", borderRadius: 16, background: "var(--light-blush)", display: "flex", alignItems: "center", fontSize: 15, fontWeight: 600, lineHeight: 1, color: "var(--deep-berry)", flexShrink: 0 }}>+963</span>
                     <input type="tel" inputMode="numeric" autoComplete="tel-national" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="9XX XXX XXX" style={{ flex: 1, minWidth: 0, height: 46, border: "none", outline: "none", fontSize: 17, letterSpacing: 1, background: "transparent", padding: "0 8px", fontWeight: 400 }} />
                   </span>
                 </label>
-              ) : (
-                <label className="field">{t("البريد الإلكتروني")}
-                  <input className="input ltr" style={{ textAlign: "right", height: 60, borderRadius: 22 }} type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@email.com" />
-                </label>
-              )}
+                <span className="caption" style={{ lineHeight: 1.7 }}>{t("سيصلك رمز التحقق برسالة واتساب على هذا الرقم.")}</span>
               {err && <div className="alert tone-danger" role="alert">{err}</div>}
-              <button type="submit" className="btn cta block" disabled={busy}>{busy ? t("جارٍ الإرسال…") : mode === "phone" ? t("إرسال رمز التحقق") : t("إرسال رابط الدخول")}</button>
+              <button type="submit" className="btn cta block" disabled={busy}>{busy ? t("جارٍ الإرسال…") : t("إرسال رمز التحقق")}</button>
             </form>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ flex: 1, height: 1, background: "var(--light-blush)" }} />
@@ -115,15 +88,8 @@ export function LoginFlow({ next, initialError }: { next: string; initialError: 
             </label>
             {err && <div className="alert tone-danger" role="alert">{err}</div>}
             <button type="submit" className="btn cta block" disabled={busy || code.length < 4}>{busy ? t("جارٍ التحقق…") : t("تأكيد ودخول")}</button>
-            <button type="button" className="link-btn" onClick={send as unknown as () => void} style={{ alignSelf: "center" }}>{t("إعادة إرسال الرمز")}</button>
+            <button type="button" className="link-btn" onClick={requestCode} disabled={busy} style={{ alignSelf: "center" }}>{t("إعادة إرسال الرمز")}</button>
           </form>
-        )}
-
-        {step === "sent" && (
-          <div className="empty" style={{ padding: "16px 0" }}>
-            <span className="ring"><Icon name="check" size={40} stroke={2} /></span>
-            <p className="muted" style={{ lineHeight: 1.8 }}>{t("افتحي الرسالة واضغطي على رابط الدخول من هذا الجهاز. إن لم تجديها، تفقّدي مجلد الرسائل غير المرغوبة.")}</p>
-          </div>
         )}
 
         <p className="caption" style={{ marginTop: "auto", textAlign: "center", lineHeight: 1.8 }}>{t("بالمتابعة، أنتِ توافقين على")} <Link href="/about?tab=policies" style={{ fontWeight: 500 }}>{t("الشروط وسياسة الخصوصية")}</Link></p>
