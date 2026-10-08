@@ -56,7 +56,7 @@ export function VariantsEditor({ productId, slug, variants, locations }: { produ
           <label className="a-field">لون (HEX)<input name="color_hex" className="a-in ltr" placeholder="#8E0254" /></label>
           <label className="a-field">SKU<input name="sku" className="a-in ltr" defaultValue={suggestSku} key={suggestSku} /></label>
         </div>
-        <label className="a-field">الباركود (اختياري — إن تُرك فارغاً يُطبع رمز SKU كباركود)<input name="barcode" className="a-in ltr" /></label>
+        <label className="a-field">الباركود (اتركه فارغاً ليتولّد تلقائياً)<input name="barcode" className="a-in ltr" /></label>
         {state && <span className={`a-flash ${state.ok ? "tone-success" : "tone-danger"}`}>{state.message}</span>}
         <button type="submit" className="btn" disabled={pending} style={{ alignSelf: "flex-start" }}>{pending ? "جارٍ الإضافة…" : "إضافة المتغير"}</button>
       </form>

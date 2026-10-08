@@ -25,9 +25,17 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
           <Link href="/admin/products" className="icon-btn" aria-label="رجوع" style={{ width: 44, height: 44, boxShadow: "none", border: "1px solid var(--border-soft)" }}><Icon name="back" stroke={2} /></Link>
           <div className="title-block"><h1 className="adm-h1">{p.name}</h1><span className="adm-sub">تعديل منتج</span></div>
         </div>
-        <Link href={`/p/${p.slug}`} className="btn secondary" target="_blank">عرضه في المتجر</Link>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Link href={`/admin/barcodes/print?product=${p.id}`} className="btn">طباعة ملصقات الباركود</Link>
+          <Link href={`/p/${p.slug}`} className="btn secondary" target="_blank">عرضه في المتجر</Link>
+        </div>
       </div>
-      {created && <div className="a-flash tone-success">تم إنشاء المنتج. أضيفي الآن المقاسات والألوان وكمياتها.</div>}
+      {created && (
+        <div className="a-flash tone-success" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <span>تم إنشاء المنتج، وتولّد باركود لكل لون ومقاس تلقائياً.</span>
+          <Link href={`/admin/barcodes/print?product=${p.id}`} className="btn" style={{ minHeight: 40 }}>اطبع الملصقات الآن</Link>
+        </div>
+      )}
       <div className="split">
         <div className="wide"><ProductForm p={p} categories={cats ?? []} locations={locations} /></div>
         <div className="narrow">

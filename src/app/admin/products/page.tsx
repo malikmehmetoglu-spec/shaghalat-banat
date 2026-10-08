@@ -59,7 +59,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
                     <td><span className={cls(w)}>{w}</span></td>
                     <td><span className={cls(s)}>{s}</span></td>
                     <td><OnlineToggle id={p.id} value={p.is_online} /></td>
-                    <td><Link href={`/admin/products/${p.id}`} className="btn soft">تعديل</Link></td>
+                    <td><span style={{ display: "flex", gap: 6 }}><Link href={`/admin/products/${p.id}`} className="btn soft">تعديل</Link><Link href={`/admin/barcodes/print?product=${p.id}`} className="btn soft" title="طباعة ملصقات الباركود">طباعة باركود</Link></span></td>
                   </tr>
                 );
               })}

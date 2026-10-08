@@ -25,7 +25,7 @@ export function Labels({ items }: { items: It[] }) {
     <>
       <div className="adm-top no-print">
         <div className="title-block"><h1 className="adm-h1">الباركود والملصقات</h1><span className="adm-sub">اختاري المنتجات وعدد الملصقات ثم اطبعي · الرمز: الباركود إن وُجد وإلا SKU</span></div>
-        <button className="btn" disabled={!sheet.length} onClick={() => window.print()}>طباعة {sheet.length} ملصق</button>
+        <a className="btn" aria-disabled={!sheet.length} style={!sheet.length ? { opacity: .55, pointerEvents: "none" } : undefined} href={`/admin/barcodes/print?items=${items.filter((i) => (qty[i.id] ?? 0) > 0).map((i) => `${i.id}:${qty[i.id]}`).join(",")}`}>متابعة للطباعة ({sheet.length} ملصق)</a>
       </div>
       <div className="split no-print">
         <div className="acard flush wide">
