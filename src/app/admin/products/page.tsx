@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getLocations, requireStaff } from "@/lib/admin";
 import { placeholder, price } from "@/lib/format";
 import { OnlineToggle } from "./OnlineToggle";
+import { QtyButton } from "./QtyButton";
 
 export const metadata = { title: "المنتجات" };
 
@@ -10,7 +11,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
   const { sb } = await requireStaff();
   const [locations, { data: cats }] = await Promise.all([getLocations(), sb.from("categories").select("id,name").order("sort_order")]);
   let query = sb.from("products")
-    .select("id,slug,name,price,images,is_online,category:categories(name),product_variants(sku,stock_levels(location_id,on_hand,reserved))")
+    .select("id,slug,name,price,images,is_online,category:categories(name),product_variants(id,sku,barcode,size,color_name,color_hex,stock_levels(location_id,on_hand,reserved))")
     .order("created_at", { ascending: false });
   if (cat) query = query.eq("category_id", cat);
   if (q) query = query.ilike("name", `%${q.replace(/[%,]/g, "")}%`);
@@ -59,7 +60,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
                     <td><span className={cls(w)}>{w}</span></td>
                     <td><span className={cls(s)}>{s}</span></td>
                     <td><OnlineToggle id={p.id} value={p.is_online} /></td>
-                    <td><span style={{ display: "flex", gap: 6 }}><Link href={`/admin/products/${p.id}`} className="btn soft">تعديل</Link><Link href={`/admin/barcodes/print?product=${p.id}`} className="btn soft" title="طباعة ملصقات الباركود">طباعة باركود</Link></span></td>
+                    <td><span style={{ display: "flex", gap: 6 }}><QtyButton productId={p.id} name={p.name} variants={p.product_variants} locations={locations.filter((l) => l.kind !== "transit").map((l) => ({ id: l.id, name: l.name }))} /><Link href={`/admin/products/${p.id}`} className="btn soft">تعديل</Link><Link href={`/admin/barcodes/print?product=${p.id}`} className="btn soft" title="طباعة ملصقات الباركود">طباعة باركود</Link></span></td>
                   </tr>
                 );
               })}

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
-import { deleteVariant, setStock, type ActionResult } from "../../actions";
+import { useRouter } from "next/navigation";
+import { addStock, deleteVariant, setStock, type ActionResult } from "../../actions";
 import { Icon } from "@/components/Icon";
 
 type V = { id: string; sku: string; barcode: string | null; size: string | null; color_name: string | null; color_hex: string | null; stock_levels: { location_id: string; on_hand: number; reserved: number }[] };
@@ -8,13 +9,16 @@ type L = { id: string; name: string };
 
 /** الكميات الحالية لكل لون ومقاس، مع زر «+ إضافة قطع» سريع لكل واحد */
 export function VariantsEditor({ productId, variants, locations }: { productId: string; slug?: string; variants: V[]; locations: L[] }) {
-  const [msg, setMsg] = useState<ActionResult | null>(null);
+  const router = useRouter();
+  const [msg, setMsgRaw] = useState<ActionResult | null>(null);
+  const setMsg = (r: ActionResult) => { setMsgRaw(r); if (r.ok) router.refresh(); };
   const [busy, start] = useTransition();
   const [open, setOpen] = useState<string | null>(null);
   const [fix, setFix] = useState(false);
   const [add, setAdd] = useState({ qty: "", loc: locations[0]?.id ?? "" });
-  const qtyAt = (v: V, loc: string) => v.stock_levels.find((s) => s.location_id === loc)?.on_hand ?? 0;
-  const total = variants.reduce((t, v) => t + v.stock_levels.reduce((a, s) => a + s.on_hand, 0), 0);
+  const [local, setLocal] = useState<Record<string, number>>({}); // آخر قيمة أكّدها الخادم
+  const qtyAt = (v: V, loc: string) => local[`${v.id}:${loc}`] ?? v.stock_levels.find((s) => s.location_id === loc)?.on_hand ?? 0;
+  const total = variants.reduce((t, v) => t + locations.reduce((a, l) => a + qtyAt(v, l.id), 0), 0);
 
   return (
     <div className="acard" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -46,7 +50,7 @@ export function VariantsEditor({ productId, variants, locations }: { productId: 
                   <td key={l.id} style={{ textAlign: "center" }}>
                     {fix
                       ? <input type="number" min={0} className="cnt-in" defaultValue={qtyAt(v, l.id)} aria-label={`الكمية في ${l.name}`}
-                          onBlur={(e) => { const n = Number(e.target.value); if (n !== qtyAt(v, l.id) && n >= 0) start(async () => setMsg(await setStock(v.id, l.id, n, "adjust", "تصحيح من صفحة المنتج"))); }} />
+                          onBlur={(e) => { const n = Number(e.target.value); if (n !== qtyAt(v, l.id) && n >= 0) start(async () => { const r = await setStock(v.id, l.id, n, "adjust", "تصحيح من صفحة المنتج"); if (r.ok) setLocal((m) => ({ ...m, [`${v.id}:${l.id}`]: n })); setMsg(r); }); }} />
                       : <b style={{ fontSize: 15 }}>{qtyAt(v, l.id)}</b>}
                   </td>
                 ))}
@@ -56,7 +60,7 @@ export function VariantsEditor({ productId, variants, locations }: { productId: 
                       <input className="a-in" type="number" min="1" autoFocus placeholder="العدد" value={add.qty} onChange={(e) => setAdd((a) => ({ ...a, qty: e.target.value }))} style={{ width: 80, height: 38, textAlign: "center" }} aria-label="عدد القطع الواردة" />
                       {locations.length > 1 && <select className="a-in" value={add.loc} onChange={(e) => setAdd((a) => ({ ...a, loc: e.target.value }))} style={{ height: 38, width: "auto" }}>{locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}</select>}
                       <button type="button" className="btn" style={{ minHeight: 38, padding: "0 14px" }} disabled={busy || !(Number(add.qty) > 0)}
-                        onClick={() => start(async () => { const r = await setStock(v.id, add.loc, qtyAt(v, add.loc) + Number(add.qty), "in", "إضافة بضاعة"); setMsg(r.ok ? { ok: true, message: `تمت إضافة ${add.qty} قطعة` } : r); if (r.ok) { setOpen(null); setAdd((a) => ({ ...a, qty: "" })); } })}>حفظ</button>
+                        onClick={() => start(async () => { const r = await addStock(v.id, add.loc, Number(add.qty)); if (r.ok && r.qty !== undefined) setLocal((m) => ({ ...m, [`${v.id}:${add.loc}`]: r.qty! })); setMsg(r); if (r.ok) { setOpen(null); setAdd((a) => ({ ...a, qty: "" })); } })}>حفظ</button>
                       <button type="button" className="link-btn" onClick={() => setOpen(null)}>إلغاء</button>
                     </span>
                   ) : (

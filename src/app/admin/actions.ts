@@ -411,3 +411,16 @@ async function applyVariantsBulk(sb: Awaited<ReturnType<typeof requireStaff>>["s
   }
   return made;
 }
+
+/** إضافة قطع لكمية موجودة — تُقرأ الكمية الحالية من قاعدة البيانات لحظة الحفظ (لا تُمسح أي كمية) */
+export async function addStock(variantId: string, locationId: string, delta: number): Promise<ActionResult & { qty?: number }> {
+  const { sb } = await requireStaff();
+  if (!(delta > 0)) return fail("اكتب عدداً أكبر من صفر");
+  const { data } = await sb.from("stock_levels").select("on_hand").eq("variant_id", variantId).eq("location_id", locationId).maybeSingle();
+  const next = (data?.on_hand ?? 0) + Math.floor(delta);
+  const { error } = await sb.rpc("stock_set", { variant: variantId, loc: locationId, new_qty: next, reason: "in", note: "إضافة بضاعة" });
+  if (error) return fail(errMsg(error));
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/products", "layout");
+  return { ...ok(`تمت إضافة ${Math.floor(delta)} قطعة — المجموع الآن ${next}`), qty: next };
+}
