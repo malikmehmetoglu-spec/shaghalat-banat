@@ -45,8 +45,9 @@ export function AdminSidebar({ name, role, roleKey }: { name: string; role: stri
   return (
     <aside className="adm-side no-print">
       <div className="adm-brand">
-        <img src="/icons/logo-horizontal.svg" alt="شغلات بنات" style={{ height: 40, width: "auto", alignSelf: "flex-start" }} />
-        <span style={{ fontSize: 12, lineHeight: 1.4, color: "var(--text-label)" }}>لوحة الإدارة</span>
+        <img src="/icons/logo-mark.svg" alt="" aria-hidden="true" className="adm-brand-mark" />
+        <img src="/icons/logo-stacked.svg" alt="شغلات بنات" className="adm-brand-logo" />
+        <span className="adm-brand-tag">لوحة الإدارة</span>
       </div>
       {GROUPS.filter((g) => (!g.finance || ["owner", "accountant"].includes(roleKey)) && (!g.owner || roleKey === "owner")).map((g) => (
         <div key={g.title} style={{ display: "contents" }}>

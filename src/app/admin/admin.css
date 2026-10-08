@@ -2,7 +2,10 @@
 .adm { display: flex; flex-wrap: wrap; min-height: 100dvh; background: var(--surface-admin); }
 .adm-side { flex: 1 1 248px; background: #fff; border-left: 1px solid var(--border-soft); padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; }
 .adm-main { flex: 999 1 560px; min-width: 0; padding: 28px 32px 48px; display: flex; flex-direction: column; gap: 24px; }
-.adm-brand { display: flex; flex-direction: column; gap: 6px; padding: 4px 12px 12px; }
+.adm-brand { position: relative; overflow: hidden; margin-bottom: 14px; padding: 28px 16px 20px; border-radius: 28px; background: linear-gradient(160deg, var(--banat-pink), var(--magenta) 50%, var(--deep-berry)); display: flex; flex-direction: column; align-items: center; gap: 12px; box-shadow: 0 16px 36px rgba(142,2,84,.28); flex-shrink: 0; }
+.adm-brand-logo { position: relative; height: 128px; width: auto; filter: brightness(0) invert(1); }
+.adm-brand-mark { position: absolute; height: 190px; width: auto; inset-inline-start: -46px; bottom: -40px; opacity: .14; filter: brightness(0) invert(1); pointer-events: none; }
+.adm-brand-tag { position: relative; font-size: 12px; font-weight: 600; line-height: 1.4; color: #fff; padding: 6px 14px; border-radius: 14px; background: rgba(255,255,255,.18); }
 .adm-ng { font-size: 12px; font-weight: 600; color: var(--text-label); padding: 16px 12px 6px; line-height: 1.4; }
 .adm-ni { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 14px; color: #5A4650; font-size: 14px; font-weight: 500; line-height: 1.2; }
 .adm-ni:hover { background: var(--light-blush); color: var(--deep-berry); }

@@ -24,10 +24,11 @@ export function AdminLoginForm({ next }: { next: string }) {
   }
 
   return (
-    <main style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "var(--surface-admin)" }}>
-      <form onSubmit={submit} style={{ width: "100%", maxWidth: 420, background: "#fff", borderRadius: 32, padding: "36px 28px", boxShadow: "0 20px 60px rgba(142,2,84,.10)", display: "flex", flexDirection: "column", gap: 20 }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center" }}>
-          <img src="/icons/logo-horizontal.svg" alt="شغلات بنات" style={{ height: 48, width: "auto" }} />
+    <main style={{ position: "relative", overflow: "hidden", minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 28, padding: "40px 20px", background: "linear-gradient(160deg,var(--banat-pink),var(--magenta) 45%,var(--deep-berry))" }}>
+      <img src="/icons/logo-mark.svg" alt="" aria-hidden="true" style={{ position: "absolute", height: "90vh", maxHeight: 820, width: "auto", insetInlineStart: "-8%", bottom: "-12%", opacity: 0.1, filter: "brightness(0) invert(1)", pointerEvents: "none" }} />
+      <img src="/icons/logo-stacked.svg" alt="شغلات بنات" style={{ position: "relative", height: 170, width: "auto", filter: "brightness(0) invert(1) drop-shadow(0 10px 30px rgba(58,42,48,.25))" }} />
+      <form onSubmit={submit} style={{ position: "relative", width: "100%", maxWidth: 420, background: "#fff", borderRadius: 32, padding: "32px 28px", boxShadow: "0 30px 70px rgba(58,42,48,.30)", display: "flex", flexDirection: "column", gap: 20 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center" }}>
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, lineHeight: 1.5 }}>دخول لوحة الإدارة</h1>
           <p className="muted" style={{ margin: 0 }}>لفريق العمل فقط</p>
         </div>
