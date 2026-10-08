@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { VariantsEditor } from "./[id]/VariantsEditor";
+import { Icon } from "@/components/Icon";
 
 type V = Parameters<typeof VariantsEditor>[0]["variants"][number];
 
@@ -15,7 +16,7 @@ export function QtyButton({ productId, name, variants, locations }: { productId:
   }, [open]);
   return (
     <>
-      <button type="button" className="btn soft" onClick={() => setOpen(true)}>تعديل الكمية</button>
+      <button type="button" className="btn soft" style={{ gap: 6 }} onClick={() => setOpen(true)}><Icon name="boxes" size={15} stroke={2} />تعديل الكمية</button>
       {open && (
         <div role="dialog" aria-modal="true" aria-label={`كميات ${name}`} onClick={(e) => e.target === e.currentTarget && setOpen(false)}
           style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(58,42,48,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>

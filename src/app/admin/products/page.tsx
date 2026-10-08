@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import { getLocations, requireStaff } from "@/lib/admin";
 import { placeholder, price } from "@/lib/format";
 import { OnlineToggle } from "./OnlineToggle";
@@ -9,7 +10,8 @@ export const metadata = { title: "المنتجات" };
 
 export default async function AdminProducts({ searchParams }: { searchParams: Promise<{ cat?: string; q?: string }> }) {
   const { cat = "", q = "" } = await searchParams;
-  const { sb } = await requireStaff();
+  const { sb, profile } = await requireStaff();
+  const isOwner = profile.role === "owner";
   const [locations, { data: cats }] = await Promise.all([getLocations(), sb.from("categories").select("id,name").order("sort_order")]);
   let query = sb.from("products")
     .select("id,slug,name,price,images,is_online,category:categories(name),product_variants(id,sku,barcode,size,color_name,color_hex,stock_levels(location_id,on_hand,reserved))")
@@ -62,7 +64,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
                     <td><span className={cls(w)}>{w}</span></td>
                     <td><span className={cls(s)}>{s}</span></td>
                     <td><OnlineToggle id={p.id} value={p.is_online} /></td>
-                    <td><span style={{ display: "flex", gap: 6 }}><QtyButton productId={p.id} name={p.name} variants={p.product_variants} locations={locations.filter((l) => l.kind !== "transit").map((l) => ({ id: l.id, name: l.name }))} /><Link href={`/admin/products/${p.id}`} className="btn soft">تعديل</Link><Link href={`/admin/barcodes/print?product=${p.id}`} className="btn soft" title="طباعة ملصقات الباركود">طباعة باركود</Link><DeleteProduct id={p.id} name={p.name} /></span></td>
+                    <td><span style={{ display: "flex", gap: 6 }}><QtyButton productId={p.id} name={p.name} variants={p.product_variants} locations={locations.filter((l) => l.kind !== "transit").map((l) => ({ id: l.id, name: l.name }))} /><Link href={`/admin/products/${p.id}`} className="btn soft" style={{ gap: 6 }}><Icon name="edit" size={15} stroke={2} />تعديل</Link><Link href={`/admin/barcodes/print?product=${p.id}`} className="btn soft" style={{ gap: 6 }} title="طباعة ملصقات الباركود"><Icon name="barcode" size={15} stroke={2} />طباعة باركود</Link>{isOwner && <DeleteProduct id={p.id} name={p.name} />}</span></td>
                   </tr>
                 );
               })}

@@ -2,7 +2,7 @@
 type Name =
   | "home" | "grid" | "heart" | "bag" | "user" | "bell" | "search" | "back" | "forward"
   | "plus" | "minus" | "trash" | "pin" | "truck" | "card" | "check" | "close" | "chat"
-  | "shield" | "logout" | "edit" | "sort" | "filter" | "star" | "clock" | "globe" | "return" | "tag" | "info";
+  | "shield" | "logout" | "edit" | "sort" | "filter" | "star" | "clock" | "globe" | "return" | "tag" | "info" | "barcode" | "boxes";
 
 const paths: Record<Name, React.ReactNode> = {
   home: <path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />,
@@ -33,6 +33,8 @@ const paths: Record<Name, React.ReactNode> = {
   globe: (<><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" /></>),
   return: <path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4" />,
   tag: (<><path d="M3 12V4h8l10 10-8 8z" /><circle cx="7.5" cy="8.5" r="1.5" /></>),
+  barcode: <path d="M4 5v14M7 5v14M10 5v14M14 5v14M16 5v14M20 5v14" />,
+  boxes: (<><path d="M3 8l9-5 9 5-9 5z" /><path d="M3 8v8l9 5 9-5V8" /><path d="M12 13v8" /></>),
   info: (<><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.5" /></>),
 };
 

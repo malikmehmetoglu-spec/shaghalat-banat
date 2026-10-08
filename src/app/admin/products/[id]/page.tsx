@@ -11,7 +11,7 @@ export const metadata = { title: "تعديل منتج" };
 export default async function EditProduct({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string }> }) {
   const { id } = await params;
   const { created } = await searchParams;
-  const { sb } = await requireStaff();
+  const { sb, profile } = await requireStaff();
   const [{ data: p }, { data: cats }, locations] = await Promise.all([
     sb.from("products").select("*,product_variants(id,sku,barcode,size,color_name,color_hex,stock_levels(location_id,on_hand,reserved))").eq("id", id).maybeSingle(),
     sb.from("categories").select("id,name").order("sort_order"),
@@ -29,7 +29,7 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
         <div style={{ display: "flex", gap: 8 }}>
           <Link href={`/admin/barcodes/print?product=${p.id}`} className="btn">طباعة ملصقات الباركود</Link>
           <Link href={`/p/${p.slug}`} className="btn secondary" target="_blank">عرضه في المتجر</Link>
-          <DeleteProduct id={p.id} name={p.name} redirectTo="/admin/products" />
+          {profile.role === "owner" && <DeleteProduct id={p.id} name={p.name} redirectTo="/admin/products" />}
         </div>
       </div>
       {created && (
