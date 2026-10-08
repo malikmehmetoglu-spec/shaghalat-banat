@@ -390,15 +390,16 @@ async function applyVariantsBulk(sb: Awaited<ReturnType<typeof requireStaff>>["s
   let made = 0;
   for (const [ci, c] of list.entries()) {
     for (const s of c.sizes) {
-      const size = s.size === "مقاس واحد" ? null : s.size;
-      let v = (existing ?? []).find((e: any) => (e.color_name ?? "") === c.color && (e.size ?? null) === size) as any;
+      const size = !s.size || s.size === "مقاس واحد" ? null : s.size;
+      const colorName = c.color?.trim() ? c.color.trim() : null;
+      let v = (existing ?? []).find((e: any) => (e.color_name ?? null) === colorName && (e.size ?? null) === size) as any;
       if (!v) {
-        const sku = `${prefix}-${ci + 1}${(size ?? "OS").replace(/[^a-z0-9]/gi, "").toUpperCase() || "X"}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-        const { data: nv } = await sb.from("product_variants").insert({ product_id: productId, sku, size, color_name: c.color, color_hex: c.hex }).select("id").single();
+        const sku = `${prefix}-${ci + 1}${(size ?? "").replace(/[^a-z0-9]/gi, "").toUpperCase() || "1"}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+        const { data: nv } = await sb.from("product_variants").insert({ product_id: productId, sku, size, color_name: colorName, color_hex: colorName ? c.hex || null : null }).select("id").single();
         if (!nv) continue;
         v = { id: nv.id, stock_levels: [] };
         made++;
-      } else if (c.hex) {
+      } else if (colorName && c.hex) {
         await sb.from("product_variants").update({ color_hex: c.hex }).eq("id", v.id);
       }
       if (s.qty > 0 && locId) {

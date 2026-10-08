@@ -19,7 +19,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
 
   const sizes = useMemo(() => {
     const s = Array.from(new Set(variants.map((v) => v.size ?? "")));
-    return s.sort((a, b) => (SIZE_ORDER.indexOf(a) + 1 || 99) - (SIZE_ORDER.indexOf(b) + 1 || 99));
+    return s.sort((a, b) => (SIZE_ORDER.indexOf(a) + 1 || 99) - (SIZE_ORDER.indexOf(b) + 1 || 99) || (parseFloat(a) || 0) - (parseFloat(b) || 0));
   }, [variants]);
   const colors = useMemo(() => {
     const m = new Map<string, string>();
