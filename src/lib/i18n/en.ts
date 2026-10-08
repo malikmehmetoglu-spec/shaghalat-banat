@@ -280,4 +280,10 @@ export const EN: Record<string, string> = {
   "تحويل بنكي": "Bank transfer",
   "نقداً": "Cash",
   "تسجيل الخروج": "Sign out",
+  "تسوّقي حسب القسم": "Shop by category",
+  "كل ما تحبّه البنات في مكان واحد": "Everything girls love, in one place",
+  "لا شيء على الطرد يكشف ما بداخله": "Nothing on the parcel reveals what's inside",
+  "خلال 2 إلى 4 أيام داخل سوريا، والدفع عند الاستلام": "2–4 days across Syria, pay on delivery",
+  "استبدال خلال 7 أيام": "Exchange within 7 days",
+  "بحالة المنتج الأصلية": "In original condition",
 };

@@ -32,47 +32,56 @@ export default async function Home() {
         </Link>
       </div>
 
-      <div className="row-between">
-        <div className="title-block">
-          <h1 className="h-display">{t("اكتشفي")}</h1>
-          <p className="muted">{t("تسوّقي")} <b style={{ color: "var(--magenta)", fontWeight: 600 }}>{t("تشكيلتنا الجديدة")}</b></p>
-        </div>
-      </div>
-
-      <div className="chips scr" style={{ gap: 18 }}>
-        {cats.map((c) => (
-          <Link key={c.id} href={`/c/${c.slug}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, flexShrink: 0, color: "var(--dark-plum)" }}>
-            <span style={{ display: "block", padding: 3, borderRadius: "50%", border: "2px solid var(--light-blush)" }}>
-              <span style={{ width: 58, height: 58, borderRadius: "50%", background: c.image_url ? `url(${c.image_url}) center/cover` : placeholder(c.slug), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: "#fff" }}>
-                {!c.image_url && c.name[0]}
-              </span>
-            </span>
-            <span style={{ fontSize: 13, lineHeight: 1.4 }}>{c.name}</span>
-          </Link>
-        ))}
-      </div>
-
       <div className="m-only"><SearchBar /></div>
 
-      {banner && (
-        <div className="banner">
-          <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10 }}>
-            {banner.kicker && <span className="kicker">{banner.kicker}</span>}
-            <div className="t">{banner.title}</div>
-            {banner.link && <Link href={banner.link} className="go">{t("تسوّقي الآن")}</Link>}
-          </div>
-          <div style={{ width: 104, height: 140, flexShrink: 0, borderRadius: 20, background: banner.image_url ? `url(${banner.image_url}) center/cover` : "rgba(255,255,255,.16)", border: "1px solid rgba(255,255,255,.3)" }} />
+      <section className="hero">
+        <img src="/icons/logo-mark.svg" alt="" aria-hidden="true" className="hero-mark" />
+        <div className="hero-text">
+          {banner?.kicker && <span className="hero-kicker">{banner.kicker}</span>}
+          <h1 className="hero-title">{banner?.title ?? t("كل ما تحبّه البنات في مكان واحد")}</h1>
+          <Link href={banner?.link || "/search"} className="btn cta hero-cta">{t("تسوّقي الآن")}</Link>
         </div>
-      )}
+        <div className="arch hero-arch" style={{ background: banner?.image_url ? `url(${banner.image_url}) center/cover` : "linear-gradient(170deg,var(--banat-pink),var(--magenta) 55%,var(--deep-berry))" }} />
+      </section>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <section className="sec">
+        <h2 className="sec-title">{t("تسوّقي حسب القسم")}</h2>
+        <div className="cat-row scr">
+          {cats.map((c) => (
+            <Link key={c.id} href={`/c/${c.slug}`} className="cat-tile">
+              <span className="arch cat-arch" style={{ background: c.image_url ? `url(${c.image_url}) center/cover` : placeholder(c.slug) }}>
+                {!c.image_url && <span className="cat-letter">{c.name[0]}</span>}
+              </span>
+              <span className="cat-name">{c.name}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="sec">
         <div className="row-between">
-          <h2 className="h-section">{t("وصل حديثاً")}</h2>
+          <h2 className="sec-title">{t("وصل حديثاً")}</h2>
           <Link href="/search" className="link-btn">{t("عرض الكل")}</Link>
         </div>
         <div className="grid-2">
           {products.map((p) => <ProductCard key={p.id} p={p} isFav={favs.has(p.id)} />)}
         </div>
+      </section>
+
+      <section className="promise">
+        {[
+          { icon: "shield" as const, title: t("تغليف محايد"), text: t("لا شيء على الطرد يكشف ما بداخله") },
+          { icon: "truck" as const, title: t("توصيل لباب البيت"), text: t("خلال 2 إلى 4 أيام داخل سوريا، والدفع عند الاستلام") },
+          { icon: "return" as const, title: t("استبدال خلال 7 أيام"), text: t("بحالة المنتج الأصلية") },
+        ].map((x) => (
+          <div key={x.title} className="promise-item">
+            <span className="promise-ic"><Icon name={x.icon} size={22} stroke={1.8} /></span>
+            <span style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <b>{x.title}</b>
+              <span>{x.text}</span>
+            </span>
+          </div>
+        ))}
       </section>
     </main>
   );

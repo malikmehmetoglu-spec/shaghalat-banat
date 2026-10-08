@@ -246,6 +246,70 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 [dir="ltr"] .search { padding: 0 6px 0 20px; }
 [dir="ltr"] .ltr { text-align: left !important; }
 
+
+/* ═════════ هوية الواجهة: العقد الدمشقي ═════════
+   الإطار المقوّس (عقد) هو العنصر المميّز الوحيد: في الواجهة الرئيسية، الأقسام، وصورة المنتج.
+   كل ما حوله هادئ: أبيض، خط Rubik بتباين أوزان واضح، وألوان الهوية فقط. */
+.arch { border-radius: 50% 50% 28px 28px / 40% 40% 28px 28px; position: relative; overflow: hidden; flex-shrink: 0; }
+
+.hero { position: relative; overflow: hidden; border-radius: 36px; background: var(--light-blush); padding: 24px 22px 26px; display: flex; flex-direction: column-reverse; gap: 22px; }
+.hero-mark { position: absolute; width: 260px; height: auto; inset-inline-start: -60px; bottom: -70px; opacity: .07; pointer-events: none; }
+.hero-text { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.hero-kicker { font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--magenta); }
+.hero-title { margin: 0; font-size: 32px; font-weight: 800; line-height: 1.4; color: var(--dark-plum); letter-spacing: -0.3px; }
+.hero-cta { padding: 0 28px; margin-top: 4px; }
+.hero-arch { width: 72%; align-self: center; height: 280px; box-shadow: 0 24px 48px rgba(142,2,84,.25); }
+
+.sec { display: flex; flex-direction: column; gap: 16px; }
+.sec-title { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.5; color: var(--dark-plum); }
+
+.cat-row { display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px; padding: 2px 20px 4px; }
+.cat-tile { display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; width: 92px; color: var(--dark-plum); }
+.cat-arch { width: 92px; height: 120px; display: flex; align-items: center; justify-content: center; border-radius: 50% 50% 20px 20px / 38% 38% 20px 20px; }
+.cat-letter { font-size: 30px; font-weight: 800; line-height: 1.4; color: rgba(255,255,255,.9); }
+.cat-name { font-size: 13px; font-weight: 500; line-height: 1.5; text-align: center; }
+
+/* بطاقة المنتج */
+.pc { position: relative; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.pc-img { position: relative; aspect-ratio: 4 / 5; border-radius: 22px; overflow: hidden; }
+.pc-img .ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: rgba(255,255,255,.75); }
+.pc-img .tag { position: absolute; top: 10px; inset-inline-start: 10px; padding: 4px 10px; border-radius: 10px; background: #fff; color: var(--magenta); font-size: 11px; font-weight: 600; line-height: 1.4; }
+.pc-img .fav { position: absolute; top: 8px; inset-inline-end: 8px; z-index: 2; width: 36px; height: 36px; padding: 0; border: none; border-radius: 50%; background: rgba(255,255,255,.92); display: flex; align-items: center; justify-content: center; }
+.pc-info { display: flex; flex-direction: column; gap: 2px; padding: 0 4px; }
+.pc-name { font-size: 14px; font-weight: 600; line-height: 1.5; color: var(--dark-plum); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-sub { font-size: 12px; line-height: 1.5; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-price { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
+.pc-price b { font-size: 15px; font-weight: 700; line-height: 1.5; color: var(--magenta); }
+.pc-price s { font-size: 12px; line-height: 1.5; color: var(--text-label); }
+.pc-link { position: absolute; inset: 0; z-index: 1; border-radius: 22px; }
+.pc-link:focus-visible { outline: 2px solid var(--magenta); outline-offset: 3px; }
+
+/* وعود المتجر — شريط داكن واحد يثبّت الصفحة */
+.promise { border-radius: 32px; background: var(--dark-plum); color: #fff; padding: 24px 22px; display: flex; flex-direction: column; gap: 20px; }
+.promise-item { display: flex; align-items: flex-start; gap: 14px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,.75); }
+.promise-item b { font-size: 15px; font-weight: 600; line-height: 1.5; color: #fff; }
+.promise-ic { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50% 50% 12px 12px / 45% 45% 12px 12px; background: rgba(232,95,168,.22); color: var(--banat-pink); display: flex; align-items: center; justify-content: center; }
+
+@media (min-width: 1024px) {
+  .hero { flex-direction: row; align-items: center; padding: 56px 64px; gap: 56px; min-height: 480px; }
+  .hero-text { flex: 1; gap: 22px; }
+  .hero-title { font-size: 56px; line-height: 1.4; max-width: 12ch; }
+  .hero-kicker { font-size: 15px; }
+  .hero-arch { width: 340px; height: 420px; }
+  .hero-mark { width: 420px; inset-inline-start: auto; inset-inline-end: 30%; bottom: -120px; }
+  .sec { gap: 22px; }
+  .sec-title { font-size: 28px; }
+  .cat-row { margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 24px; overflow: visible; }
+  .cat-tile { width: auto; }
+  .cat-arch { width: 100%; height: 190px; border-radius: 50% 50% 24px 24px / 38% 38% 24px 24px; }
+  .cat-name { font-size: 15px; }
+  .pc-name { font-size: 15px; }
+  .pc-price b { font-size: 16px; }
+  .promise { flex-direction: row; padding: 36px 48px; gap: 40px; }
+  .promise-item { flex: 1; }
+  .pv-media { border-radius: 50% 50% 32px 32px / 34% 34% 32px 32px !important; }
+}
+
 /* ═════════ الديسكتوب (1024px فأكثر): واجهة متجر كاملة العرض ═════════ */
 .d-only { display: none; }
 .pv-info { display: flex; flex-direction: column; gap: 24px; }
