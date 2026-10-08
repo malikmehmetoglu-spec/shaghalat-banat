@@ -37,7 +37,7 @@ export default async function AccountPage() {
 
       <div style={{ padding: 20, borderRadius: 28, background: "linear-gradient(135deg,var(--deep-berry),var(--magenta))", color: "#fff", display: "flex", flexDirection: "column", gap: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <span style={{ width: 64, height: 64, flexShrink: 0, borderRadius: "50%", background: "rgba(255,255,255,.22)", border: "2px solid rgba(255,255,255,.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, lineHeight: 1 }}>{name[0]}</span>
+          <span style={{ width: 60, height: 76, flexShrink: 0, borderRadius: "50% 50% 16px 16px / 40% 40% 16px 16px", background: "rgba(255,255,255,.22)", border: "2px solid rgba(255,255,255,.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, lineHeight: 1 }}>{name[0]}</span>
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
             <span style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.5 }}>{name}</span>
             <span className="ltr" style={{ fontSize: 13, lineHeight: 1.5, opacity: 0.9, textAlign: "right" }}>{contact}</span>

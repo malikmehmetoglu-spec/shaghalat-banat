@@ -217,7 +217,7 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 /* رسائل */
 .alert { padding: 14px 16px; border-radius: 16px; font-size: 13px; font-weight: 500; line-height: 1.7; }
 .empty { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 48px 24px; text-align: center; }
-.empty .ring { width: 96px; height: 96px; border-radius: 50%; background: var(--light-blush); display: flex; align-items: center; justify-content: center; color: var(--magenta); }
+.empty .ring { width: 96px; height: 120px; border-radius: 50% 50% 20px 20px / 40% 40% 20px 20px; background: var(--light-blush); display: flex; align-items: center; justify-content: center; color: var(--magenta); }
 
 /* خطوات الطلب والخط الزمني */
 .timeline { display: flex; flex-direction: column; padding: 4px 8px; }
@@ -315,11 +315,29 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .cat-name { font-size: 15px; }
   .pc-name { font-size: 15px; }
   .pc-price b { font-size: 16px; }
+  .cat-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 32px 24px; }
+  .cat-card-name { font-size: 17px; }
+  .cat-hero { padding: 36px 48px; }
+  .cat-hero .hero-title { font-size: 44px; }
+  .cat-hero-arch { width: 150px; }
   .promise { flex-direction: row; padding: 36px 48px; gap: 40px; }
   .promise-item { flex: 1; }
   .pv-actions { top: auto !important; bottom: 18px; right: 18px !important; left: 18px !important; }
   .pv-media { height: auto !important; aspect-ratio: 4 / 5; width: 100%; max-width: 540px; justify-self: center; border-radius: 50% 50% 32px 32px / 40% 40% 32px 32px !important; }
 }
+
+/* صفحة الأقسام: عقود كبيرة */
+.cat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 14px; }
+.cat-card { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--dark-plum); text-align: center; min-width: 0; }
+.cat-card-arch { width: 100%; aspect-ratio: 3 / 4; display: flex; align-items: center; justify-content: center; border-radius: 50% 50% 22px 22px / 37.5% 37.5% 22px 22px; box-shadow: 0 14px 30px rgba(142,2,84,.16); margin-bottom: 6px; }
+.cat-card-name { font-size: 15px; font-weight: 600; line-height: 1.5; }
+
+/* رأس صفحة القسم */
+.cat-hero { position: relative; overflow: hidden; border-radius: 32px; background: var(--light-blush); padding: 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.cat-hero-text { position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.cat-hero .hero-title { font-size: 30px; }
+.cat-hero-arch { width: 104px; aspect-ratio: 3 / 4; border-radius: 50% 50% 18px 18px / 37.5% 37.5% 18px 18px; box-shadow: 0 14px 30px rgba(142,2,84,.22); }
+.cat-hero .hero-mark { width: 200px; bottom: -70px; inset-inline-start: auto; inset-inline-end: 90px; }
 
 /* ═════════ الديسكتوب (1024px فأكثر): واجهة متجر كاملة العرض ═════════ */
 .d-only { display: none; }

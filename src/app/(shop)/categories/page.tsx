@@ -26,14 +26,14 @@ export default async function CategoriesPage() {
         <button type="submit" className="go" aria-label={t("بحث")}><Icon name="search" stroke={2} /></button>
       </form>
 
-      <div className="grid-2">
+      <div className="cat-grid">
         {cats.map((c) => (
-          <Link key={c.id} href={`/c/${c.slug}`} className="pcard" style={{ height: 180, background: c.image_url ? `url(${c.image_url}) center/cover` : placeholder(c.slug), boxShadow: "0 10px 24px rgba(142,2,84,0.12)" }}>
-            {!c.image_url && <span className="ph" style={{ bottom: 70 }}>{t("[صورة القسم]")}</span>}
-            <span className="glass" style={{ padding: "10px 12px", gap: 4 }}>
-              <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.4 }}>{c.name}</span>
-              <span style={{ fontSize: 12, lineHeight: 1.4, opacity: 0.9 }}>{c.count} {t("منتج")}</span>
+          <Link key={c.id} href={`/c/${c.slug}`} className="cat-card">
+            <span className="arch cat-card-arch" style={{ background: c.image_url ? `url(${c.image_url}) center/cover` : placeholder(c.slug) }}>
+              {!c.image_url && <span className="cat-letter">{c.name[0]}</span>}
             </span>
+            <span className="cat-card-name">{c.name}</span>
+            <span className="caption">{c.count} {t("منتج")}</span>
           </Link>
         ))}
       </div>
