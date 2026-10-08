@@ -1,4 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import "@fontsource/rubik/arabic-400.css";
+import "@fontsource/rubik/arabic-500.css";
+import "@fontsource/rubik/arabic-600.css";
+import "@fontsource/rubik/arabic-700.css";
+import "@fontsource/rubik/latin-400.css";
+import "@fontsource/rubik/latin-500.css";
+import "@fontsource/rubik/latin-600.css";
+import "@fontsource/rubik/latin-700.css";
 import "./globals.css";
 import { CartProvider } from "@/components/CartProvider";
 import { SwRegister } from "@/components/SwRegister";
@@ -25,12 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const lang = await getLang();
   return (
     <html lang={lang} dir={lang === "en" ? "ltr" : "rtl"}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
+
       <body>
         <LangProvider lang={lang}>
           <CartProvider>
