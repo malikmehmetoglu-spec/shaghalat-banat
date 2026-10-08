@@ -61,7 +61,7 @@ export function LoginFlow({ next, initialError }: { next: string; initialError: 
   const sub = step === "verify" ? t("أدخلي الرمز المرسل إلى {x}", { x: fullPhone() }) : step === "sent" ? t("أرسلنا رابط الدخول إلى {x}", { x: email }) : t("سجّلي دخولك لمتابعة طلباتك ومفضلتك");
 
   return (
-    <main style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+    <main className="login-d" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg,var(--banat-pink),var(--magenta) 55%,var(--deep-berry))", borderRadius: "0 0 40px 40px", padding: "40px 24px 36px", color: "#fff", display: "flex", flexDirection: "column", gap: 28 }}>
         <div className="row-between">
           {step === "enter"

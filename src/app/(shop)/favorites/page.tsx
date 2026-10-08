@@ -17,7 +17,7 @@ export default async function FavoritesPage() {
   const items = (data ?? []).map((f: any) => f.product as Product).filter(Boolean);
 
   return (
-    <main className="page">
+    <main className="page wide">
       <div className="title-block">
         <h1 className="h-display">{t("المفضلة")}</h1>
         <p className="muted">{items.length ? t("{n} منتجات محفوظة", { n: items.length }) : t("لا توجد منتجات محفوظة")}</p>

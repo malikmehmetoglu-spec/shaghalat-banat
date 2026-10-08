@@ -15,7 +15,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const results = term ? await getProducts({ q: term }) : await getProducts({ sort: "new" });
 
   return (
-    <main className="page" style={{ paddingBottom: 40 }}>
+    <main className="page wide" style={{ paddingBottom: 40 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <Link href="/" className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
         <form action="/search" role="search" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, height: 52, paddingInlineStart: 18, paddingInlineEnd: 6, borderRadius: 26, border: "1.5px solid var(--magenta)" }}>

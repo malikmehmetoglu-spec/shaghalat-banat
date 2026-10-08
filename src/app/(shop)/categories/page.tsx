@@ -11,16 +11,16 @@ export default async function CategoriesPage() {
   const t = await getT();
   const cats = await getCategories();
   return (
-    <main className="page">
+    <main className="page wide">
       <div className="row-between">
         <div className="title-block">
           <h1 className="h-display">{t("الأقسام")}</h1>
           <p className="muted">{t("كل ما تحتاجينه في مكان واحد")}</p>
         </div>
-        <CartBadgeLink />
+        <span className="m-only"><CartBadgeLink /></span>
       </div>
 
-      <form action="/search" className="search" role="search">
+      <form action="/search" className="search m-only" role="search">
         <label htmlFor="qc" className="sr">{t("ابحثي في الأقسام")}</label>
         <input id="qc" name="q" placeholder={t("ابحثي في المنتجات…")} />
         <button type="submit" className="go" aria-label={t("بحث")}><Icon name="search" stroke={2} /></button>

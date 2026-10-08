@@ -20,8 +20,8 @@ export default async function Home() {
   const banner = banners.data?.[0];
 
   return (
-    <main className="page">
-      <div className="topbar">
+    <main className="page wide">
+      <div className="topbar m-only">
         <Link href="/categories" className="icon-btn" aria-label={t("الأقسام")} style={{ boxShadow: "none", background: "transparent" }}>
           <Icon name="grid" size={22} />
         </Link>
@@ -52,7 +52,7 @@ export default async function Home() {
         ))}
       </div>
 
-      <SearchBar />
+      <div className="m-only"><SearchBar /></div>
 
       {banner && (
         <div className="banner">

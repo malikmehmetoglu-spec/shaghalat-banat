@@ -23,7 +23,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   const [products, favs] = await Promise.all([getProducts({ categorySlug: slug, sort: sort as SortKey }), getFavoriteIds()]);
 
   return (
-    <main className="page tight" style={{ paddingBottom: 40 }}>
+    <main className="page tight wide" style={{ paddingBottom: 40 }}>
       <div className="topbar">
         <Link href="/categories" className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
         <h1 className="h-title">{(t("ل.س") !== "ل.س" && cat.name_en) || cat.name}</h1>

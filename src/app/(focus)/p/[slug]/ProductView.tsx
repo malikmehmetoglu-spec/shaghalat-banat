@@ -62,8 +62,8 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
   ];
 
   return (
-    <main className="page tight" style={{ paddingBottom: 140 }}>
-      <div style={{ position: "relative", height: 420, borderRadius: 32, overflow: "hidden", background: img ? `url(${img}) center/cover` : placeholder(p.slug), boxShadow: "0 16px 36px rgba(142,2,84,0.22)" }}>
+    <main className="page tight wide pv" style={{ paddingBottom: 140 }}>
+      <div className="pv-media" style={{ position: "relative", height: 420, borderRadius: 32, overflow: "hidden", background: img ? `url(${img}) center/cover` : placeholder(p.slug), boxShadow: "0 16px 36px rgba(142,2,84,0.22)" }}>
         {!img && <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "rgba(255,255,255,.75)" }}>{t("[صورة المنتج]")}</div>}
         <div style={{ position: "absolute", top: 16, right: 16, left: 16, display: "flex", justifyContent: "space-between" }}>
           <button className="icon-btn" aria-label={t("رجوع")} onClick={() => router.back()} style={{ width: 44, height: 44, background: "rgba(255,255,255,.92)" }}><Icon name="back" stroke={2} /></button>
@@ -77,6 +77,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
         </div>
       </div>
 
+      <div className="pv-info">
       <div className="row-between" style={{ alignItems: "flex-start" }}>
         <div className="title-block">
           <h1 style={{ fontSize: 24, fontWeight: 700, lineHeight: 1.5 }}>{p.name}</h1>
@@ -137,6 +138,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
           {added ? t("تمت الإضافة ✓") : stock <= 0 ? t("غير متوفر") : t("أضيفي إلى السلة")}
           {!added && stock > 0 && <Icon name="bag" stroke={2} />}
         </button>
+      </div>
       </div>
     </main>
   );
