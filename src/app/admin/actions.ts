@@ -325,3 +325,40 @@ export async function toggleLocationOnline(id: string, value: boolean) {
   await sb.from("locations").update({ sells_online: value }).eq("id", id);
   revalidatePath("/admin/inventory/locations");
 }
+
+// ───────── حسابات الموظفين (اسم مستخدم + كلمة مرور) ─────────
+export async function createStaff(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const { sb, profile } = await requireStaff();
+  if (profile.role !== "owner") return fail("إنشاء الحسابات متاح للمدير العام فقط");
+  const login = str(fd, "login").toLowerCase();
+  if (!/^[a-z0-9._@-]{3,}$/.test(login)) return fail("اسم المستخدم بأحرف إنجليزية أو أرقام (3 أحرف على الأقل)");
+  const { error } = await sb.rpc("admin_create_staff", { p_login: login, p_password: str(fd, "password"), p_name: str(fd, "name"), p_role: str(fd, "role") });
+  if (error) return fail(errMsg(error));
+  revalidatePath("/admin/staff");
+  return ok(`تم إنشاء الحساب — يدخل بـ ${login.includes("@") ? login : login + "@shaghalat-banat.com"} أو باسم المستخدم فقط`);
+}
+
+export async function updateStaffRole(id: string, role: string): Promise<ActionResult> {
+  const { sb, profile } = await requireStaff();
+  if (profile.role !== "owner") return fail("متاح للمدير العام فقط");
+  if (id === profile.id) return fail("لا يمكنك تغيير دورك بنفسك");
+  const { error } = await sb.from("profiles").update({ role }).eq("id", id);
+  if (error) return fail(errMsg(error));
+  revalidatePath("/admin/staff");
+  return ok("تم تحديث الدور");
+}
+
+export async function setStaffActive(id: string, active: boolean): Promise<ActionResult> {
+  const { sb } = await requireStaff();
+  const { error } = await sb.rpc("admin_set_staff_active", { p_user: id, p_active: active });
+  if (error) return fail(errMsg(error));
+  revalidatePath("/admin/staff");
+  return ok(active ? "تم تفعيل الحساب" : "تم إيقاف الحساب");
+}
+
+export async function setStaffPassword(id: string, password: string): Promise<ActionResult> {
+  const { sb, profile } = await requireStaff();
+  const { error } = await sb.rpc("admin_set_password", { p_user: id || profile.id, p_password: password });
+  if (error) return fail(errMsg(error));
+  return ok("تم تغيير كلمة المرور");
+}

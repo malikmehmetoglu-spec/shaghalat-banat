@@ -5,7 +5,7 @@ export type StaffRole = "owner" | "sales" | "inventory" | "accountant" | "cashie
 
 export const ROLE_LABEL: Record<string, string> = {
   customer: "عميلة",
-  owner: "مديرة",
+  owner: "مدير عام",
   sales: "مشرفة مبيعات",
   inventory: "أمينة مخزون",
   accountant: "محاسبة",
@@ -18,7 +18,7 @@ export const FINANCE_ROLES: StaffRole[] = ["owner", "accountant"];
 export async function requireStaff(roles?: StaffRole[]) {
   const sb = await createClient();
   const { data: u } = await sb.auth.getUser();
-  if (!u.user) redirect("/login?next=/admin");
+  if (!u.user) redirect("/admin-login");
   const { data: profile } = await sb.from("profiles").select("id,full_name,role,phone,email").eq("id", u.user.id).maybeSingle();
   if (!profile || profile.role === "customer") redirect("/admin-no-access");
   if (roles && !roles.includes(profile.role as StaffRole)) redirect("/admin?denied=1");

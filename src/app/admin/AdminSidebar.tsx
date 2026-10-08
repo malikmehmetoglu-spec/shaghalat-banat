@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/Icon";
+import { AdminLogout } from "./AdminLogout";
 
 type Item = { href: string; label: string; icon: Parameters<typeof Icon>[0]["name"]; exact?: boolean };
 const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean }[] = [
@@ -64,6 +65,7 @@ export function AdminSidebar({ name, role, roleKey }: { name: string; role: stri
       ))}
       <div style={{ marginTop: "auto", paddingTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
         <Link href="/" className="adm-ni"><Icon name="back" stroke={2} /> عرض المتجر</Link>
+        <AdminLogout />
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, borderRadius: 18, background: "var(--light-blush)" }}>
           <span style={{ width: 40, height: 40, flexShrink: 0, borderRadius: "50%", background: "var(--magenta)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, lineHeight: 1 }}>{name[0]}</span>
           <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
