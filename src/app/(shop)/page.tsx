@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
+import { HeroCarousel } from "@/components/HeroCarousel";
 import { ProductCard } from "@/components/ProductCard";
 import { SearchBar } from "@/components/SearchBar";
 import { getCategories, getFavoriteIds, getProducts, getUnreadCount } from "@/lib/data";
@@ -15,9 +16,8 @@ export default async function Home() {
     getProducts({ sort: "new", limit: 8 }),
     getFavoriteIds(),
     getUnreadCount(),
-    sb.from("banners").select("id,kicker,title,link,image_url").eq("is_active", true).order("sort_order").limit(1),
+    sb.from("banners").select("id,kicker,title,link,image_url").eq("is_active", true).order("sort_order"),
   ]);
-  const banner = banners.data?.[0];
 
   return (
     <main className="page wide">
@@ -34,15 +34,7 @@ export default async function Home() {
 
       <div className="m-only"><SearchBar /></div>
 
-      <section className="hero">
-        <img src="/icons/logo-mark.svg" alt="" aria-hidden="true" className="hero-mark" />
-        <div className="hero-text">
-          {banner?.kicker && <span className="hero-kicker">{banner.kicker}</span>}
-          <h1 className="hero-title">{banner?.title ?? t("كل ما تحبّه البنات في مكان واحد")}</h1>
-          <Link href={banner?.link || "/search"} className="btn cta hero-cta">{t("تسوّقي الآن")}</Link>
-        </div>
-        <div className="arch hero-arch" style={{ background: banner?.image_url ? `url(${banner.image_url}) center/cover` : "linear-gradient(170deg,var(--banat-pink),var(--magenta) 55%,var(--deep-berry))" }} />
-      </section>
+      <HeroCarousel banners={banners.data ?? []} fallbackTitle={t("كل ما تحبّه البنات في مكان واحد")} />
 
       <section className="sec">
         <h2 className="sec-title">{t("تسوّقي حسب القسم")}</h2>

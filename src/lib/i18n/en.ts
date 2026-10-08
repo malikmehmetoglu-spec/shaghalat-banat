@@ -290,4 +290,6 @@ export const EN: Record<string, string> = {
   "أرسلنا رمز التحقق عبر واتساب إلى {x}": "We sent a verification code via WhatsApp to {x}",
   "سجّلي دخولك برقم هاتفك لمتابعة طلباتك ومفضلتك": "Sign in with your phone number to track your orders and favorites",
   "سيصلك رمز التحقق برسالة واتساب على هذا الرقم.": "You'll receive the code in a WhatsApp message on this number.",
+  "العروض": "Offers",
+  "العرض": "Offer",
 };

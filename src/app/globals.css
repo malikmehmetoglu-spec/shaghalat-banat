@@ -253,7 +253,15 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 /* العقد: نصف دائرة حقيقية في الأعلى — نصف القطر العمودي = نصف العرض، لذلك نثبّت نسبة الأبعاد لكل إطار */
 .arch { border-radius: 50% 50% 28px 28px / 40% 40% 28px 28px; position: relative; overflow: hidden; flex-shrink: 0; }
 
-.hero { position: relative; overflow: hidden; border-radius: 36px; background: var(--light-blush); padding: 24px 22px 26px; display: flex; flex-direction: column-reverse; gap: 22px; }
+.hero { position: relative; overflow: hidden; border-radius: 36px; background: var(--light-blush); padding: 24px 22px 22px; display: flex; flex-direction: column; gap: 16px; }
+/* الشرائح فوق بعضها في نفس الخلية: ارتفاع الحاوية = أطول شريحة، فلا قفزات عند التقليب */
+.hero-stage { position: relative; display: grid; }
+.hero-slide { grid-area: 1 / 1; display: flex; flex-direction: column-reverse; gap: 22px; opacity: 0; visibility: hidden; transition: opacity .7s ease, visibility 0s linear .7s; }
+.hero-slide.on { opacity: 1; visibility: visible; transition: opacity .7s ease, visibility 0s; }
+.hero-dots { position: relative; display: flex; justify-content: center; gap: 8px; }
+.hero-dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 4px; background: var(--rosy-gray); cursor: pointer; transition: width .3s ease, background .3s ease; }
+.hero-dots button.on { width: 24px; background: var(--magenta); }
+@media (prefers-reduced-motion: reduce) { .hero-slide, .hero-slide.on, .hero-dots button { transition: none; } }
 .hero-mark { position: absolute; width: 260px; height: auto; inset-inline-start: -60px; bottom: -70px; opacity: .07; pointer-events: none; }
 .hero-text { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 .hero-kicker { font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--magenta); }
@@ -292,7 +300,8 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 .promise-ic { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50% 50% 12px 12px / 45% 45% 12px 12px; background: rgba(232,95,168,.22); color: var(--banat-pink); display: flex; align-items: center; justify-content: center; }
 
 @media (min-width: 1024px) {
-  .hero { flex-direction: row; align-items: center; padding: 56px 64px; gap: 56px; min-height: 480px; }
+  .hero { padding: 56px 64px 28px; gap: 20px; }
+  .hero-slide { flex-direction: row; align-items: center; gap: 56px; min-height: 420px; }
   .hero-text { flex: 1; gap: 22px; }
   .hero-title { font-size: 56px; line-height: 1.4; max-width: 12ch; }
   .hero-kicker { font-size: 15px; }
