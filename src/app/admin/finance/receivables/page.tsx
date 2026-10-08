@@ -4,7 +4,7 @@ import { date, price } from "@/lib/format";
 import { FormCard } from "../../FormCard";
 import { recordPayment } from "../actions";
 
-export const metadata = { title: "الذمم" };
+export const metadata = { title: "لنا وعلينا" };
 const days = (d: string) => Math.max(0, Math.floor((Date.now() - new Date(d).getTime()) / 86400000));
 
 export default async function ReceivablesPage({ searchParams }: { searchParams: Promise<{ party?: string }> }) {
@@ -19,7 +19,7 @@ export default async function ReceivablesPage({ searchParams }: { searchParams: 
 
   const courierBal = (cod ?? []).reduce((s, o) => s + Number(o.total), 0);
   const parties = [
-    { id: "courier", type: "courier", name: "شركة التوصيل (عند الاستلام)", dir: "لنا", count: cod?.length ?? 0, bal: courierBal, oldest: cod?.[0]?.created_at ?? null },
+    { id: "courier", type: "courier", name: "شركة التوصيل (الدفع عند الاستلام)", dir: "لنا", count: cod?.length ?? 0, bal: courierBal, oldest: cod?.[0]?.created_at ?? null },
     ...(sups ?? []).map((s) => {
       const ls = ((supLines ?? []) as any[]).filter((l) => l.party_id === s.id);
       const bal = ls.reduce((a, l) => a + Number(l.credit) - Number(l.debit), 0);
@@ -33,7 +33,7 @@ export default async function ReceivablesPage({ searchParams }: { searchParams: 
 
   return (
     <>
-      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">ذمم العملاء والموردين</h1><span className="adm-sub">ما لنا عند الآخرين وما علينا لهم، مرتّباً حسب مدة التأخير</span></div></div>
+      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">لنا وعلينا</h1><span className="adm-sub">المبالغ التي لم نستلمها بعد من شركة التوصيل، والمبالغ التي لم ندفعها بعد للموردين</span></div></div>
       <div className="kpis">
         <div className="acard" style={{ display: "flex", flexDirection: "column", gap: 4 }}><b style={{ fontSize: 22, lineHeight: 1.4, color: "#1a7f4b" }}>{price(totalIn)}</b><span className="adm-sub">لنا (مستحق التحصيل)</span></div>
         <div className="acard" style={{ display: "flex", flexDirection: "column", gap: 4 }}><b style={{ fontSize: 22, lineHeight: 1.4, color: "var(--magenta)" }}>{price(totalOut)}</b><span className="adm-sub">علينا (مستحق السداد)</span></div>

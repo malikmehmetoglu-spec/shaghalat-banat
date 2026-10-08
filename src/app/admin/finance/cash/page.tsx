@@ -25,7 +25,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">الصندوق والبنوك</h1><span className="adm-sub">الأرصدة النقدية وحركة كل حساب، مع إغلاق وردية المحل اليومية</span></div></div>
+      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">الصندوق والبنك</h1><span className="adm-sub">كم المال الموجود في كل مكان، وما دخل وما خرج، مع إغلاق وردية المحل اليومية</span></div></div>
       <div className="kpis">
         {cashAccs.map((a) => (
           <Link key={a.code} href={`/admin/finance/cash?acc=${a.code}`} className="acard" style={{ display: "flex", flexDirection: "column", gap: 4, color: "inherit", outline: sel?.code === a.code ? "2px solid var(--magenta)" : "none" }}>
@@ -42,7 +42,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
               {rows.map((r) => (
                 <tr key={r.id}>
                   <td className="caption">{date(r.entry.entry_date)}</td>
-                  <td>{r.entry.memo}<div className="caption ltr" style={{ textAlign: "right" }}>{r.entry.number}</div></td>
+                  <td>{r.entry.memo}</td>
                   <td style={{ color: "#1a7f4b", fontWeight: 600 }}>{Number(r.debit) ? price(r.debit) : ""}</td>
                   <td style={{ color: "var(--magenta)", fontWeight: 600 }}>{Number(r.credit) ? price(r.credit) : ""}</td>
                   <td style={{ fontWeight: 600 }}>{price(r.run)}</td>
@@ -54,15 +54,15 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
         </div>
         <div className="narrow" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <ShiftCard shift={s ? { openedAt: s.opened_at, by: s.opened_by_name, opening: Number(s.opening), sales: Number(s.cash_sales), expenses: Number(s.cash_expenses), expected: Number(s.expected) } : null} />
-          <FormCard title="تحويل / إيداع / سحب" action={cashMove} submitLabel="تسجيل">
-            <label className="a-field">نوع الحركة<select name="kind" className="a-in"><option value="transfer">تحويل بين الحسابات</option><option value="deposit">إيداع من المالكة (رأس مال)</option><option value="withdraw">سحب شخصي</option></select></label>
+          <FormCard title="نقل أو إضافة أو سحب مال" action={cashMove} submitLabel="تسجيل">
+            <label className="a-field">ماذا تريد أن تفعل؟<select name="kind" className="a-in"><option value="transfer">نقل مال بين الصندوق والبنك</option><option value="deposit">إضافة مال من جيب صاحبة المتجر</option><option value="withdraw">سحب مال للاستخدام الشخصي</option></select></label>
             <div className="a-grid" style={{ gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
               <label className="a-field">من<select name="from" className="a-in">{movable.map((a) => <option key={a.code} value={a.code}>{a.name}</option>)}</select></label>
               <label className="a-field">إلى<select name="to" className="a-in" defaultValue={movable[1]?.code}>{movable.map((a) => <option key={a.code} value={a.code}>{a.name}</option>)}</select></label>
             </div>
             <label className="a-field">المبلغ (ل.س)<input name="amount" type="number" min="1" className="a-in" required /></label>
             <label className="a-field">ملاحظة<input name="note" className="a-in" placeholder="إيداع مبيعات الأسبوع في البنك" /></label>
-            <span className="caption">الإيداع يستخدم «إلى» فقط، والسحب يستخدم «من» فقط.</span>
+            <span className="caption">عند الإضافة نستخدم «إلى» فقط، وعند السحب نستخدم «من» فقط.</span>
           </FormCard>
         </div>
       </div>

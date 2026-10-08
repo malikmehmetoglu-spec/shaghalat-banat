@@ -26,7 +26,7 @@ export async function recordExpense(_: ActionResult | null, fd: FormData): Promi
   });
   if (error) return fail(errMsg(error));
   touch();
-  return ok("تم حفظ المصروف وترحيل القيد");
+  return ok("تم حفظ المصروف");
 }
 
 export async function cashMove(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
@@ -99,4 +99,19 @@ export async function saveSettings(_: ActionResult | null, fd: FormData): Promis
   if (error) return fail(errMsg(error));
   touch();
   return ok("تم حفظ الإعدادات");
+}
+
+/** تصنيف مصاريف جديد بالاسم فقط (الرقم الداخلي يُولَّد تلقائياً) */
+export async function addExpenseCategory(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const { sb } = await fin();
+  const name = str(fd, "name");
+  if (!name) return fail("اكتب اسم التصنيف");
+  const { data } = await sb.from("accounts").select("code").like("code", "5%");
+  const used = new Set((data ?? []).map((r) => r.code));
+  let code = 5210;
+  while (used.has(String(code))) code += 10;
+  const { error } = await sb.from("accounts").insert({ code: String(code), name, type: "expense", is_expense_category: true });
+  if (error) return fail(errMsg(error));
+  touch();
+  return ok(`تمت إضافة تصنيف «${name}»`);
 }

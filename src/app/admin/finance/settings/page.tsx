@@ -3,7 +3,7 @@ import { FormCard } from "../../FormCard";
 import { saveSettings } from "../actions";
 
 export const metadata = { title: "الضرائب والإعدادات" };
-const MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+const _M = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
 export default async function SettingsPage() {
   const { sb } = await requireStaff(FINANCE_ROLES);
@@ -12,16 +12,13 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">الضرائب والإعدادات المالية</h1><span className="adm-sub">إعدادات تنطبق على الفواتير والتقارير ونقطة البيع</span></div></div>
+      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">الإعدادات المالية</h1><span className="adm-sub">الضريبة وبيانات الفاتورة</span></div></div>
       <div style={{ maxWidth: 820 }}>
         <FormCard title="الإعدادات" action={saveSettings} submitLabel="حفظ الإعدادات" resetOnSuccess={false}>
-          <h3 style={{ fontSize: 15, fontWeight: 600 }}>العملة والسنة المالية</h3>
-          <div className="a-grid">
-            <label className="a-field">العملة الأساسية<select name="currency" className="a-in" defaultValue={s.currency}><option value="SYP">ليرة سورية (ل.س)</option><option value="USD">دولار أمريكي ($)</option></select></label>
-            <label className="a-field">بداية السنة المالية<select name="fiscal_start_month" className="a-in" defaultValue={s.fiscal_start_month}>{MONTHS.map((m, i) => <option key={i} value={i + 1}>1 {m}</option>)}</select></label>
-            <label className="a-field">طريقة تقييم المخزون<select name="inventory_method" className="a-in" defaultValue={s.inventory_method}><option value="avg">متوسط التكلفة المرجّح</option><option value="fifo">الوارد أولاً صادر أولاً</option></select></label>
-            <label className="a-field">إقفال الفترات<select name="close_period" className="a-in" defaultValue={s.close_period}><option value="monthly">شهري</option><option value="quarterly">ربع سنوي</option></select></label>
-          </div>
+          <input type="hidden" name="currency" value={s.currency} />
+          <input type="hidden" name="fiscal_start_month" value={s.fiscal_start_month} />
+          <input type="hidden" name="inventory_method" value={s.inventory_method} />
+          <input type="hidden" name="close_period" value={s.close_period} />
           <h3 style={{ fontSize: 15, fontWeight: 600 }}>الضريبة</h3>
           <div className="a-grid">
             <label className="a-field">نسبة الضريبة %<input name="tax_rate" type="number" min="0" max="100" step="0.01" className="a-in" defaultValue={s.tax_rate} /></label>
@@ -35,11 +32,11 @@ export default async function SettingsPage() {
             <label className="a-field">هاتف المحل<input name="store_phone" className="a-in ltr" defaultValue={s.store_phone ?? ""} /></label>
           </div>
           <label className="a-field">تذييل الفاتورة<input name="invoice_footer" className="a-in" defaultValue={s.invoice_footer ?? ""} /></label>
-          <h3 style={{ fontSize: 15, fontWeight: 600 }}>ربط طرق الدفع بالحسابات</h3>
+          <h3 style={{ fontSize: 15, fontWeight: 600 }}>أين يذهب المال تلقائياً</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {[["نقداً في المحل", "صندوق المحل (1110)"], ["بطاقة / تحويل", "الحساب البنكي (1120)"], ["الدفع عند الاستلام", "ذمم شركة التوصيل (1130) حتى التحصيل"]].map(([a, b]) => <div key={a} className="kv" style={{ fontSize: 13 }}><span>{a}</span><span className="adm-sub">{b}</span></div>)}
+            {[["بيع نقدي في المحل", "صندوق المحل"], ["بطاقة أو تحويل", "الحساب البنكي"], ["الدفع عند الاستلام", "يبقى عند شركة التوصيل حتى تسلّمه لنا"]].map(([a, b]) => <div key={a} className="kv" style={{ fontSize: 13 }}><span>{a}</span><span className="adm-sub">{b}</span></div>)}
           </div>
-          <span className="caption">الأتمتة: يُرحَّل قيد المبيعات تلقائياً عند تسليم الطلب أو البيع في المحل، ويُعكس عند الإرجاع، وتُرحَّل المشتريات عند الاستلام.</span>
+          <span className="caption">كل بيع ومرتجع ومصروف وشراء بضاعة يُسجَّل في الحسابات تلقائياً — لا حاجة لأي إدخال محاسبي.</span>
         </FormCard>
       </div>
     </>

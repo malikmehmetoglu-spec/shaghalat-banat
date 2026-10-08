@@ -2,7 +2,7 @@ import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
 import { date, price } from "@/lib/format";
 import { monthLabel, periodRange } from "@/lib/finance";
 import { FormCard } from "../../FormCard";
-import { recordExpense } from "../actions";
+import { addExpenseCategory, recordExpense } from "../actions";
 
 export const metadata = { title: "المصاريف" };
 
@@ -58,6 +58,10 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
             <label className="a-field">دُفع من<select name="paid_from" className="a-in">{(cashAccs ?? []).map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}</select></label>
             <label className="a-field">صورة الإيصال (اختياري)<input name="receipt" type="file" accept="image/*,application/pdf" capture="environment" className="a-in" style={{ paddingTop: 10 }} /></label>
             <label className="caption" style={{ display: "flex", gap: 8, alignItems: "center" }}><input type="checkbox" name="recurring" /> مصروف متكرر شهرياً</label>
+          </FormCard>
+          <div style={{ height: 16 }} />
+          <FormCard title="تصنيف مصاريف جديد" action={addExpenseCategory} submitLabel="إضافة التصنيف">
+            <label className="a-field">اسم التصنيف<input name="name" className="a-in" required placeholder="صيانة المحل" /></label>
           </FormCard>
         </div>
       </div>

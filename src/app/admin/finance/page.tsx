@@ -43,7 +43,7 @@ export default async function FinanceDashboard() {
 
   return (
     <>
-      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">اللوحة المالية</h1><span className="adm-sub">{monthLabel(now)} · أرقام المتجر الإلكتروني والمحل معاً</span></div></div>
+      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">نظرة عامة على الأموال</h1><span className="adm-sub">{monthLabel(now)} · أرقام المتجر الإلكتروني والمحل معاً</span></div></div>
       <div className="kpis">
         {[[price(revenue), "الإيرادات هذا الشهر"], [price(expense), "المصاريف هذا الشهر"], [price(revenue - expense), "صافي الربح"], [revenue ? `${Math.round(((revenue - expense) / revenue) * 100)}%` : "—", "هامش الربح"]].map(([v, l]) => (
           <div key={l} className="acard" style={{ display: "flex", flexDirection: "column", gap: 4 }}><b style={{ fontSize: 22, lineHeight: 1.4 }}>{v}</b><span className="adm-sub">{l}</span></div>
@@ -84,7 +84,7 @@ export default async function FinanceDashboard() {
           <Link href="/admin/finance/cash" className="btn secondary">عرض الصندوق والبنوك</Link>
         </div>
         <div className="acard flush wide">
-          <div className="row-between" style={{ padding: "12px 14px 4px" }}><h2 className="adm-h2">مستحقات قريبة</h2><Link href="/admin/finance/receivables" className="caption" style={{ color: "var(--magenta)" }}>كل الذمم</Link></div>
+          <div className="row-between" style={{ padding: "12px 14px 4px" }}><h2 className="adm-h2">مستحقات قريبة</h2><Link href="/admin/finance/receivables" className="caption" style={{ color: "var(--magenta)" }}>عرض الكل</Link></div>
           <div className="tw"><table className="tbl">
             <thead><tr><th>الجهة</th><th>النوع</th><th>المبلغ</th><th>منذ</th></tr></thead>
             <tbody>
