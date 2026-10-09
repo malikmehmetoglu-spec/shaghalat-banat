@@ -497,3 +497,14 @@ export async function archiveLocation(id: string): Promise<ActionResult> {
   revalidatePath("/admin/inventory", "layout");
   return ok("تم حذف المستودع");
 }
+
+/** حذف عملية بيع (للمدير): تعود البضائع للمخزون وتُحذف قيودها المالية */
+export async function deleteSale(orderId: string): Promise<ActionResult> {
+  const { sb, profile } = await requireStaff();
+  if (profile.role !== "owner") return fail("حذف عمليات البيع متاح للمدير فقط");
+  const { data, error } = await sb.rpc("delete_sale", { p_order: orderId });
+  if (error) return fail(errMsg(error));
+  for (const p of ["/admin", "/admin/orders", "/admin/customers", "/admin/products", "/admin/pos"]) revalidatePath(p);
+  revalidatePath("/admin/finance", "layout"); revalidatePath("/admin/inventory", "layout");
+  return ok(`تم حذف العملية #${data}`);
+}

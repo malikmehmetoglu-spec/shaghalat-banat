@@ -2,13 +2,14 @@ import Link from "next/link";
 import { requireStaff } from "@/lib/admin";
 import { date, ORDER_STATUS, PAYMENT_LABEL, price } from "@/lib/format";
 import { StatusButtons } from "./StatusButtons";
+import { DeleteSale } from "./DeleteSale";
 
 export const metadata = { title: "الطلبات" };
 const TABS = ["all", "new", "confirmed", "preparing", "shipped", "delivered", "cancelled"];
 
 export default async function AdminOrders({ searchParams }: { searchParams: Promise<{ status?: string; id?: string; q?: string }> }) {
   const { status = "all", id, q = "" } = await searchParams;
-  const { sb } = await requireStaff();
+  const { sb, profile } = await requireStaff();
 
   let query = sb.from("orders").select("id,number,status,channel,payment_method,total,created_at,customer_phone,user:profiles!orders_user_id_fkey(full_name,phone,email)").order("created_at", { ascending: false }).limit(100);
   if (status !== "all") query = query.eq("status", status);
@@ -94,6 +95,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
             <div className="kv" style={{ fontSize: 16, fontWeight: 700 }}><span>الإجمالي</span><span style={{ color: "var(--magenta)" }}>{price(sel.total)}</span></div>
             <div className="kv"><span className="adm-sub">الدفع</span><span>{PAYMENT_LABEL[sel.payment_method]} · {sel.is_paid ? "مدفوع" : "غير مدفوع"}</span></div>
             {sel.channel === "online" && <StatusButtons orderId={sel.id} current={sel.status} />}
+            {profile.role === "owner" && <DeleteSale id={sel.id} number={sel.number} back={qs(status)} />}
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <span style={{ fontSize: 13, fontWeight: 600 }}>السجل</span>
               {(sel.order_events as any[]).sort((a, b) => a.created_at.localeCompare(b.created_at)).map((e, i) => (
