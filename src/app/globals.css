@@ -522,3 +522,8 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 .ph-logo { width: 48px; height: 48px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50% 50% 14px 14px / 40% 40% 14px 14px;
   background: rgba(255,255,255,.85); box-shadow: 0 6px 14px rgba(214,3,127,.14); }
 .ph-logo img { width: 34px; height: 34px; }
+.np-bell { position: relative; }
+.np-bell svg { animation: np-ring 2.4s ease-in-out infinite; transform-origin: 50% 10%; }
+.np-dot { position: absolute; top: 26%; inset-inline-end: 24%; width: 14px; height: 14px; border-radius: 50%; background: #ff3d8b; border: 2px solid #fff; }
+@keyframes np-ring { 0%,60%,100% { transform: rotate(0) } 10% { transform: rotate(14deg) } 20% { transform: rotate(-12deg) } 30% { transform: rotate(8deg) } 40% { transform: rotate(-5deg) } }
+@media (prefers-reduced-motion: reduce) { .np-bell svg { animation: none; } }

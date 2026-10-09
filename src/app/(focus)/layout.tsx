@@ -1,3 +1,4 @@
+import { NotifyPrompt } from "@/components/NotifyPrompt";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { SiteFooter, SiteHeader } from "@/components/SiteHeader";
 
@@ -8,6 +9,7 @@ export default function FocusLayout({ children }: { children: React.ReactNode })
       {children}
       <SiteFooter />
       <InstallPrompt />
+      <NotifyPrompt />
     </div>
   );
 }

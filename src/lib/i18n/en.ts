@@ -305,4 +305,12 @@ export const EN: Record<string, string> = {
   "اضغطي «إضافة» — وصار التطبيق على هاتفك 💗": "Tap “Add” — the app is now on your phone 💗",
   "لاحقاً": "Later",
   "إغلاق": "Close",
+  "لا تفوّتي أي عرض!": "Don’t miss a single offer!",
+  "فعّلي الإشعارات لتعرفي أولاً بالخصومات والوصول الجديد، ولتتابعي حالة طلبك لحظة بلحظة.": "Turn on notifications to hear first about discounts and new arrivals, and follow your order live.",
+  "خصومات حصرية": "Exclusive discounts",
+  "حالة طلبك": "Order status",
+  "فعّلي الإشعارات": "Turn on notifications",
+  "الإشعارات محظورة حالياً على هذا الجهاز": "Notifications are blocked on this device",
+  "افتحي الإعدادات ← الإشعارات ← شغلات بنات": "Open Settings → Notifications → Shaghalat Banat",
+  "فعّلي «السماح بالإشعارات» 💗": "Turn on “Allow Notifications” 💗",
 };
