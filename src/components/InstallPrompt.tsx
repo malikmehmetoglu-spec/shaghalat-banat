@@ -4,7 +4,7 @@ import { useT } from "@/components/LangProvider";
 
 type BIP = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 const KEY = "sb-install-dismissed";
-const COOLDOWN = 3 * 24 * 3600 * 1000; // لا نزعج الزائرة أكثر من مرة كل 3 أيام
+const COOLDOWN = 6 * 3600 * 1000; // تظهر مجدداً كل 6 ساعات لمن لم تثبّت
 
 function dismissedRecently() {
   try { return Date.now() - Number(localStorage.getItem(KEY) || 0) < COOLDOWN; } catch { return false; }
@@ -29,12 +29,12 @@ export function InstallPrompt() {
     window.addEventListener("beforeinstallprompt", onBip);
     const onInstalled = () => { setShow(false); remember(); };
     window.addEventListener("appinstalled", onInstalled);
-    const timer = mobile ? setTimeout(() => setShow(true), 2500) : undefined;
+    const timer = mobile ? setTimeout(() => setShow(true), 1000) : undefined;
     return () => { window.removeEventListener("beforeinstallprompt", onBip); window.removeEventListener("appinstalled", onInstalled); if (timer) clearTimeout(timer); };
   }, []);
 
   // على الكمبيوتر: نظهر فقط إن كان المتصفح يدعم التثبيت
-  useEffect(() => { if (evt && !show && !dismissedRecently()) { const x = setTimeout(() => setShow(true), 2500); return () => clearTimeout(x); } }, [evt]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (evt && !show && !dismissedRecently()) { const x = setTimeout(() => setShow(true), 1000); return () => clearTimeout(x); } }, [evt]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!show) return null;
   const close = () => { setShow(false); remember(); };
