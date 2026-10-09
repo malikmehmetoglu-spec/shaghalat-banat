@@ -451,3 +451,17 @@ export async function saveStoreProfile(_: ActionResult | null, fd: FormData): Pr
   revalidatePath("/qr");
   return ok("تم حفظ روابط التواصل");
 }
+
+/** مرتجع في المحل / تراجع عن الشراء: تعود القطع للمخزون ويُسجّل المبلغ المُعاد */
+export async function recordStoreReturn(input: { items: { variant: string; qty: number }[]; kind: "return" | "cancel"; refund: number; refundFrom: "1110" | "1120" | "none"; reason: string; phone: string }): Promise<ActionResult> {
+  const { sb } = await requireStaff();
+  const items = input.items.filter((i) => i.qty > 0);
+  if (!items.length) return fail("اختاري منتجاً واحداً على الأقل");
+  const { data, error } = await sb.rpc("record_store_return", {
+    p_items: items, p_kind: input.kind, p_refund: Math.max(0, Number(input.refund) || 0),
+    p_refund_from: input.refundFrom, p_reason: input.reason, p_phone: input.phone || null,
+  });
+  if (error) return fail(errMsg(error));
+  revalidatePath("/admin/returns"); revalidatePath("/admin/products"); revalidatePath("/admin/inventory"); revalidatePath("/admin/pos");
+  return ok(`تم تسجيل المرتجع ${data} وأُعيدت القطع إلى المخزون`);
+}
