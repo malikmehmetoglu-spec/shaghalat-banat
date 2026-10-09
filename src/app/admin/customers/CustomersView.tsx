@@ -16,14 +16,17 @@ const CALL = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke=
 const CONTACT = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>;
 const TRASH = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>;
 
-/** يحفظ العميلة كجهة اتصال (ملف vCard يفتح تطبيق جهات الاتصال على الهاتف) */
+/** يفتح شاشة «إضافة جهة اتصال» على الهاتف مع الاسم والرقم جاهزين */
 function saveContact(r: Row) {
   const name = r.name || "عميلة شغلات بنات";
-  const vcf = ["BEGIN:VCARD", "VERSION:3.0", `FN:${name}`, `N:;${name};;;`, `TEL;TYPE=CELL:+${r.phone}`, "ORG:عميلة — شغلات بنات", "END:VCARD"].join("\r\n");
-  const url = URL.createObjectURL(new Blob([vcf], { type: "text/vcard;charset=utf-8" }));
-  const a = document.createElement("a");
-  a.href = url; a.download = `${name}.vcf`; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  const tel = `+${r.phone}`;
+  if (/android/i.test(navigator.userAgent)) {
+    // أندرويد: يفتح نافذة جهة اتصال جديدة مباشرة
+    location.href = `intent:#Intent;action=android.intent.action.INSERT;type=vnd.android.cursor.dir/contact;S.name=${encodeURIComponent(name)};S.phone=${encodeURIComponent(tel)};S.phone_type=2;end`;
+    return;
+  }
+  // آيفون والباقي: بطاقة اتصال تُعرض مع زر «إنشاء جهة اتصال جديدة»
+  location.href = `/admin/customers/vcard?${new URLSearchParams({ phone: r.phone, name })}`;
 }
 
 const tierOf = (n: number) => (n >= 5 ? ["مميّزة", "tone-brand"] : n >= 2 ? ["دائمة", "tone-info"] : ["جديدة", "tone-success"]);
