@@ -481,8 +481,10 @@ export async function lookupCustomer(phone: string): Promise<{ name: string | nu
   return data ? { name: data.name, marketing: data.marketing_opt_in } : null;
 }
 
-export async function setCustomerMarketing(phone: string, on: boolean) {
+export async function deleteCustomer(phone: string): Promise<ActionResult> {
   const { sb } = await requireStaff();
-  await sb.from("customers").update({ marketing_opt_in: on, opt_in_at: on ? new Date().toISOString() : null, updated_at: new Date().toISOString() }).eq("phone", phone);
+  const { error } = await sb.from("customers").delete().eq("phone", phone);
+  if (error) return fail(errMsg(error));
   revalidatePath("/admin/customers");
+  return ok("تم حذف العميلة");
 }

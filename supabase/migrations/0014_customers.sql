@@ -97,3 +97,6 @@ begin
   select * into o from public.pos_sale(items, payment, discount_amount, ph);
   return o;
 end $$;
+
+-- حذف العملاء من لوحة الإدارة
+create policy "customers staff delete" on public.customers for delete using (public.is_staff());
