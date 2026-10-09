@@ -216,11 +216,14 @@ export async function receivePurchaseOrder(id: string): Promise<ActionResult> {
 }
 
 // ───────── نقطة البيع ─────────
-export async function posSale(items: { variant_id: string; qty: number }[], payment: string, discount: number, phone: string): Promise<ActionResult & { number?: string; total?: number }> {
+export async function posSale(items: { variant_id: string; qty: number }[], payment: string, discount: number, phone: string, name = "", marketing = false): Promise<ActionResult & { number?: string; total?: number }> {
   const { sb } = await requireStaff();
-  const { data, error } = await sb.rpc("pos_sale", { items, payment, discount_amount: discount, customer_phone_in: phone || null });
+  if (phone.replace(/\D/g, "").length < 9) return fail("رقم هاتف العميلة مطلوب");
+  if (!name.trim()) return fail("اسم العميلة مطلوب");
+  const { data, error } = await sb.rpc("pos_sale_v2", { items, payment, discount_amount: discount, customer_phone_in: phone, customer_name_in: name, marketing_in: marketing });
   if (error || !data) return fail(errMsg(error));
   revalidatePath("/admin");
+  revalidatePath("/admin/customers");
   return { ...ok("تمت عملية البيع"), number: (data as { number: string }).number, total: Number((data as { total: number }).total) };
 }
 
@@ -464,4 +467,22 @@ export async function recordStoreReturn(input: { items: { variant: string; qty: 
   if (error) return fail(errMsg(error));
   revalidatePath("/admin/returns"); revalidatePath("/admin/products"); revalidatePath("/admin/inventory"); revalidatePath("/admin/pos");
   return ok(`تم تسجيل المرتجع ${data} وأُعيدت القطع إلى المخزون`);
+}
+
+/** البحث عن عميلة برقمها (لتعبئة الاسم تلقائياً في نقطة البيع) */
+export async function lookupCustomer(phone: string): Promise<{ name: string | null; marketing: boolean } | null> {
+  const { sb } = await requireStaff();
+  let d = phone.replace(/\D/g, "");
+  if (d.startsWith("00")) d = d.slice(2);
+  if (d.length === 10 && d.startsWith("09")) d = "963" + d.slice(1);
+  if (d.length === 9 && d.startsWith("9")) d = "963" + d;
+  if (d.length < 9) return null;
+  const { data } = await sb.from("customers").select("name,marketing_opt_in").eq("phone", d).maybeSingle();
+  return data ? { name: data.name, marketing: data.marketing_opt_in } : null;
+}
+
+export async function setCustomerMarketing(phone: string, on: boolean) {
+  const { sb } = await requireStaff();
+  await sb.from("customers").update({ marketing_opt_in: on, opt_in_at: on ? new Date().toISOString() : null, updated_at: new Date().toISOString() }).eq("phone", phone);
+  revalidatePath("/admin/customers");
 }
