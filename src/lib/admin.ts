@@ -27,7 +27,7 @@ export async function requireStaff(roles?: StaffRole[]) {
 
 export async function getLocations() {
   const sb = await createClient();
-  const { data } = await sb.from("locations").select("id,name,kind,address,sells_online").order("created_at");
+  const { data } = await sb.from("locations").select("id,name,kind,address,sells_online").is("archived_at", null).order("created_at");
   return data ?? [];
 }
 

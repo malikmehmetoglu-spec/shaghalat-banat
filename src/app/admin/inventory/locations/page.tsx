@@ -5,12 +5,13 @@ import { loadVariants } from "@/lib/inventory";
 import { FormCard } from "../../FormCard";
 import { saveLocation } from "../../actions";
 import { LocationOnline } from "./LocationOnline";
+import { DeleteLocation } from "./DeleteLocation";
 
 export const metadata = { title: "المواقع والمستودعات" };
 const KIND: Record<string, string> = { store: "محل", warehouse: "مستودع", transit: "قيد النقل" };
 
 export default async function LocationsPage() {
-  const { sb } = await requireStaff();
+  const { sb, profile } = await requireStaff();
   const [locs, all] = await Promise.all([getLocations(), loadVariants(sb)]);
   return (
     <>
@@ -31,6 +32,7 @@ export default async function LocationsPage() {
                   <Link href={`/admin/inventory/count?loc=${l.id}`} className="btn soft" style={{ flex: 1 }}>جرد</Link>
                   <Link href="/admin/inventory/moves" className="btn soft" style={{ flex: 1 }}>تحويل منه</Link>
                 </div>
+                {profile.role === "owner" && l.kind !== "store" && <DeleteLocation id={l.id} name={l.name} units={units} />}
               </div>
             );
           })}

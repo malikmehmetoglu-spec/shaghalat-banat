@@ -488,3 +488,12 @@ export async function deleteCustomer(phone: string): Promise<ActionResult> {
   revalidatePath("/admin/customers");
   return ok("تم حذف العميلة");
 }
+
+export async function archiveLocation(id: string): Promise<ActionResult> {
+  const { sb, profile } = await requireStaff();
+  if (profile.role !== "owner") return fail("حذف المستودع متاح للمدير فقط");
+  const { error } = await sb.rpc("archive_location", { p_loc: id });
+  if (error) return fail(errMsg(error));
+  revalidatePath("/admin/inventory", "layout");
+  return ok("تم حذف المستودع");
+}
