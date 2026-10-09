@@ -3,7 +3,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteSale } from "../actions";
 
-const WAIT = 15;
+const WAIT = 5;
 
 export function DeleteSale({ id, number, back }: { id: string; number: string; back: string }) {
   const router = useRouter();
