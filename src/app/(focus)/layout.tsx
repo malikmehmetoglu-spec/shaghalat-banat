@@ -1,3 +1,4 @@
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { SiteFooter, SiteHeader } from "@/components/SiteHeader";
 
 export default function FocusLayout({ children }: { children: React.ReactNode }) {
@@ -6,6 +7,7 @@ export default function FocusLayout({ children }: { children: React.ReactNode })
       <SiteHeader />
       {children}
       <SiteFooter />
+      <InstallPrompt />
     </div>
   );
 }
