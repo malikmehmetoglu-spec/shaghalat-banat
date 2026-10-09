@@ -24,10 +24,16 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  let user = null;
-  try { user = (await supabase.auth.getUser()).data.user; } catch { /* لا نُسقط الموقع إن تعذّر الاتصال */ }
   const path = request.nextUrl.pathname;
-  if (!user && PROTECTED.some((p) => path === p || path.startsWith(p + "/"))) {
+  const needsAuth = PROTECTED.some((p) => path === p || path.startsWith(p + "/"));
+  let user = null;
+  try {
+    // الصفحات المحمية: تحقق كامل من الخادم. الصفحات العامة: قراءة محلية سريعة (تُجدَّد الجلسة فقط عند انتهائها)
+    user = needsAuth
+      ? (await supabase.auth.getUser()).data.user
+      : (await supabase.auth.getSession()).data.session?.user ?? null;
+  } catch { /* لا نُسقط الموقع إن تعذّر الاتصال */ }
+  if (!user && needsAuth) {
     const url = request.nextUrl.clone();
     url.pathname = path.startsWith("/admin") ? "/admin-login" : "/login";
     url.searchParams.set("next", path);
