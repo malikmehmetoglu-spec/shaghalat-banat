@@ -9,7 +9,7 @@ export function PageHeaderClient({ title, back = "/" }: { title: string; back?: 
     <div className="topbar">
       <Link href={back} className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
       <h1 className="h-title" style={{ textAlign: "center" }}>{title}</h1>
-      <span style={{ width: 48, height: 48 }} />
+      <Link href="/" className="ph-logo" aria-label={t("شغلات بنات")}><img src="/icons/logo-mark.svg" alt="" /></Link>
     </div>
   );
 }

@@ -356,7 +356,8 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .site-header { position: sticky; top: 0; z-index: 30; background: rgba(255,255,255,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--border-soft); }
   .sh-row { max-width: 1240px; margin: 0 auto; padding: 14px 32px; display: flex; align-items: center; gap: 32px; }
   .sh-logo { flex-shrink: 0; display: flex; }
-  .sh-logo img { height: 44px; width: auto; }
+  .sh-logo img { height: 62px; width: auto; filter: drop-shadow(0 4px 10px rgba(142,2,84,.18)); transition: transform .2s; }
+  .sh-logo:hover img { transform: scale(1.04); }
   .sh-search { flex: 1; max-width: 560px; height: 52px; box-shadow: none; border: 1.5px solid var(--border-soft); }
   .sh-search .go { width: 40px; height: 40px; }
   .sh-icons { display: flex; gap: 10px; margin-inline-start: auto; }
@@ -514,3 +515,10 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 @keyframes ip-up{from{opacity:0;transform:translateY(40px) scale(.96)}}
 @keyframes ip-pulse{50%{transform:scale(1.025);box-shadow:0 14px 34px -6px rgba(255,180,220,1)}}
 @media (prefers-reduced-motion:reduce){.ip-back,.ip-card,.ip-btn{animation:none}}
+
+/* ───── حضور اللوغو ───── */
+.home-logo { display: flex; justify-content: center; flex: 1; }
+.home-logo img { height: 58px; width: auto; max-width: 70vw; filter: drop-shadow(0 6px 14px rgba(142,2,84,.22)); }
+.ph-logo { width: 48px; height: 48px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50% 50% 14px 14px / 40% 40% 14px 14px;
+  background: rgba(255,255,255,.85); box-shadow: 0 6px 14px rgba(214,3,127,.14); }
+.ph-logo img { width: 34px; height: 34px; }

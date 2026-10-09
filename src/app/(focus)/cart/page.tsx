@@ -38,7 +38,7 @@ export default function CartPage() {
         <div className="topbar">
           <Link href="/" className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
           <h1 className="h-title">{t("سلّتي")}</h1>
-          <span style={{ width: 48 }} />
+          <Link href="/" className="ph-logo" aria-label="شغلات بنات"><img src="/icons/logo-mark.svg" alt="" /></Link>
         </div>
         <div className="empty">
           <span className="ring"><Icon name="bag" size={40} stroke={1.6} /></span>
@@ -54,7 +54,7 @@ export default function CartPage() {
       <div className="topbar">
         <Link href="/" className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
         <h1 className="h-title">{t("سلّتي (")}{count})</h1>
-        <span style={{ width: 48 }} />
+        <Link href="/" className="ph-logo" aria-label="شغلات بنات"><img src="/icons/logo-mark.svg" alt="" /></Link>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: 16, borderRadius: 20, background: "var(--light-blush)" }}>

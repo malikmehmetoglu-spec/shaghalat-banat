@@ -36,7 +36,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
       <div className="topbar">
         <Link href="/orders" className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
         <h1 className="h-title">{placed ? t("تم استلام طلبك") : t("تتبّع الطلب")}</h1>
-        <span style={{ width: 48 }} />
+        <Link href="/" className="ph-logo" aria-label="شغلات بنات"><img src="/icons/logo-mark.svg" alt="" /></Link>
       </div>
 
       {placed && (

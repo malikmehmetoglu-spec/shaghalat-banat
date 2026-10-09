@@ -74,7 +74,7 @@ export function CheckoutFlow({ addresses: initial, shipping }: { addresses: Addr
           ? <Link href="/cart" className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
           : <button type="button" className="icon-btn" aria-label={t("رجوع")} onClick={() => setStep((s) => s - 1)}><Icon name="back" stroke={2} /></button>}
         <h1 className="h-title">{t("إتمام الطلب")}</h1>
-        <span style={{ width: 48 }} />
+        <Link href="/" className="ph-logo" aria-label="شغلات بنات"><img src="/icons/logo-mark.svg" alt="" /></Link>
       </div>
 
       <ol style={{ display: "flex", gap: 8, padding: "0 8px", margin: 0, listStyle: "none" }}>

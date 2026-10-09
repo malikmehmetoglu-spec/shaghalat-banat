@@ -10,7 +10,7 @@ export function PageHeader({ title, back = "/", end }: { title: string; back?: s
     <div className="topbar">
       <Link href={back} className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
       <h1 className="h-title" style={{ textAlign: "center" }}>{title}</h1>
-      {end ?? <span style={{ width: 48, height: 48 }} />}
+      {end ?? <Link href="/" className="ph-logo" aria-label={t("شغلات بنات")}><img src="/icons/logo-mark.svg" alt="" /></Link>}
     </div>
   );
 }

@@ -27,7 +27,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
     <main className="page tight wide" style={{ paddingBottom: 40 }}>
       <div className="topbar m-only">
         <Link href="/categories" className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
-        <span />
+        <Link href="/" className="ph-logo" aria-label="شغلات بنات"><img src="/icons/logo-mark.svg" alt="" /></Link>
         <Link href="/search" className="icon-btn" aria-label={t("بحث")}><Icon name="search" stroke={2} /></Link>
       </div>
       <section className="cat-hero">

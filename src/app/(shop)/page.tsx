@@ -25,7 +25,7 @@ export default async function Home() {
         <Link href="/categories" className="icon-btn" aria-label={t("الأقسام")} style={{ boxShadow: "none", background: "transparent" }}>
           <Icon name="grid" size={22} />
         </Link>
-        <img src="/icons/logo-horizontal.svg" alt={t("شغلات بنات")} style={{ height: 36, width: "auto" }} />
+        <Link href="/" className="home-logo"><img src="/icons/logo-horizontal.svg" alt={t("شغلات بنات")} /></Link>
         <Link href="/notifications" className="icon-btn" aria-label={t("الإشعارات")}>
           <Icon name="bell" />
           {unread > 0 && <span className="dot" />}

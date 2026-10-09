@@ -18,7 +18,7 @@ export default async function AboutPage({ searchParams }: { searchParams: Promis
       <div className="topbar">
         <Link href="/account" className="icon-btn" aria-label={t("رجوع")}><Icon name="back" stroke={2} /></Link>
         <h1 className="h-title">{t("شغلات بنات")}</h1>
-        <span style={{ width: 48 }} />
+        <Link href="/" className="ph-logo" aria-label="شغلات بنات"><img src="/icons/logo-mark.svg" alt="" /></Link>
       </div>
       <div className="seg" role="tablist">
         {TABS.map((tb) => (
