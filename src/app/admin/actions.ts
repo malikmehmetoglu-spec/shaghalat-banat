@@ -218,9 +218,9 @@ export async function receivePurchaseOrder(id: string): Promise<ActionResult> {
 // ───────── نقطة البيع ─────────
 export async function posSale(items: { variant_id: string; qty: number }[], payment: string, discount: number, phone: string, name = "", marketing = false): Promise<ActionResult & { number?: string; total?: number }> {
   const { sb } = await requireStaff();
-  if (phone.replace(/\D/g, "").length < 9) return fail("رقم هاتف العميلة مطلوب");
-  if (!name.trim()) return fail("اسم العميلة مطلوب");
-  const { data, error } = await sb.rpc("pos_sale_v2", { items, payment, discount_amount: discount, customer_phone_in: phone, customer_name_in: name, marketing_in: marketing });
+  const digits = phone.replace(/\D/g, "");
+  if (digits && digits.length < 9) return fail("رقم الهاتف غير مكتمل");
+  const { data, error } = await sb.rpc("pos_sale_v2", { items, payment, discount_amount: discount, customer_phone_in: digits ? phone : null, customer_name_in: digits ? name : null, marketing_in: digits ? marketing : false });
   if (error || !data) return fail(errMsg(error));
   revalidatePath("/admin");
   revalidatePath("/admin/customers");

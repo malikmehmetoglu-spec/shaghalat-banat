@@ -17,6 +17,7 @@ export function POS({ items, storeName, cashier, shop, shift }: { items: Item[];
   const [cname, setCname] = useState("");
   const [marketing, setMarketing] = useState(false);
   const [known, setKnown] = useState(false);
+  const [anon, setAnon] = useState(false);
   const [payment, setPayment] = useState<"cash" | "card">("cash");
   const [msg, setMsg] = useState<{ ok: boolean; message: string } | null>(null);
   const [receipt, setReceipt] = useState<{ number: string; total: number; lines: Line[]; discount: number; payment: string; at: string } | null>(null);
@@ -48,10 +49,10 @@ export function POS({ items, storeName, cashier, shop, shift }: { items: Item[];
 
   function checkout() {
     start(async () => {
-      const r = await posSale(cart.map((l) => ({ variant_id: l.id, qty: l.qty })), payment, discount, phone, cname, marketing);
+      const r = await posSale(cart.map((l) => ({ variant_id: l.id, qty: l.qty })), payment, discount, anon ? "" : phone, anon ? "" : cname, !anon && marketing);
       if (!r.ok) { setMsg(r); return; }
       setReceipt({ number: r.number!, total: r.total!, lines: cart, discount, payment, at: new Date().toISOString() });
-      setCart([]); setDiscount(0); setPhone(""); setCname(""); setMarketing(false); setKnown(false); setMsg(null);
+      setCart([]); setDiscount(0); setPhone(""); setCname(""); setMarketing(false); setKnown(false); setAnon(false); setMsg(null);
     });
   }
 
@@ -99,17 +100,23 @@ export function POS({ items, storeName, cashier, shop, shift }: { items: Item[];
             <div className="a-grid" style={{ gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
               <label className="a-field">خصم (ل.س)<input className="a-in" type="number" min="0" value={discount || ""} onChange={(e) => setDiscount(Math.max(0, Number(e.target.value)))} /></label>
             </div>
+            <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13.5, lineHeight: 1.5, cursor: "pointer" }}>
+              <input type="checkbox" checked={anon} onChange={(e) => setAnon(e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--magenta)" }} />
+              الزبونة لا ترغب بإعطاء بياناتها
+            </label>
+            {!anon && <>
             <div className="a-grid" style={{ gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
-              <label className="a-field">هاتف العميلة *<input className="a-in ltr" inputMode="tel" required value={phone} placeholder="09xxxxxxxx"
+              <label className="a-field">هاتف العميلة<input className="a-in ltr" inputMode="tel" value={phone} placeholder="09xxxxxxxx"
                 onChange={(e) => { setPhone(e.target.value); setKnown(false); }}
                 onBlur={async () => { const c = await lookupCustomer(phone); if (c) { setKnown(true); if (c.name && !cname) setCname(c.name); if (c.marketing) setMarketing(true); } }} /></label>
-              <label className="a-field">اسم العميلة *<input className="a-in" required value={cname} onChange={(e) => setCname(e.target.value)} /></label>
+              <label className="a-field">اسم العميلة<input className="a-in" value={cname} onChange={(e) => setCname(e.target.value)} /></label>
             </div>
             {known && <span className="caption tone-success" style={{ marginTop: -6 }}>عميلة مسجّلة سابقاً ✓</span>}
             <label style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 12px", borderRadius: 14, background: marketing ? "rgba(214,3,127,.08)" : "var(--surface-admin)", cursor: "pointer", fontSize: 14, lineHeight: 1.5 }}>
               <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} style={{ width: 20, height: 20, accentColor: "var(--magenta)" }} />
               وافقت على إضافتها لقنوات ومجموعات العروض
             </label>
+            </>}
             <div style={{ display: "flex", gap: 8 }}>
               {(["cash", "card"] as const).map((p) => <button key={p} type="button" className={`a-chip${payment === p ? " on" : ""}`} onClick={() => setPayment(p)} style={{ flex: 1 }}>{p === "cash" ? "نقداً" : "بطاقة"}</button>)}
             </div>
@@ -117,7 +124,7 @@ export function POS({ items, storeName, cashier, shop, shift }: { items: Item[];
             {discount > 0 && <div className="kv"><span className="adm-sub">الخصم</span><span>−{price(discount)}</span></div>}
             <div className="kv" style={{ fontSize: 18 }}><b>الإجمالي</b><b style={{ color: "var(--magenta)" }}>{price(total)}</b></div>
             {msg && <span className={`a-flash ${msg.ok ? "tone-success" : "tone-danger"}`}>{msg.message}</span>}
-            <button className="btn" disabled={!cart.length || pending || phone.replace(/\D/g, "").length < 9 || !cname.trim()} onClick={checkout}>{pending ? "جارٍ التسجيل…" : "إتمام البيع"}</button>
+            <button className="btn" disabled={!cart.length || pending} onClick={checkout}>{pending ? "جارٍ التسجيل…" : "إتمام البيع"}</button>
           </div>
         </div>
       </div>

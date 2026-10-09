@@ -84,3 +84,16 @@ group by c.phone;
 -- تعبئة أولية من الحسابات والطلبات الموجودة
 select private.upsert_customer(phone, full_name, 'online', null) from public.profiles where role = 'customer' and phone is not null;
 update public.orders set customer_phone = customer_phone where customer_phone is not null or user_id is not null;
+
+-- بيانات العميلة اختيارية (بعض الزبونات لا يرغبن بإعطائها)
+create or replace function public.pos_sale_v2(items jsonb, payment public.payment_method, discount_amount numeric, customer_phone_in text, customer_name_in text, marketing_in boolean)
+returns public.orders language plpgsql security definer set search_path = public as $$
+declare o public.orders; ph text;
+begin
+  perform public.require_staff();
+  ph := private.norm_phone(customer_phone_in);
+  if ph is not null and length(ph) < 9 then raise exception 'رقم الهاتف غير مكتمل'; end if;
+  if ph is not null then perform private.upsert_customer(ph, customer_name_in, 'store', coalesce(marketing_in, false)); end if;
+  select * into o from public.pos_sale(items, payment, discount_amount, ph);
+  return o;
+end $$;
