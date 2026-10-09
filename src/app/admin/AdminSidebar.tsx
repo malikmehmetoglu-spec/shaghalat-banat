@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { AdminLogout } from "./AdminLogout";
@@ -43,8 +44,22 @@ const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean
 
 export function AdminSidebar({ name, role, roleKey }: { name: string; role: string; roleKey: string }) {
   const path = usePathname();
+  const [open, setOpen] = useState(false);
+  useEffect(() => { setOpen(false); }, [path]);                       // إغلاق القائمة بعد التنقل
+  useEffect(() => { document.body.style.overflow = open ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [open]);
+  const current = GROUPS.flatMap((g) => g.items).filter((it) => (it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/"))).sort((a, b) => b.href.length - a.href.length)[0];
   return (
-    <aside className="adm-side no-print">
+    <>
+    <header className="adm-mbar no-print">
+      <button type="button" className="adm-burger" onClick={() => setOpen(true)} aria-label="فتح القائمة" aria-expanded={open}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M4 7h16M4 12h16M4 17h10" /></svg>
+      </button>
+      <span className="adm-mbar-title">{current?.label ?? "لوحة الإدارة"}</span>
+      <Link href="/admin" aria-label="لوحة المؤشرات"><img src="/icons/logo-mark.svg" alt="" className="adm-mbar-logo" /></Link>
+    </header>
+    {open && <div className="adm-scrim no-print" onClick={() => setOpen(false)} aria-hidden />}
+    <aside className={`adm-side no-print${open ? " open" : ""}`}>
+      <button type="button" className="adm-close" onClick={() => setOpen(false)} aria-label="إغلاق القائمة">✕</button>
       <div className="adm-brand">
         <img src="/icons/logo-mark.svg" alt="" aria-hidden="true" className="adm-brand-mark" />
         <img src="/icons/logo-stacked.svg" alt="شغلات بنات" className="adm-brand-logo" />
@@ -75,5 +90,6 @@ export function AdminSidebar({ name, role, roleKey }: { name: string; role: stri
         </div>
       </div>
     </aside>
+    </>
   );
 }
