@@ -42,13 +42,13 @@ end $$;
 -- كل طلب: يوحّد رقم الهاتف (من الطلب أو من حساب العميلة) ويُسجّل العميلة
 create or replace function private.orders_customer()
 returns trigger language plpgsql security definer set search_path = public as $$
-declare pr record;
+declare p_phone text; p_name text;
 begin
-  if new.user_id is not null then select phone, full_name into pr from public.profiles where id = new.user_id; end if;
-  new.customer_phone := coalesce(private.norm_phone(new.customer_phone), private.norm_phone(pr.phone),
+  if new.user_id is not null then select phone, full_name into p_phone, p_name from public.profiles where id = new.user_id; end if;
+  new.customer_phone := coalesce(private.norm_phone(new.customer_phone), private.norm_phone(p_phone),
                                  private.norm_phone(new.address_snapshot->>'phone'));
   if new.customer_phone is not null and tg_op = 'INSERT' then
-    perform private.upsert_customer(new.customer_phone, coalesce(pr.full_name, new.address_snapshot->>'name', new.address_snapshot->>'full_name'),
+    perform private.upsert_customer(new.customer_phone, coalesce(p_name, new.address_snapshot->>'name', new.address_snapshot->>'full_name'),
       case when new.channel = 'store' then 'store' else 'online' end, null);
   end if;
   return new;
