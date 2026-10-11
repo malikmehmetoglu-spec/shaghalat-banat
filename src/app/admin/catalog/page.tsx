@@ -2,7 +2,7 @@ import { requireStaff } from "@/lib/admin";
 import { placeholder } from "@/lib/format";
 import { FormCard } from "../FormCard";
 import { saveBanner, saveCategory, saveStoreProfile } from "../actions";
-import { BannerControls, BannerImage, CategoryImage, CategoryToggle } from "./Controls";
+import { BannerControls, BannerImage, CategoryImage, CategoryToggle, EditCategory } from "./Controls";
 import { ImageUpload } from "../ImageUpload";
 
 export const metadata = { title: "الأقسام والبانرات" };
@@ -10,7 +10,7 @@ export const metadata = { title: "الأقسام والبانرات" };
 export default async function CatalogPage() {
   const { sb } = await requireStaff();
   const [{ data: cats }, { data: profileRow }, { data: banners }] = await Promise.all([
-    sb.from("categories").select("id,name,slug,image_url,is_visible,sort_order,products(count)").order("sort_order"),
+    sb.from("categories").select("id,name,name_en,slug,image_url,is_visible,sort_order,products(count)").order("sort_order"),
     sb.from("store_profile").select("whatsapp,facebook_url,instagram_url,tagline").eq("id", 1).maybeSingle(),
     sb.from("banners").select("id,kicker,title,link,image_url,is_active,sort_order").order("sort_order"),
   ]);
@@ -25,18 +25,21 @@ export default async function CatalogPage() {
           <div className="acard" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <h2 className="adm-h2">الأقسام</h2>
             {(cats ?? []).map((c: any) => (
-              <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 18, border: "1px solid var(--border-row)" }}>
+              <div key={c.id} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 18, border: "1px solid var(--border-row)" }}>
                 <span style={{ width: 44, height: 44, flexShrink: 0, borderRadius: "50%", background: c.image_url ? `url(${c.image_url}) center/cover` : placeholder(c.slug) }} />
                 <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>{c.name}</span>
                   <span className="caption">{c.products?.[0]?.count ?? 0} منتج · ترتيب {c.sort_order}{c.is_visible ? "" : " · مخفي"}</span>
                 </span>
-                <CategoryImage id={c.id} url={c.image_url} />
                 <CategoryToggle id={c.id} visible={c.is_visible} />
+                <div style={{ display: "flex", gap: 8, flexBasis: "100%", justifyContent: "flex-end", flexWrap: "wrap" }}>
+                  <CategoryImage id={c.id} url={c.image_url} />
+                  <EditCategory id={c.id} name={c.name} nameEn={c.name_en} sort={c.sort_order} />
+                </div>
               </div>
             ))}
           </div>
-          <FormCard title="قسم جديد" action={saveCategory} submitLabel="إضافة القسم">
+          <FormCard title="قسم جديد" action={saveCategory} submitLabel="حفظ القسم">
             <div className="a-grid" style={{ gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
               <label className="a-field">الاسم<input name="name" className="a-in" required /></label>
               <label className="a-field">الاسم بالإنجليزية<input name="name_en" className="a-in ltr" /></label>

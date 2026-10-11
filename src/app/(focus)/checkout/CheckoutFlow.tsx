@@ -18,7 +18,10 @@ const PAYMENTS = [
 ];
 const STEPS = ["العنوان", "الشحن", "الدفع"];
 
-export function CheckoutFlow({ addresses: initial, shipping }: { addresses: Address[]; shipping: Ship[] }) {
+const GKEY = "sb-guest-info";
+type Guest = { name: string; phone: string; city: string; street: string };
+
+export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { addresses: Address[]; shipping: Ship[]; guest?: boolean }) {
   const t = useT();
   const router = useRouter();
   const { lines, subtotal, clear, ready } = useCart();
@@ -31,6 +34,10 @@ export function CheckoutFlow({ addresses: initial, shipping }: { addresses: Addr
   const [coupon, setCoupon] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [g, setG] = useState<Guest>({ name: "", phone: "", city: "", street: "" });
+  useEffect(() => { if (guest) { try { const x = JSON.parse(localStorage.getItem(GKEY) || "null"); if (x) setG(x); } catch {} } }, [guest]);
+  const gDigits = g.phone.replace(/\D/g, "");
+  const guestValid = g.name.trim().length > 1 && gDigits.length >= 9 && g.city.trim() && g.street.trim();
 
   useEffect(() => {
     try { setCoupon(sessionStorage.getItem("sb-coupon")); } catch {}
@@ -44,6 +51,19 @@ export function CheckoutFlow({ addresses: initial, shipping }: { addresses: Addr
 
   async function placeOrder() {
     setBusy(true); setErr("");
+    if (guest) {
+      const { data, error } = await getBrowserClient().rpc("place_order_guest", {
+        items: lines.map((l) => ({ variant_id: l.variantId, qty: l.qty })),
+        cust_name: g.name, cust_phone: g.phone, city: g.city, street: g.street,
+        shipping_code: ship, payment: pay, coupon, note: null,
+      });
+      if (error || !data) { setBusy(false); setErr(error?.message?.replace(/^.*?:\s*/, "") || t("تعذّر إتمام الطلب، حاولي مجدداً")); return; }
+      try { localStorage.setItem(GKEY, JSON.stringify(g)); sessionStorage.removeItem("sb-coupon"); } catch {}
+      const d = data as { number: string; total: number };
+      clear();
+      router.replace(`/order-placed?n=${encodeURIComponent(d.number)}&t=${d.total}`);
+      return;
+    }
     const { data, error } = await getBrowserClient().rpc("place_order", {
       items: lines.map((l) => ({ variant_id: l.variantId, qty: l.qty })),
       address_id: addr,
@@ -63,6 +83,10 @@ export function CheckoutFlow({ addresses: initial, shipping }: { addresses: Addr
   }
 
   const next = () => {
+    if (step === 0 && guest) {
+      if (!guestValid) { setErr(t("أكملي الاسم ورقم الهاتف والعنوان")); return; }
+      setErr(""); setStep(1); return;
+    }
     if (step === 0 && !addr) { setErr(t("اختاري عنوان التوصيل أو أضيفي عنواناً")); return; }
     setErr(""); setStep((s) => Math.min(2, s + 1));
   };
@@ -88,7 +112,20 @@ export function CheckoutFlow({ addresses: initial, shipping }: { addresses: Addr
         ))}
       </ol>
 
-      {step === 0 && (
+      {step === 0 && guest && (
+        <section style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <h2 className="h-section">{t("بيانات التوصيل")}</h2>
+          <div className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+            <label className="field">{t("الاسم")}<input className="input" value={g.name} onChange={(e) => setG({ ...g, name: e.target.value })} autoComplete="name" /></label>
+            <label className="field">{t("رقم الهاتف (واتساب)")}<input className="input ltr" inputMode="tel" autoComplete="tel" placeholder="09xxxxxxxx" value={g.phone} onChange={(e) => setG({ ...g, phone: e.target.value })} style={{ textAlign: "left" }} /></label>
+            <label className="field">{t("المدينة")}<input className="input" value={g.city} onChange={(e) => setG({ ...g, city: e.target.value })} /></label>
+            <label className="field">{t("العنوان بالتفصيل")}<input className="input" placeholder={t("الحي، الشارع، البناء، الطابق")} value={g.street} onChange={(e) => setG({ ...g, street: e.target.value })} /></label>
+          </div>
+          <span className="caption" style={{ lineHeight: 1.7 }}>{t("سنتواصل معك على هذا الرقم لتأكيد الطلب.")}</span>
+        </section>
+      )}
+
+      {step === 0 && !guest && (
         <section style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <h2 className="h-section">{t("عنوان التوصيل")}</h2>
           {addresses.map((a) => (

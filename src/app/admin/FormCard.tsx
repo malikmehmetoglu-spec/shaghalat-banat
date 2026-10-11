@@ -16,7 +16,7 @@ export function FormCard({ title, action, submitLabel, children, resetOnSuccess 
       <h2 className="adm-h2">{title}</h2>
       {children}
       {state && <span className={`a-flash ${state.ok ? "tone-success" : "tone-danger"}`}>{state.message}</span>}
-      <button type="submit" className="btn" disabled={pending} style={{ alignSelf: "flex-start", minWidth: 140 }}>{pending ? "جارٍ الحفظ…" : submitLabel}</button>
+      <button type="submit" className="btn" disabled={pending} style={{ width: "100%", minHeight: 50 }}>{pending ? "جارٍ الحفظ…" : submitLabel}</button>
     </form>
   );
 }

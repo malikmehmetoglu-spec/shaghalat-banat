@@ -80,7 +80,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
               <span className={`pill tone-${ORDER_STATUS[sel.status].tone}`}>{ORDER_STATUS[sel.status].label}</span>
             </div>
             <div style={{ padding: 14, borderRadius: 18, background: "var(--surface-admin)", display: "flex", flexDirection: "column", gap: 6 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>{(sel as any).user?.full_name || "عميلة"}</span>
+              <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>{(sel as any).user?.full_name || (sel.address_snapshot as any)?.name || "عميلة"}</span>
               {((sel as any).user?.phone || sel.customer_phone) && <span className="caption ltr" style={{ textAlign: "right" }}>{(sel as any).user?.phone || sel.customer_phone}</span>}
               {(sel.address_snapshot as any) && <span className="caption" style={{ lineHeight: 1.7 }}>{(sel.address_snapshot as any).city}، {(sel.address_snapshot as any).street}{(sel.address_snapshot as any).recipient_phone ? ` · ${(sel.address_snapshot as any).recipient_phone}` : ""}</span>}
             </div>

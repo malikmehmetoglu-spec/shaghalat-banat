@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { canAccess } from "@/lib/access";
 
 /** يحدّث جلسة Supabase مع كل طلب، ويحمي الصفحات التي تحتاج تسجيل دخول. */
-const PROTECTED = ["/admin", "/checkout", "/orders", "/account", "/favorites", "/notifications"];
+const PROTECTED = ["/admin", "/orders", "/account", "/favorites", "/notifications"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });

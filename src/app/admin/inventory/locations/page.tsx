@@ -30,7 +30,7 @@ export default async function LocationsPage() {
                 <div className="kv" style={{ fontSize: 13, alignItems: "center" }}><span className="adm-sub">متاح للطلب أونلاين</span><LocationOnline id={l.id} on={l.sells_online} /></div>
                 <div style={{ display: "flex", gap: 8 }}>
                   <Link href={`/admin/inventory/count?loc=${l.id}`} className="btn soft" style={{ flex: 1 }}>جرد</Link>
-                  <Link href="/admin/inventory/moves" className="btn soft" style={{ flex: 1 }}>تحويل منه</Link>
+                  <Link href={`/admin/inventory/moves?from=${l.id}`} className="btn soft" style={{ flex: 1 }}>تحويل منه</Link>
                 </div>
                 {profile.role === "owner" && l.kind !== "store" && <DeleteLocation id={l.id} name={l.name} units={units} />}
               </div>

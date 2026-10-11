@@ -508,3 +508,39 @@ export async function deleteSale(orderId: string): Promise<ActionResult> {
   revalidatePath("/admin/finance", "layout"); revalidatePath("/admin/inventory", "layout");
   return ok(`تم حذف العملية #${data}`);
 }
+
+/** تحويل عدة قطع دفعة واحدة من موقع لآخر */
+export async function transferMany(from: string, to: string, items: { variant: string; qty: number }[], note: string): Promise<ActionResult> {
+  const { sb } = await requireStaff();
+  if (!from || !to) return fail("اختاري الموقعين");
+  if (from === to) return fail("اختاري موقعين مختلفين");
+  const list = items.filter((i) => i.qty > 0);
+  if (!list.length) return fail("حدّدي كمية لقطعة واحدة على الأقل");
+  let done = 0;
+  for (const it of list) {
+    const { error } = await sb.rpc("stock_transfer", { variant: it.variant, from_loc: from, to_loc: to, qty: it.qty, note: note || null });
+    if (error) { revalidatePath("/admin/inventory", "layout"); return fail(`${errMsg(error)}${done ? ` (تم تحويل ${done} قبل الخطأ)` : ""}`); }
+    done++;
+  }
+  revalidatePath("/admin/inventory", "layout"); revalidatePath("/admin/products"); revalidatePath("/admin/pos");
+  return ok(`تم تحويل ${list.reduce((s, i) => s + i.qty, 0)} قطعة بنجاح`);
+}
+
+export async function updateCategory(id: string, data: { name: string; name_en: string; sort_order: number }): Promise<ActionResult> {
+  const { sb } = await requireStaff();
+  if (!data.name.trim()) return fail("اسم القسم مطلوب");
+  const { error } = await sb.from("categories").update({ name: data.name.trim(), name_en: data.name_en.trim() || null, sort_order: Number(data.sort_order) || 99 }).eq("id", id);
+  if (error) return fail(errMsg(error));
+  revalidatePath("/admin/catalog"); revalidatePath("/", "layout");
+  return ok("تم حفظ القسم");
+}
+
+export async function removeCategory(id: string): Promise<ActionResult> {
+  const { sb } = await requireStaff();
+  const { count } = await sb.from("products").select("id", { count: "exact", head: true }).eq("category_id", id).is("archived_at", null);
+  if (count) return fail(`في هذا القسم ${count} منتج — انقليها لقسم آخر أولاً`);
+  const { error } = await sb.from("categories").delete().eq("id", id);
+  if (error) return fail(errMsg(error));
+  revalidatePath("/admin/catalog"); revalidatePath("/", "layout");
+  return ok("تم حذف القسم");
+}

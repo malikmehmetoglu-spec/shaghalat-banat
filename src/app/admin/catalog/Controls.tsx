@@ -1,6 +1,6 @@
 "use client";
 import { useOptimistic, useTransition } from "react";
-import { deleteBanner, setBannerImage, setCategoryImage, toggleBanner, toggleCategory } from "../actions";
+import { deleteBanner, removeCategory, setBannerImage, setCategoryImage, toggleBanner, toggleCategory, updateCategory } from "../actions";
 import { uploadImage } from "../ImageUpload";
 import { useRef, useState } from "react";
 import { Switch } from "../Switch";
@@ -40,3 +40,28 @@ function ChangeImage({ folder, url, save }: { folder: string; url: string | null
 }
 export const CategoryImage = ({ id, url }: { id: string; url: string | null }) => <ChangeImage folder="categories" url={url} save={(u) => setCategoryImage(id, u)} />;
 export const BannerImage = ({ id, url }: { id: string; url: string | null }) => <ChangeImage folder="banners" url={url} save={(u) => setBannerImage(id, u)} />;
+
+/** تعديل قسم موجود: الاسم والترتيب + حفظ / حذف */
+export function EditCategory({ id, name, nameEn, sort }: { id: string; name: string; nameEn: string | null; sort: number }) {
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState({ name, name_en: nameEn ?? "", sort_order: sort });
+  const [msg, setMsg] = useState<{ ok: boolean; message: string } | null>(null);
+  const [pending, start] = useTransition();
+  if (!open) return <button type="button" className="btn soft" onClick={() => setOpen(true)}>تعديل</button>;
+  return (
+    <div style={{ flexBasis: "100%", display: "flex", flexDirection: "column", gap: 10, paddingTop: 10, borderTop: "1px solid var(--border-row)" }}>
+      <div className="a-grid" style={{ gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
+        <label className="a-field">الاسم<input className="a-in" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></label>
+        <label className="a-field">بالإنجليزية<input className="a-in ltr" value={f.name_en} onChange={(e) => setF({ ...f, name_en: e.target.value })} /></label>
+        <label className="a-field">الترتيب<input className="a-in" type="number" value={f.sort_order} onChange={(e) => setF({ ...f, sort_order: Number(e.target.value) })} /></label>
+      </div>
+      {msg && <span className={`a-flash ${msg.ok ? "tone-success" : "tone-danger"}`}>{msg.message}</span>}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button type="button" className="btn" disabled={pending} onClick={() => start(async () => { const r = await updateCategory(id, f); setMsg(r); if (r.ok) setOpen(false); })}>{pending ? "جارٍ الحفظ…" : "حفظ"}</button>
+        <button type="button" className="btn soft" disabled={pending} onClick={() => setOpen(false)}>إلغاء</button>
+        <button type="button" className="btn soft" disabled={pending} style={{ color: "#c62828", marginInlineStart: "auto" }}
+          onClick={() => confirm(`حذف قسم «${name}»؟`) && start(async () => setMsg(await removeCategory(id)))}>حذف القسم</button>
+      </div>
+    </div>
+  );
+}
