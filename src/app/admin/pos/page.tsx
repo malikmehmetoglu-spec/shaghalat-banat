@@ -15,6 +15,13 @@ export default async function PosPage() {
   const sh = (shiftRows as any[] | null)?.[0];
   const store = locs.find((l) => l.kind === "store");
   const items = all.map((v) => ({ id: v.id, name: v.product, label: variantLabel(v), sku: v.sku, barcode: v.barcode, price: v.price, image: v.image, slug: v.slug, stock: store ? cell(v, store.id).on_hand : 0 }));
+  if (!store) return (
+    <div className="acard" style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
+      <h1 className="adm-h1">نقطة البيع</h1>
+      <span className="caption" style={{ lineHeight: 1.8 }}>لا يوجد محل بعد. أضيفي موقعاً من نوع «محل» أولاً، ثم أضيفي المنتجات وكمياتها، وبعدها تعمل نقطة البيع.</span>
+      <a className="btn" href="/admin/inventory/locations">إضافة محل</a>
+    </div>
+  );
   return (
     <POS items={items} storeName={store?.name ?? "المحل"} cashier={profile.full_name || ""}
       shop={{ address: settings?.store_address ?? "", phone: settings?.store_phone ?? "", footer: settings?.invoice_footer ?? "شكراً لتسوّقك من شغلات بنات", taxNumber: settings?.tax_number ?? "" }}
