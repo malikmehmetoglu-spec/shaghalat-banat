@@ -30,7 +30,7 @@ export function FxCard({ rate, auto, updatedAt, source, error, canEdit }: { rate
       {canEdit && (
         <>
           <div style={{ display: "flex", gap: 8 }}>
-            <button type="button" {...chip(mode)} onClick={() => setMode(true)}>تلقائي (كل ساعة)</button>
+            <button type="button" {...chip(mode)} onClick={() => setMode(true)}>تلقائي من «الليرة اليوم» (كل ساعة)</button>
             <button type="button" {...chip(!mode)} onClick={() => setMode(false)}>يدوي</button>
           </div>
           {mode ? (
