@@ -15,9 +15,13 @@ async function compress(file: File, max = 1600): Promise<Blob> {
 
 export async function uploadImage(file: File, folder: string): Promise<string> {
   const blob = await compress(file);
-  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
+  const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
+  const path = `${folder}/${name}`;
   const sb = getBrowserClient();
-  const { error } = await sb.storage.from("media").upload(path, blob, { contentType: "image/webp", cacheControl: "31536000" });
+  const [{ error }] = await Promise.all([
+    sb.storage.from("media").upload(path, blob, { contentType: "image/webp", cacheControl: "31536000" }),
+    compress(file, 480).then((t) => sb.storage.from("media").upload(`${folder}/t_${name}`, t, { contentType: "image/webp", cacheControl: "31536000" })),
+  ]);
   if (error) throw error;
   return sb.storage.from("media").getPublicUrl(path).data.publicUrl;
 }

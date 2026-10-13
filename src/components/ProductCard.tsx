@@ -3,6 +3,7 @@ import Link from "next/link";
 import { placeholder, price } from "@/lib/format";
 import type { Product } from "@/lib/types";
 import { FavButton } from "./FavButton";
+import { Pic } from "./Pic";
 import { useT } from "@/components/LangProvider";
 
 /** بطاقة المنتج: الصورة تملأ البطاقة، ولوح زجاجي شفاف فوقها فيه الاسم والسعر والتقييم */
@@ -12,8 +13,8 @@ export function ProductCard({ p, isFav = false }: { p: Product; isFav?: boolean;
   const off = p.compare_at_price && Number(p.compare_at_price) > Number(p.price);
   return (
     <div className="pc">
-      <div className="pc-img" style={{ background: img ? `url(${img}) center/cover` : placeholder(p.slug) }}>
-        {!img && <span className="ph">{t("[صورة المنتج]")}</span>}
+      <div className="pc-img" style={{ background: placeholder(p.slug) }}>
+        {img ? <Pic src={img} alt="" /> : <span className="ph">{t("[صورة المنتج]")}</span>}
         {p.tag && <span className="tag">{p.tag}</span>}
         <FavButton productId={p.id} initial={isFav} />
         <div className="pc-glass">

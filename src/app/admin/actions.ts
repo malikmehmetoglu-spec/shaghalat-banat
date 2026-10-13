@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { errMsg, requireStaff } from "@/lib/admin";
 import { audienceSubs, sendToSubs } from "@/lib/push";
@@ -16,8 +16,8 @@ export async function setOrderStatus(orderId: string, status: string, note?: str
   const { error } = await sb.rpc("admin_set_order_status", { order_id: orderId, new_status: status, note: note || null });
   if (error) return fail(errMsg(error));
   await notifyOrderStatus(sb, orderId, status).catch(() => {});
-  revalidatePath("/admin/orders");
-  revalidatePath("/admin");
+  revalidateTag("catalog"); revalidatePath("/admin/orders");
+  revalidateTag("catalog"); revalidatePath("/admin");
   return ok("تم تحديث حالة الطلب");
 }
 
@@ -53,7 +53,7 @@ export async function sendCampaign(_: ActionResult | null, fd: FormData): Promis
   if (when) {
     const { error } = await sb.from("push_campaigns").insert({ title, body, link, audience, scheduled_at: new Date(when).toISOString(), created_by: profile.id });
     if (error) return fail(errMsg(error, "تعذّر الحفظ — تأكدي من تنفيذ ملف 0006_push.sql"));
-    revalidatePath("/admin/push");
+    revalidateTag("catalog"); revalidatePath("/admin/push");
     return ok("تمت جدولة الإشعار");
   }
   const subs = await audienceSubs(sb, audience, profile.id);
@@ -66,7 +66,7 @@ export async function sendCampaign(_: ActionResult | null, fd: FormData): Promis
       if (ids.length) await sb.from("notifications").insert(ids.map((user_id) => ({ user_id, kind: "offer", title, body })));
     }
   }
-  revalidatePath("/admin/push");
+  revalidateTag("catalog"); revalidatePath("/admin/push");
   if (!subs.length) return fail(audience === "test" ? "لا يوجد اشتراك لجهازك — فعّلي الإشعارات من صفحة حسابي في التطبيق أولاً" : "لا يوجد مشتركون في هذا الجمهور بعد");
   return ok(`تم الإرسال إلى ${r.sent} جهاز${r.failed ? ` · فشل ${r.failed}` : ""}`);
 }
@@ -106,20 +106,20 @@ export async function saveProduct(_: ActionResult | null, fd: FormData): Promise
     if (error) return fail(errMsg(error));
     await applyVariantsBulk(sb, id, str(fd, "variants_json"), str(fd, "stock_location"));
     revalidatePath(`/admin/products/${id}`);
-    revalidatePath("/admin/products");
+    revalidateTag("catalog"); revalidatePath("/admin/products");
     return ok("تم حفظ المنتج");
   }
   const { data, error } = await sb.from("products").insert({ ...row, slug: slugify(str(fd, "name_en") || name) }).select("id").single();
   if (error || !data) return fail(errMsg(error));
   await applyVariantsBulk(sb, data.id, str(fd, "variants_json"), str(fd, "stock_location"));
-  revalidatePath("/admin/products");
+  revalidateTag("catalog"); revalidatePath("/admin/products");
   redirect(`/admin/products/${data.id}?created=1`);
 }
 
 export async function toggleProductOnline(id: string, value: boolean) {
   const { sb } = await requireStaff();
   await sb.from("products").update({ is_online: value }).eq("id", id);
-  revalidatePath("/admin/products");
+  revalidateTag("catalog"); revalidatePath("/admin/products");
 }
 
 export async function addVariant(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
@@ -153,8 +153,8 @@ export async function setStock(variantId: string, locationId: string, qty: numbe
   const { sb } = await requireStaff();
   const { error } = await sb.rpc("stock_set", { variant: variantId, loc: locationId, new_qty: qty, reason, note: note || null });
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/inventory");
-  revalidatePath("/admin/products", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory");
+  revalidateTag("catalog"); revalidatePath("/admin/products", "layout");
   return ok("تم تحديث الكمية");
 }
 
@@ -169,8 +169,8 @@ export async function transferStock(_: ActionResult | null, fd: FormData): Promi
     note: str(fd, "note") || null,
   });
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/inventory/moves");
-  revalidatePath("/admin/inventory");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory/moves");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory");
   return ok("تم التحويل بنجاح");
 }
 
@@ -182,7 +182,7 @@ export async function applyCount(locationId: string, counts: { variantId: string
     if (error) return fail(errMsg(error));
     if (data) changed++;
   }
-  revalidatePath("/admin/inventory");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory");
   return ok(changed ? `تم اعتماد الجرد وتسجيل ${changed} تسويات` : "الجرد مطابق، لا توجد فروقات");
 }
 
@@ -193,7 +193,7 @@ export async function addSupplier(_: ActionResult | null, fd: FormData): Promise
   if (!name) return fail("اسم المورد مطلوب");
   const { error } = await sb.from("suppliers").insert({ name, category: str(fd, "category") || null, phone: str(fd, "phone") || null, lead_days: numOrNull(str(fd, "lead_days")) });
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/inventory/suppliers");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory/suppliers");
   return ok("تمت إضافة المورد");
 }
 
@@ -204,7 +204,7 @@ export async function createPurchaseOrder(supplierId: string, locationId: string
   if (error || !po) return fail(errMsg(error));
   const { error: e2 } = await sb.from("po_items").insert(items.map((i) => ({ po_id: po.id, variant_id: i.variantId, qty: i.qty, unit_cost: i.cost })));
   if (e2) return fail(errMsg(e2));
-  revalidatePath("/admin/inventory/suppliers");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory/suppliers");
   return { ...ok(`تم إنشاء أمر الشراء ${po.number}`), id: po.id };
 }
 
@@ -212,8 +212,8 @@ export async function receivePurchaseOrder(id: string): Promise<ActionResult> {
   const { sb } = await requireStaff();
   const { error } = await sb.rpc("receive_purchase_order", { po: id });
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/inventory/suppliers");
-  revalidatePath("/admin/inventory");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory/suppliers");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory");
   return ok("تم استلام البضاعة وإضافتها للمخزون");
 }
 
@@ -224,8 +224,8 @@ export async function posSale(items: { variant_id: string; qty: number }[], paym
   if (digits && digits.length < 9) return fail("رقم الهاتف غير مكتمل");
   const { data, error } = await sb.rpc("pos_sale_v2", { items, payment, discount_amount: discount, customer_phone_in: digits ? phone : null, customer_name_in: digits ? name : null, marketing_in: digits ? marketing : false });
   if (error || !data) return fail(errMsg(error));
-  revalidatePath("/admin");
-  revalidatePath("/admin/customers");
+  revalidateTag("catalog"); revalidatePath("/admin");
+  revalidateTag("catalog"); revalidatePath("/admin/customers");
   return { ...ok("تمت عملية البيع"), number: (data as { number: string }).number, total: Number((data as { total: number }).total) };
 }
 
@@ -237,14 +237,14 @@ export async function saveCategory(_: ActionResult | null, fd: FormData): Promis
   const slug = str(fd, "slug") || slugify(str(fd, "name_en") || name);
   const { error } = await sb.from("categories").insert({ name, name_en: str(fd, "name_en") || null, slug, image_url: str(fd, "image_url") || null, sort_order: Number(str(fd, "sort_order") || 99) });
   if (error) return fail(error.code === "23505" ? "الرابط المختصر مستخدم مسبقاً" : errMsg(error));
-  revalidatePath("/admin/catalog");
+  revalidateTag("catalog"); revalidatePath("/admin/catalog");
   return ok("تمت إضافة القسم");
 }
 
 export async function toggleCategory(id: string, visible: boolean) {
   const { sb } = await requireStaff();
   await sb.from("categories").update({ is_visible: visible }).eq("id", id);
-  revalidatePath("/admin/catalog");
+  revalidateTag("catalog"); revalidatePath("/admin/catalog");
 }
 
 export async function saveBanner(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
@@ -253,20 +253,20 @@ export async function saveBanner(_: ActionResult | null, fd: FormData): Promise<
   if (!title) return fail("عنوان البانر مطلوب");
   const { error } = await sb.from("banners").insert({ title, kicker: str(fd, "kicker") || null, link: str(fd, "link") || null, image_url: str(fd, "image_url") || null, sort_order: Number(str(fd, "sort_order") || 0) });
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/catalog");
+  revalidateTag("catalog"); revalidatePath("/admin/catalog");
   return ok("تمت إضافة البانر");
 }
 
 export async function toggleBanner(id: string, active: boolean) {
   const { sb } = await requireStaff();
   await sb.from("banners").update({ is_active: active }).eq("id", id);
-  revalidatePath("/admin/catalog");
+  revalidateTag("catalog"); revalidatePath("/admin/catalog");
 }
 
 export async function deleteBanner(id: string) {
   const { sb } = await requireStaff();
   await sb.from("banners").delete().eq("id", id);
-  revalidatePath("/admin/catalog");
+  revalidateTag("catalog"); revalidatePath("/admin/catalog");
 }
 
 export async function saveCoupon(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
@@ -285,14 +285,14 @@ export async function saveCoupon(_: ActionResult | null, fd: FormData): Promise<
     channel: str(fd, "channel") || "all",
   });
   if (error) return fail(error.code === "23505" ? "هذا الكود موجود مسبقاً" : errMsg(error));
-  revalidatePath("/admin/coupons");
+  revalidateTag("catalog"); revalidatePath("/admin/coupons");
   return ok(`تم إنشاء الكوبون ${code}`);
 }
 
 export async function toggleCoupon(code: string, active: boolean) {
   const { sb } = await requireStaff();
   await sb.from("coupons").update({ is_active: active }).eq("code", code);
-  revalidatePath("/admin/coupons");
+  revalidateTag("catalog"); revalidatePath("/admin/coupons");
 }
 
 // ───────── الموظفون ─────────
@@ -308,7 +308,7 @@ export async function setRole(_: ActionResult | null, fd: FormData): Promise<Act
   const { data, error } = await sb.from("profiles").update({ role }).in("phone", [digits, "+" + digits]).select("id");
   if (error) return fail(errMsg(error));
   if (!data?.length) return fail("لم نجد حساباً بهذا الرقم — يجب أن تسجّل الموظفة دخولها برقم هاتفها مرة أولاً");
-  revalidatePath("/admin/staff");
+  revalidateTag("catalog"); revalidatePath("/admin/staff");
   return ok("تم تحديث الدور");
 }
 
@@ -316,7 +316,7 @@ export async function setRole(_: ActionResult | null, fd: FormData): Promise<Act
 export async function setReturnStatus(id: string, status: string) {
   const { sb } = await requireStaff();
   await sb.from("return_requests").update({ status }).eq("id", id);
-  revalidatePath("/admin/returns");
+  revalidateTag("catalog"); revalidatePath("/admin/returns");
 }
 
 export async function saveLocation(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
@@ -325,14 +325,14 @@ export async function saveLocation(_: ActionResult | null, fd: FormData): Promis
   if (!name) return fail("اسم الموقع مطلوب");
   const { error } = await sb.from("locations").insert({ name, kind: str(fd, "kind") || "warehouse", address: str(fd, "address") || null, sells_online: fd.get("sells_online") === "on" });
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/inventory/locations");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory/locations");
   return ok("تمت إضافة الموقع");
 }
 
 export async function toggleLocationOnline(id: string, value: boolean) {
   const { sb } = await requireStaff();
   await sb.from("locations").update({ sells_online: value }).eq("id", id);
-  revalidatePath("/admin/inventory/locations");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory/locations");
 }
 
 // ───────── حسابات الموظفين (اسم مستخدم + كلمة مرور) ─────────
@@ -343,7 +343,7 @@ export async function createStaff(_: ActionResult | null, fd: FormData): Promise
   if (!/^[a-z0-9._@-]{3,}$/.test(login)) return fail("اسم المستخدم بأحرف إنجليزية أو أرقام (3 أحرف على الأقل)");
   const { error } = await sb.rpc("admin_create_staff", { p_login: login, p_password: str(fd, "password"), p_name: str(fd, "name"), p_role: str(fd, "role") });
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/staff");
+  revalidateTag("catalog"); revalidatePath("/admin/staff");
   return ok(`تم إنشاء الحساب — يدخل بـ ${login.includes("@") ? login : login + "@shaghalat-banat.com"} أو باسم المستخدم فقط`);
 }
 
@@ -353,7 +353,7 @@ export async function updateStaffRole(id: string, role: string): Promise<ActionR
   if (id === profile.id) return fail("لا يمكنك تغيير دورك بنفسك");
   const { error } = await sb.from("profiles").update({ role }).eq("id", id);
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/staff");
+  revalidateTag("catalog"); revalidatePath("/admin/staff");
   return ok("تم تحديث الدور");
 }
 
@@ -361,7 +361,7 @@ export async function setStaffActive(id: string, active: boolean): Promise<Actio
   const { sb } = await requireStaff();
   const { error } = await sb.rpc("admin_set_staff_active", { p_user: id, p_active: active });
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/staff");
+  revalidateTag("catalog"); revalidatePath("/admin/staff");
   return ok(active ? "تم تفعيل الحساب" : "تم إيقاف الحساب");
 }
 
@@ -376,12 +376,12 @@ export async function setStaffPassword(id: string, password: string): Promise<Ac
 export async function setCategoryImage(id: string, url: string) {
   const { sb } = await requireStaff();
   await sb.from("categories").update({ image_url: url }).eq("id", id);
-  revalidatePath("/admin/catalog"); revalidatePath("/", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/catalog"); revalidateTag("catalog"); revalidatePath("/", "layout");
 }
 export async function setBannerImage(id: string, url: string) {
   const { sb } = await requireStaff();
   await sb.from("banners").update({ image_url: url }).eq("id", id);
-  revalidatePath("/admin/catalog"); revalidatePath("/", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/catalog"); revalidateTag("catalog"); revalidatePath("/", "layout");
 }
 
 // ───────── إضافة ألوان ومقاسات وكميات دفعة واحدة ─────────
@@ -425,8 +425,8 @@ export async function addStock(variantId: string, locationId: string, delta: num
   const next = (data?.on_hand ?? 0) + Math.floor(delta);
   const { error } = await sb.rpc("stock_set", { variant: variantId, loc: locationId, new_qty: next, reason: "in", note: "إضافة بضاعة" });
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/inventory");
-  revalidatePath("/admin/products", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory");
+  revalidateTag("catalog"); revalidatePath("/admin/products", "layout");
   return { ...ok(`تمت إضافة ${Math.floor(delta)} قطعة — المجموع الآن ${next}`), qty: next };
 }
 
@@ -436,8 +436,8 @@ export async function archiveProduct(id: string): Promise<ActionResult> {
   if (profile.role !== "owner") return fail("حذف المنتجات متاح للمدير العام فقط");
   const { error } = await sb.from("products").update({ archived_at: new Date().toISOString(), is_online: false, is_in_store: false }).eq("id", id);
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/products", "layout");
-  revalidatePath("/", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/products", "layout");
+  revalidateTag("catalog"); revalidatePath("/", "layout");
   return ok("تم حذف المنتج");
 }
 
@@ -453,7 +453,7 @@ export async function saveStoreProfile(_: ActionResult | null, fd: FormData): Pr
     updated_at: new Date().toISOString(),
   }).eq("id", 1);
   if (error) return fail(errMsg(error));
-  revalidatePath("/qr");
+  revalidateTag("catalog"); revalidatePath("/qr");
   return ok("تم حفظ روابط التواصل");
 }
 
@@ -467,7 +467,7 @@ export async function recordStoreReturn(input: { items: { variant: string; qty: 
     p_refund_from: input.refundFrom, p_reason: input.reason, p_phone: input.phone || null,
   });
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/returns"); revalidatePath("/admin/products"); revalidatePath("/admin/inventory"); revalidatePath("/admin/pos");
+  revalidateTag("catalog"); revalidatePath("/admin/returns"); revalidateTag("catalog"); revalidatePath("/admin/products"); revalidateTag("catalog"); revalidatePath("/admin/inventory"); revalidateTag("catalog"); revalidatePath("/admin/pos");
   return ok(`تم تسجيل المرتجع ${data} وأُعيدت القطع إلى المخزون`);
 }
 
@@ -487,7 +487,7 @@ export async function deleteCustomer(phone: string): Promise<ActionResult> {
   const { sb } = await requireStaff();
   const { error } = await sb.from("customers").delete().eq("phone", phone);
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/customers");
+  revalidateTag("catalog"); revalidatePath("/admin/customers");
   return ok("تم حذف العميلة");
 }
 
@@ -496,7 +496,7 @@ export async function archiveLocation(id: string): Promise<ActionResult> {
   if (profile.role !== "owner") return fail("حذف المستودع متاح للمدير فقط");
   const { error } = await sb.rpc("archive_location", { p_loc: id });
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/inventory", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory", "layout");
   return ok("تم حذف المستودع");
 }
 
@@ -507,7 +507,7 @@ export async function deleteSale(orderId: string): Promise<ActionResult> {
   const { data, error } = await sb.rpc("delete_sale", { p_order: orderId });
   if (error) return fail(errMsg(error));
   for (const p of ["/admin", "/admin/orders", "/admin/customers", "/admin/products", "/admin/pos"]) revalidatePath(p);
-  revalidatePath("/admin/finance", "layout"); revalidatePath("/admin/inventory", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/finance", "layout"); revalidateTag("catalog"); revalidatePath("/admin/inventory", "layout");
   return ok(`تم حذف العملية #${data}`);
 }
 
@@ -521,10 +521,10 @@ export async function transferMany(from: string, to: string, items: { variant: s
   let done = 0;
   for (const it of list) {
     const { error } = await sb.rpc("stock_transfer", { variant: it.variant, from_loc: from, to_loc: to, qty: it.qty, note: note || null });
-    if (error) { revalidatePath("/admin/inventory", "layout"); return fail(`${errMsg(error)}${done ? ` (تم تحويل ${done} قبل الخطأ)` : ""}`); }
+    if (error) { revalidateTag("catalog"); revalidatePath("/admin/inventory", "layout"); return fail(`${errMsg(error)}${done ? ` (تم تحويل ${done} قبل الخطأ)` : ""}`); }
     done++;
   }
-  revalidatePath("/admin/inventory", "layout"); revalidatePath("/admin/products"); revalidatePath("/admin/pos");
+  revalidateTag("catalog"); revalidatePath("/admin/inventory", "layout"); revalidateTag("catalog"); revalidatePath("/admin/products"); revalidateTag("catalog"); revalidatePath("/admin/pos");
   return ok(`تم تحويل ${list.reduce((s, i) => s + i.qty, 0)} قطعة بنجاح`);
 }
 
@@ -533,7 +533,7 @@ export async function updateCategory(id: string, data: { name: string; name_en: 
   if (!data.name.trim()) return fail("اسم القسم مطلوب");
   const { error } = await sb.from("categories").update({ name: data.name.trim(), name_en: data.name_en.trim() || null, sort_order: Number(data.sort_order) || 99 }).eq("id", id);
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/catalog"); revalidatePath("/", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/catalog"); revalidateTag("catalog"); revalidatePath("/", "layout");
   return ok("تم حفظ القسم");
 }
 
@@ -543,7 +543,7 @@ export async function removeCategory(id: string): Promise<ActionResult> {
   if (count) return fail(`في هذا القسم ${count} منتج — انقليها لقسم آخر أولاً`);
   const { error } = await sb.from("categories").delete().eq("id", id);
   if (error) return fail(errMsg(error));
-  revalidatePath("/admin/catalog"); revalidatePath("/", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/catalog"); revalidateTag("catalog"); revalidatePath("/", "layout");
   return ok("تم حذف القسم");
 }
 
@@ -554,6 +554,6 @@ export async function setFxRate(rate: number, auto: boolean): Promise<ActionResu
   const { data, error } = await sb.rpc("fx_set", { p_rate: auto ? null : rate, p_auto: auto });
   if (error) return fail(errMsg(error));
   if (auto && data == null) return fail("تعذّر جلب السعر من الإنترنت الآن، سيُعاد المحاولة تلقائياً كل ساعة");
-  revalidatePath("/", "layout");
+  revalidateTag("catalog"); revalidatePath("/", "layout");
   return ok(`تم اعتماد سعر الدولار ${Number(data).toLocaleString("en-US", { maximumFractionDigits: 2 })} ل.س وتحديث أسعار المنتجات`);
 }

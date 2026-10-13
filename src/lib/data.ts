@@ -1,4 +1,6 @@
+import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { publicClient } from "@/lib/supabase/public";
 import { getLang } from "@/lib/i18n/server";
 import type { Category, Product, ProductWithVariants } from "@/lib/types";
 
@@ -10,16 +12,30 @@ async function localize<T extends { name: string; name_en?: string | null }>(row
   return rows.map((r) => (r.name_en ? { ...r, name: r.name_en } : r));
 }
 
+/** تخزين مؤقت للبيانات العامة: تُقرأ من قاعدة البيانات مرة كل فترة لا مع كل زيارة */
+const cached = <T>(key: string[], fn: () => Promise<T>, revalidate = 120) =>
+  unstable_cache(fn, key, { revalidate, tags: ["catalog"] })();
+
 export async function getCategories(): Promise<(Category & { count: number })[]> {
-  const sb = await createClient();
-  const { data } = await sb.from("categories").select("id,slug,name,name_en,image_url,sort_order,products(count)").order("sort_order");
-  return localize((data ?? []).map((c: any) => ({ ...c, count: c.products?.[0]?.count ?? 0 })));
+  const data = await cached(["cats"], async () => {
+    const { data } = await publicClient().from("categories").select("id,slug,name,name_en,image_url,sort_order,products(count)").eq("is_visible", true).order("sort_order");
+    return (data ?? []).map((c: any) => ({ ...c, count: c.products?.[0]?.count ?? 0 }));
+  });
+  return localize(data);
+}
+
+export async function getBanners() {
+  return cached(["banners"], async () => {
+    const { data } = await publicClient().from("banners").select("id,kicker,title,link,image_url").eq("is_active", true).order("sort_order");
+    return data ?? [];
+  });
 }
 
 export type SortKey = "new" | "best" | "price_asc" | "price_desc";
 
 export async function getProducts(opts: { categorySlug?: string; sort?: SortKey; q?: string; limit?: number } = {}): Promise<Product[]> {
-  const sb = await createClient();
+  const data = await cached(["products", JSON.stringify(opts)], async () => {
+  const sb = publicClient();
   let query = sb.from("products").select(opts.categorySlug ? `${PRODUCT_COLS},categories!inner(slug)` : PRODUCT_COLS).is("archived_at", null);
   if (opts.categorySlug) query = query.eq("categories.slug", opts.categorySlug);
   if (opts.q) {
@@ -34,11 +50,14 @@ export async function getProducts(opts: { categorySlug?: string; sort?: SortKey;
   }
   if (opts.limit) query = query.limit(opts.limit);
   const { data } = await query;
-  return localize((data ?? []) as unknown as Product[]);
+  return (data ?? []) as unknown as Product[];
+  });
+  return localize(data);
 }
 
 export async function getProduct(slug: string): Promise<ProductWithVariants | null> {
-  const sb = await createClient();
+  const data = await cached(["product", slug], async () => {
+  const sb = publicClient();
   const { data } = await sb
     .from("products")
     .select(`${PRODUCT_COLS},product_variants(id,sku,size,color_name,color_hex,price_override)`)
@@ -49,11 +68,14 @@ export async function getProduct(slug: string): Promise<ProductWithVariants | nu
   const ids = (data as any).product_variants.map((v: any) => v.id);
   const { data: avail } = await sb.from("variant_availability").select("variant_id,online_available").in("variant_id", ids);
   const map = new Map((avail ?? []).map((a: any) => [a.variant_id, a.online_available]));
-  const [loc] = await localize([data as any]);
   return {
-    ...loc,
+    ...(data as any),
     product_variants: (data as any).product_variants.map((v: any) => ({ ...v, available: map.get(v.id) ?? 0 })),
   };
+  }, 60);
+  if (!data) return null;
+  const [loc] = await localize([data as any]);
+  return { ...data, ...loc };
 }
 
 export async function getUser() {

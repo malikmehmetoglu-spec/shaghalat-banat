@@ -1,22 +1,21 @@
+import { Pic } from "@/components/Pic";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { ProductCard } from "@/components/ProductCard";
 import { SearchBar } from "@/components/SearchBar";
-import { getCategories, getFavoriteIds, getProducts, getUnreadCount } from "@/lib/data";
-import { createClient } from "@/lib/supabase/server";
+import { getBanners, getCategories, getFavoriteIds, getProducts, getUnreadCount } from "@/lib/data";
 import { placeholder } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 
 export default async function Home() {
   const t = await getT();
-  const sb = await createClient();
   const [cats, products, favs, unread, banners] = await Promise.all([
     getCategories(),
     getProducts({ sort: "new", limit: 8 }),
     getFavoriteIds(),
     getUnreadCount(),
-    sb.from("banners").select("id,kicker,title,link,image_url").eq("is_active", true).order("sort_order"),
+    getBanners(),
   ]);
 
   return (
@@ -34,15 +33,15 @@ export default async function Home() {
 
       <div className="m-only"><SearchBar /></div>
 
-      <HeroCarousel banners={banners.data ?? []} fallbackTitle={t("كل ما تحبّه البنات في مكان واحد")} />
+      <HeroCarousel banners={banners} fallbackTitle={t("كل ما تحبّه البنات في مكان واحد")} />
 
       <section className="sec">
         <h2 className="sec-title">{t("تسوّقي حسب القسم")}</h2>
         <div className="cat-row scr">
           {cats.map((c) => (
             <Link key={c.id} href={`/c/${c.slug}`} className="cat-tile">
-              <span className="arch cat-arch" style={{ background: c.image_url ? `url(${c.image_url}) center/cover` : placeholder(c.slug) }}>
-                {!c.image_url && <span className="cat-letter">{c.name[0]}</span>}
+              <span className="arch cat-arch" style={{ background: placeholder(c.slug) }}>
+                {c.image_url ? <Pic src={c.image_url} /> : <span className="cat-letter">{c.name[0]}</span>}
               </span>
               <span className="cat-name">{c.name}</span>
             </Link>

@@ -1,3 +1,4 @@
+import { Pic } from "@/components/Pic";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { CartBadgeLink } from "@/components/CartBadgeLink";
@@ -29,8 +30,8 @@ export default async function CategoriesPage() {
       <div className="cat-grid">
         {cats.map((c) => (
           <Link key={c.id} href={`/c/${c.slug}`} className="cat-card">
-            <span className="arch cat-card-arch" style={{ background: c.image_url ? `url(${c.image_url}) center/cover` : placeholder(c.slug) }}>
-              {!c.image_url && <span className="cat-letter">{c.name[0]}</span>}
+            <span className="arch cat-card-arch" style={{ background: placeholder(c.slug) }}>
+              {c.image_url ? <Pic src={c.image_url} /> : <span className="cat-letter">{c.name[0]}</span>}
             </span>
             <span className="cat-card-name">{c.name}</span>
             <span className="caption">{c.count} {t("منتج")}</span>

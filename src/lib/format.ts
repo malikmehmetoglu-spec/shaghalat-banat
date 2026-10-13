@@ -51,3 +51,6 @@ export const PAYMENT_LABEL: Record<string, string> = {
   transfer: "تحويل بنكي",
   cash: "نقداً",
 };
+
+/** رابط النسخة المصغّرة من صورة مرفوعة (t_ قبل اسم الملف) */
+export const thumbUrl = (u: string) => u.replace(/\/([^/]+)$/, "/t_$1");
