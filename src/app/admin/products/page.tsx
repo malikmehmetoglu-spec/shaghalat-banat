@@ -15,10 +15,10 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
   const isOwner = profile.role === "owner";
   const [locations, { data: cats }] = await Promise.all([getLocations(), sb.from("categories").select("id,name").order("sort_order")]);
   let query = sb.from("products")
-    .select("id,slug,name,price,images,is_online,category:categories(name),product_variants(id,sku,barcode,size,color_name,color_hex,stock_levels(location_id,on_hand,reserved))")
+    .select("id,slug,name,price,images,is_online,product_categories(categories(name)),product_variants(id,sku,barcode,size,color_name,color_hex,stock_levels(location_id,on_hand,reserved))")
     .is("archived_at", null)
     .order("created_at", { ascending: false });
-  if (cat) query = query.eq("category_id", cat);
+  if (cat) { const { data: ids } = await sb.from("product_categories").select("product_id").eq("category_id", cat); query = query.in("id", (ids ?? []).map((r) => r.product_id).concat("00000000-0000-0000-0000-000000000000")); }
   if (q) query = query.ilike("name", `%${q.replace(/[%,]/g, "")}%`);
   const { data: products } = await query;
   const wh = locations.find((l) => l.kind === "warehouse")?.id;
@@ -64,7 +64,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
                 return (
                   <tr key={p.id}>
                     <td><span style={{ display: "flex", alignItems: "center", gap: 12 }}><span className="thumb" style={{ background: p.images?.[0] ? `url(${p.images[0]}) center/cover` : placeholder(p.slug) }} /><Link href={`/admin/products/${p.id}`} className="rowlink">{p.name}</Link></span></td>
-                    <td className="caption">{p.category?.name ?? "—"}</td>
+                    <td className="caption">{(p.product_categories ?? []).map((r: any) => r.categories?.name).filter(Boolean).join("، ") || "—"}</td>
                     <td style={{ fontWeight: 600 }}>{price(p.price)}</td>
                     <td className="caption">{p.product_variants.length}</td>
                     <td><span className={cls(w)}>{w}</span></td>

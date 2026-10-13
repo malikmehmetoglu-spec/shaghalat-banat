@@ -13,7 +13,7 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
   const { created } = await searchParams;
   const { sb, profile } = await requireStaff();
   const [{ data: p }, { data: cats }, locations, fx] = await Promise.all([
-    sb.from("products").select("*,product_variants(id,sku,barcode,size,color_name,color_hex,stock_levels(location_id,on_hand,reserved))").eq("id", id).maybeSingle(),
+    sb.from("products").select("*,product_categories(category_id),product_variants(id,sku,barcode,size,color_name,color_hex,stock_levels(location_id,on_hand,reserved))").eq("id", id).maybeSingle(),
     sb.from("categories").select("id,name").order("sort_order"),
     getLocations(), getFx(),
   ]);
@@ -39,7 +39,7 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
         </div>
       )}
       <VariantsEditor productId={p.id} slug={p.slug} variants={p.product_variants} locations={locations.filter((l) => l.kind !== "transit")} />
-      <ProductForm p={p} categories={cats ?? []} locations={locations} rate={fx.rate} />
+      <ProductForm p={{ ...p, category_ids: (p.product_categories ?? []).map((r: any) => r.category_id) }} categories={cats ?? []} locations={locations} rate={fx.rate} />
     </>
   );
 }

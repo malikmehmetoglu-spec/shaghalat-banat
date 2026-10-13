@@ -10,7 +10,7 @@ export const metadata = { title: "الأقسام والبانرات" };
 export default async function CatalogPage() {
   const { sb } = await requireStaff();
   const [{ data: cats }, { data: profileRow }, { data: banners }] = await Promise.all([
-    sb.from("categories").select("id,name,name_en,slug,image_url,is_visible,sort_order,products(count)").order("sort_order"),
+    sb.from("categories").select("id,name,name_en,slug,image_url,is_visible,sort_order,product_categories(count)").order("sort_order"),
     sb.from("store_profile").select("whatsapp,facebook_url,instagram_url,tagline").eq("id", 1).maybeSingle(),
     sb.from("banners").select("id,kicker,title,link,image_url,is_active,sort_order").order("sort_order"),
   ]);
@@ -29,7 +29,7 @@ export default async function CatalogPage() {
                 <span style={{ width: 44, height: 44, flexShrink: 0, borderRadius: "50%", background: c.image_url ? `url(${c.image_url}) center/cover` : placeholder(c.slug) }} />
                 <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.5 }}>{c.name}</span>
-                  <span className="caption">{c.products?.[0]?.count ?? 0} منتج · ترتيب {c.sort_order}{c.is_visible ? "" : " · مخفي"}</span>
+                  <span className="caption">{c.product_categories?.[0]?.count ?? 0} منتج · ترتيب {c.sort_order}{c.is_visible ? "" : " · مخفي"}</span>
                 </span>
                 <CategoryToggle id={c.id} visible={c.is_visible} />
                 <div style={{ display: "flex", gap: 8, flexBasis: "100%", justifyContent: "flex-end", flexWrap: "wrap" }}>

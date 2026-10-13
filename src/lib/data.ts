@@ -18,8 +18,8 @@ const cached = <T>(key: string[], fn: () => Promise<T>, revalidate = 120) =>
 
 export async function getCategories(): Promise<(Category & { count: number })[]> {
   const data = await cached(["cats"], async () => {
-    const { data } = await publicClient().from("categories").select("id,slug,name,name_en,image_url,sort_order,products(count)").eq("is_visible", true).order("sort_order");
-    return (data ?? []).map((c: any) => ({ ...c, count: c.products?.[0]?.count ?? 0 }));
+    const { data } = await publicClient().from("categories").select("id,slug,name,name_en,image_url,sort_order,product_categories(count)").eq("is_visible", true).order("sort_order");
+    return (data ?? []).map((c: any) => ({ ...c, count: c.product_categories?.[0]?.count ?? 0 }));
   });
   return localize(data);
 }
@@ -36,8 +36,14 @@ export type SortKey = "new" | "best" | "price_asc" | "price_desc";
 export async function getProducts(opts: { categorySlug?: string; sort?: SortKey; q?: string; limit?: number } = {}): Promise<Product[]> {
   const data = await cached(["products", JSON.stringify(opts)], async () => {
   const sb = publicClient();
-  let query = sb.from("products").select(opts.categorySlug ? `${PRODUCT_COLS},categories!inner(slug)` : PRODUCT_COLS).is("archived_at", null);
-  if (opts.categorySlug) query = query.eq("categories.slug", opts.categorySlug);
+  let catId: string | null = null;
+  if (opts.categorySlug) {
+    const { data: c } = await sb.from("categories").select("id").eq("slug", opts.categorySlug).maybeSingle();
+    if (!c) return [];
+    catId = c.id;
+  }
+  let query = sb.from("products").select(catId ? `${PRODUCT_COLS},product_categories!inner(category_id)` : PRODUCT_COLS).is("archived_at", null);
+  if (catId) query = query.eq("product_categories.category_id", catId);
   if (opts.q) {
     const term = opts.q.replace(/[%,()]/g, " ").trim();
     query = query.or(`name.ilike.%${term}%,subtitle.ilike.%${term}%,description.ilike.%${term}%`);

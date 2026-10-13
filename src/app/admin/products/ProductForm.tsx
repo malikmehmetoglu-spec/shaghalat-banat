@@ -7,7 +7,7 @@ import { saveProduct, type ActionResult } from "../actions";
 
 type P = {
   id?: string; name?: string; name_en?: string | null; subtitle?: string | null; description?: string | null;
-  price?: number; compare_at_price?: number | null; cost?: number | null; tag?: string | null; category_id?: string | null;
+  price?: number; compare_at_price?: number | null; cost?: number | null; tag?: string | null; category_id?: string | null; category_ids?: string[];
   images?: string[]; is_online?: boolean; is_in_store?: boolean;
   currency?: string; price_usd?: number | null; compare_usd?: number | null; cost_usd?: number | null;
 };
@@ -24,12 +24,16 @@ export function ProductForm({ p = {}, categories, locations = [], rate }: { p?: 
       </div>
       <div className="a-grid">
         <label className="a-field">وصف مختصر (يظهر على البطاقة)<input name="subtitle" className="a-in" defaultValue={p.subtitle ?? ""} placeholder="مثال: كريب ملكي" /></label>
-        <label className="a-field">القسم
-          <select name="category_id" className="a-in" defaultValue={p.category_id ?? ""}>
-            <option value="">— بدون قسم —</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </label>
+        <div className="a-field">الأقسام (يمكن اختيار أكثر من قسم)
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {categories.map((c) => (
+              <label key={c.id} className="cat-chk">
+                <input type="checkbox" name="category_ids" value={c.id} defaultChecked={(p.category_ids ?? (p.category_id ? [p.category_id] : [])).includes(c.id)} />
+                <span>{c.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
       <label className="a-field">الوصف<textarea name="description" className="a-in" defaultValue={p.description ?? ""} /></label>
       <PriceFields rate={rate} p={p} />

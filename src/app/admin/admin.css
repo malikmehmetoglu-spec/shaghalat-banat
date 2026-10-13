@@ -104,3 +104,9 @@ textarea.a-in { height: 100px; padding: 12px 14px; line-height: 1.7; resize: ver
 @keyframes adm-fade { from { opacity: 0 } }
 .fx-mini summary { cursor: pointer; list-style: none; display: inline-flex; gap: 6px; align-items: center; padding: 8px 14px; border-radius: 14px; background: #fff; border: 1px solid var(--border-soft); font-size: 14px; line-height: 1.5; }
 .fx-mini summary::-webkit-details-marker { display: none; }
+.cat-chk { display: inline-flex; align-items: center; cursor: pointer; }
+.cat-chk input { position: absolute; opacity: 0; pointer-events: none; }
+.cat-chk span { height: 40px; padding: 0 16px; border-radius: 20px; border: 1.5px solid var(--border-soft); background: #fff; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; color: #5A4650; }
+.cat-chk input:checked + span { border-color: var(--magenta); background: var(--magenta); color: #fff; font-weight: 600; }
+.cat-chk input:checked + span::before { content: "✓"; }
+.cat-chk input:focus-visible + span { outline: 2px solid var(--magenta); outline-offset: 2px; }

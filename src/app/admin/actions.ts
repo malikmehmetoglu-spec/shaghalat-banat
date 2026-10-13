@@ -96,7 +96,7 @@ export async function saveProduct(_: ActionResult | null, fd: FormData): Promise
       ? { price_usd: priceV, compare_usd: numOrNull(str(fd, "compare_usd")), cost_usd: numOrNull(str(fd, "cost_usd")) }
       : { price: priceV, compare_at_price: numOrNull(str(fd, "compare_at_price")), cost: numOrNull(str(fd, "cost")), price_usd: null, compare_usd: null, cost_usd: null }),
     tag: str(fd, "tag") || null,
-    category_id: str(fd, "category_id") || null,
+    category_id: fd.getAll("category_ids").map(String).filter(Boolean)[0] ?? null,
     images,
     is_online: fd.get("is_online") === "on",
     is_in_store: fd.get("is_in_store") === "on",
@@ -105,6 +105,7 @@ export async function saveProduct(_: ActionResult | null, fd: FormData): Promise
     const { error } = await sb.from("products").update(row).eq("id", id);
     if (error) return fail(errMsg(error));
     await applyVariantsBulk(sb, id, str(fd, "variants_json"), str(fd, "stock_location"));
+    await syncCategories(sb, id, fd.getAll("category_ids").map(String).filter(Boolean));
     revalidatePath(`/admin/products/${id}`);
     revalidateTag("catalog"); revalidatePath("/admin/products");
     return ok("تم حفظ المنتج");
@@ -112,8 +113,20 @@ export async function saveProduct(_: ActionResult | null, fd: FormData): Promise
   const { data, error } = await sb.from("products").insert({ ...row, slug: slugify(str(fd, "name_en") || name) }).select("id").single();
   if (error || !data) return fail(errMsg(error));
   await applyVariantsBulk(sb, data.id, str(fd, "variants_json"), str(fd, "stock_location"));
+  await syncCategories(sb, data.id, fd.getAll("category_ids").map(String).filter(Boolean));
   revalidateTag("catalog"); revalidatePath("/admin/products");
   redirect(`/admin/products/${data.id}?created=1`);
+}
+
+/** ربط المنتج بالأقسام المختارة (يمكن أكثر من قسم) */
+async function syncCategories(sb: any, productId: string, ids: string[]) {
+  const { data: cur } = await sb.from("product_categories").select("category_id").eq("product_id", productId);
+  const have = new Set((cur ?? []).map((r: any) => r.category_id));
+  const want = new Set(ids);
+  const add = ids.filter((c) => !have.has(c)).map((c) => ({ product_id: productId, category_id: c }));
+  const del = [...have].filter((c) => !want.has(c as string));
+  if (add.length) await sb.from("product_categories").insert(add);
+  if (del.length) await sb.from("product_categories").delete().eq("product_id", productId).in("category_id", del);
 }
 
 export async function toggleProductOnline(id: string, value: boolean) {
@@ -539,7 +552,7 @@ export async function updateCategory(id: string, data: { name: string; name_en: 
 
 export async function removeCategory(id: string): Promise<ActionResult> {
   const { sb } = await requireStaff();
-  const { count } = await sb.from("products").select("id", { count: "exact", head: true }).eq("category_id", id).is("archived_at", null);
+  const { count } = await sb.from("product_categories").select("product_id,products!inner(archived_at)", { count: "exact", head: true }).eq("category_id", id).is("products.archived_at", null);
   if (count) return fail(`في هذا القسم ${count} منتج — انقليها لقسم آخر أولاً`);
   const { error } = await sb.from("categories").delete().eq("id", id);
   if (error) return fail(errMsg(error));
