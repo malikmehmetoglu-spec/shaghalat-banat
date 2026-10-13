@@ -38,3 +38,10 @@ export function errMsg(e: { message?: string } | null | undefined, fallback = "�
 }
 
 export { canAccess } from "./access";
+
+/** سعر صرف الدولار الحالي (ليرة جديدة) */
+export async function getFx() {
+  const sb = await createClient();
+  const { data } = await sb.from("fx_settings").select("usd_rate,auto,source,updated_at,last_error").eq("id", 1).maybeSingle();
+  return { rate: Number(data?.usd_rate ?? 0), auto: data?.auto ?? true, source: data?.source ?? null, updatedAt: data?.updated_at ?? null, error: data?.last_error ?? null };
+}

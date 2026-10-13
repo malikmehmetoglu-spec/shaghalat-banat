@@ -1,4 +1,5 @@
-import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
+import { FINANCE_ROLES, getFx, requireStaff } from "@/lib/admin";
+import { FxCard } from "../../FxCard";
 import { FormCard } from "../../FormCard";
 import { saveSettings } from "../actions";
 
@@ -6,14 +7,16 @@ export const metadata = { title: "الضرائب والإعدادات" };
 const _M = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
 export default async function SettingsPage() {
-  const { sb } = await requireStaff(FINANCE_ROLES);
+  const { sb, profile } = await requireStaff(FINANCE_ROLES);
+  const fx = await getFx();
   const { data: s } = await sb.from("finance_settings").select("*").eq("id", 1).single();
   if (!s) return null;
 
   return (
     <>
       <div className="adm-top"><div className="title-block"><h1 className="adm-h1">الإعدادات المالية</h1><span className="adm-sub">الضريبة وبيانات الفاتورة</span></div></div>
-      <div style={{ maxWidth: 820 }}>
+      <div style={{ maxWidth: 820, display: "flex", flexDirection: "column", gap: 16 }}>
+        <FxCard {...fx} canEdit={["owner", "accountant"].includes(profile.role)} />
         <FormCard title="الإعدادات" action={saveSettings} submitLabel="حفظ الإعدادات" resetOnSuccess={false}>
           <input type="hidden" name="currency" value={s.currency} />
           <input type="hidden" name="fiscal_start_month" value={s.fiscal_start_month} />

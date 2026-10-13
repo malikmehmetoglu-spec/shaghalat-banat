@@ -3,7 +3,9 @@ const nf = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
 export const num = (n: number | string | null | undefined) => nf.format(Number(n ?? 0));
 type Tr = (s: string) => string;
-export const price = (n: number | string | null | undefined, t?: Tr) => `${num(n)} ${t ? t("ل.س") : "ل.س"}`;
+const nf0 = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+/** المبالغ بالليرة تُعرض بلا فواصل عشرية */
+export const price = (n: number | string | null | undefined, t?: Tr) => `${nf0.format(Math.round(Number(n ?? 0)))} ${t ? t("ل.س") : "ل.س"}`;
 
 const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 

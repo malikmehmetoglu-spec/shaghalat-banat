@@ -81,18 +81,20 @@ export async function saveProduct(_: ActionResult | null, fd: FormData): Promise
   const { sb } = await requireStaff();
   const id = str(fd, "id");
   const name = str(fd, "name");
-  const priceV = Number(str(fd, "price"));
+  const currency = str(fd, "currency") === "USD" ? "USD" : "SYP";
+  const priceV = currency === "USD" ? Number(str(fd, "price_usd")) : Number(str(fd, "price"));
   if (!name) return fail("اسم المنتج مطلوب");
-  if (!(priceV >= 0)) return fail("السعر غير صحيح");
+  if (!(priceV >= 0) || str(fd, currency === "USD" ? "price_usd" : "price") === "") return fail("السعر غير صحيح");
   const images = str(fd, "images").split(/\s*\n\s*/).filter(Boolean);
   const row = {
     name,
     name_en: str(fd, "name_en") || null,
     subtitle: str(fd, "subtitle") || null,
     description: str(fd, "description") || null,
-    price: priceV,
-    compare_at_price: numOrNull(str(fd, "compare_at_price")),
-    cost: numOrNull(str(fd, "cost")),
+    currency,
+    ...(currency === "USD"
+      ? { price_usd: priceV, compare_usd: numOrNull(str(fd, "compare_usd")), cost_usd: numOrNull(str(fd, "cost_usd")) }
+      : { price: priceV, compare_at_price: numOrNull(str(fd, "compare_at_price")), cost: numOrNull(str(fd, "cost")), price_usd: null, compare_usd: null, cost_usd: null }),
     tag: str(fd, "tag") || null,
     category_id: str(fd, "category_id") || null,
     images,
@@ -543,4 +545,15 @@ export async function removeCategory(id: string): Promise<ActionResult> {
   if (error) return fail(errMsg(error));
   revalidatePath("/admin/catalog"); revalidatePath("/", "layout");
   return ok("تم حذف القسم");
+}
+
+/** سعر صرف الدولار: تحديث تلقائي من الإنترنت أو إدخال يدوي */
+export async function setFxRate(rate: number, auto: boolean): Promise<ActionResult> {
+  const { sb } = await requireStaff();
+  if (!auto && !(rate > 0)) return fail("أدخلي سعراً صحيحاً");
+  const { data, error } = await sb.rpc("fx_set", { p_rate: auto ? null : rate, p_auto: auto });
+  if (error) return fail(errMsg(error));
+  if (auto && data == null) return fail("تعذّر جلب السعر من الإنترنت الآن، سيُعاد المحاولة تلقائياً كل ساعة");
+  revalidatePath("/", "layout");
+  return ok(`تم اعتماد سعر الدولار ${Number(data).toLocaleString("en-US", { maximumFractionDigits: 2 })} ل.س وتحديث أسعار المنتجات`);
 }

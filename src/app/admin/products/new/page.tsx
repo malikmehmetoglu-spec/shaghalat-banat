@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getLocations, requireStaff } from "@/lib/admin";
+import { getFx, getLocations, requireStaff } from "@/lib/admin";
 import { Icon } from "@/components/Icon";
 import { ProductForm } from "../ProductForm";
 
@@ -7,7 +7,7 @@ export const metadata = { title: "منتج جديد" };
 
 export default async function NewProduct() {
   const { sb } = await requireStaff();
-  const [{ data: cats }, locations] = await Promise.all([sb.from("categories").select("id,name").order("sort_order"), getLocations()]);
+  const [{ data: cats }, locations, fx] = await Promise.all([sb.from("categories").select("id,name").order("sort_order"), getLocations(), getFx()]);
   return (
     <>
       <div className="adm-top">
@@ -16,7 +16,7 @@ export default async function NewProduct() {
           <div className="title-block"><h1 className="adm-h1">منتج جديد</h1><span className="adm-sub">المعلومات، الصور، ثم الألوان والمقاسات وعدد القطع — كلها في صفحة واحدة</span></div>
         </div>
       </div>
-      <ProductForm categories={cats ?? []} locations={locations} />
+      <ProductForm categories={cats ?? []} locations={locations} rate={fx.rate} />
     </>
   );
 }

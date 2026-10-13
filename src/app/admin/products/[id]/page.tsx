@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getLocations, requireStaff } from "@/lib/admin";
+import { getFx, getLocations, requireStaff } from "@/lib/admin";
 import { Icon } from "@/components/Icon";
 import { ProductForm } from "../ProductForm";
 import { VariantsEditor } from "./VariantsEditor";
@@ -12,10 +12,10 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
   const { id } = await params;
   const { created } = await searchParams;
   const { sb, profile } = await requireStaff();
-  const [{ data: p }, { data: cats }, locations] = await Promise.all([
+  const [{ data: p }, { data: cats }, locations, fx] = await Promise.all([
     sb.from("products").select("*,product_variants(id,sku,barcode,size,color_name,color_hex,stock_levels(location_id,on_hand,reserved))").eq("id", id).maybeSingle(),
     sb.from("categories").select("id,name").order("sort_order"),
-    getLocations(),
+    getLocations(), getFx(),
   ]);
   if (!p) notFound();
 
@@ -39,7 +39,7 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
         </div>
       )}
       <VariantsEditor productId={p.id} slug={p.slug} variants={p.product_variants} locations={locations.filter((l) => l.kind !== "transit")} />
-      <ProductForm p={p} categories={cats ?? []} locations={locations} />
+      <ProductForm p={p} categories={cats ?? []} locations={locations} rate={fx.rate} />
     </>
   );
 }

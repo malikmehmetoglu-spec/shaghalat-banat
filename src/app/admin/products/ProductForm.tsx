@@ -1,6 +1,7 @@
 "use client";
 import { ImageUpload } from "../ImageUpload";
 import { ColorsBuilder } from "./ColorsBuilder";
+import { PriceFields } from "./PriceFields";
 import { useActionState } from "react";
 import { saveProduct, type ActionResult } from "../actions";
 
@@ -8,9 +9,10 @@ type P = {
   id?: string; name?: string; name_en?: string | null; subtitle?: string | null; description?: string | null;
   price?: number; compare_at_price?: number | null; cost?: number | null; tag?: string | null; category_id?: string | null;
   images?: string[]; is_online?: boolean; is_in_store?: boolean;
+  currency?: string; price_usd?: number | null; compare_usd?: number | null; cost_usd?: number | null;
 };
 
-export function ProductForm({ p = {}, categories, locations = [] }: { p?: P; categories: { id: string; name: string }[]; locations?: { id: string; name: string; kind: string }[] }) {
+export function ProductForm({ p = {}, categories, locations = [], rate }: { p?: P; categories: { id: string; name: string }[]; locations?: { id: string; name: string; kind: string }[]; rate: number }) {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(saveProduct, null);
   return (
     <form action={action} className="acard" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -30,10 +32,8 @@ export function ProductForm({ p = {}, categories, locations = [] }: { p?: P; cat
         </label>
       </div>
       <label className="a-field">الوصف<textarea name="description" className="a-in" defaultValue={p.description ?? ""} /></label>
+      <PriceFields rate={rate} p={p} />
       <div className="a-grid">
-        <label className="a-field">السعر (ل.س)<input name="price" type="number" min="0" step="0.01" className="a-in" defaultValue={p.price ?? ""} required /></label>
-        <label className="a-field">السعر قبل الخصم<input name="compare_at_price" type="number" min="0" step="0.01" className="a-in" defaultValue={p.compare_at_price ?? ""} placeholder="اختياري" /></label>
-        <label className="a-field">سعر التكلفة<input name="cost" type="number" min="0" step="0.01" className="a-in" defaultValue={p.cost ?? ""} placeholder="للمحاسبة" /></label>
         <label className="a-field">شارة<input name="tag" className="a-in" defaultValue={p.tag ?? ""} placeholder="جديد، الأكثر مبيعاً…" /></label>
       </div>
       <ImageUpload name="images" folder="products" multiple label="صور المنتج" initial={p.images ?? []} />

@@ -102,3 +102,5 @@ textarea.a-in { height: 100px; padding: 12px 14px; line-height: 1.7; resize: ver
   .adm-main { padding: 18px 14px 40px; }
 }
 @keyframes adm-fade { from { opacity: 0 } }
+.fx-mini summary { cursor: pointer; list-style: none; display: inline-flex; gap: 6px; align-items: center; padding: 8px 14px; border-radius: 14px; background: #fff; border: 1px solid var(--border-soft); font-size: 14px; line-height: 1.5; }
+.fx-mini summary::-webkit-details-marker { display: none; }

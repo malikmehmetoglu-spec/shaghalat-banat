@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { getLocations, requireStaff } from "@/lib/admin";
+import { getFx, getLocations, requireStaff } from "@/lib/admin";
+import { FxCard } from "../FxCard";
 import { placeholder, price } from "@/lib/format";
 import { OnlineToggle } from "./OnlineToggle";
 import { QtyButton } from "./QtyButton";
@@ -26,6 +27,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
   const qty = (p: any, loc?: string) => p.product_variants.reduce((s: number, v: any) => s + v.stock_levels.filter((x: any) => x.location_id === loc).reduce((a: number, x: any) => a + x.on_hand, 0), 0);
   const cls = (n: number) => `qtyp${n === 0 ? " out" : n < 5 ? " low" : ""}`;
 
+  const fx = await getFx();
   return (
     <>
       <div className="adm-top">
@@ -42,6 +44,10 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
           <Link href="/admin/products/new" className="btn">+ إضافة منتج</Link>
         </div>
       </div>
+      <details className="fx-mini">
+        <summary>💵 سعر الدولار: <b className="ltr">{fx.rate.toLocaleString("en-US", { maximumFractionDigits: 2 })}</b> ل.س {fx.auto ? "· تلقائي" : "· يدوي"}</summary>
+        <div style={{ marginTop: 10, maxWidth: 520 }}><FxCard {...fx} canEdit={["owner", "accountant"].includes(profile.role)} /></div>
+      </details>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <Link href="/admin/products" className={`a-chip${!cat ? " on" : ""}`}>الكل</Link>
