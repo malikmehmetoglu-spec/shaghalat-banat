@@ -10,13 +10,32 @@ export const price = (n: number | string | null | undefined, t?: Tr) => `${nf0.f
 const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
 /** تاريخ بأرقام إنجليزية وأسماء أشهر عربية: "7 أكتوبر 2026" */
+export const TZ = "Asia/Damascus";
+const dtf = new Intl.DateTimeFormat("en-US", { timeZone: TZ, year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit", hourCycle: "h23" });
+/** أجزاء التاريخ بتوقيت دمشق — نفس النتيجة على الخادم (UTC) والمتصفح */
+export function damascus(d: string | Date = new Date()) {
+  const o: Record<string, number> = {};
+  for (const p of dtf.formatToParts(new Date(d))) if (p.type !== "literal") o[p.type] = Number(p.value);
+  return { y: o.year, mo: o.month, d: o.day, h: o.hour % 24, mi: o.minute };
+}
+/** تاريخ اليوم بتوقيت دمشق بصيغة YYYY-MM-DD (للحقول الافتراضية) */
+export const todayISO = () => { const x = damascus(); return `${x.y}-${String(x.mo).padStart(2, "0")}-${String(x.d).padStart(2, "0")}`; };
+/** بداية يوم في دمشق (منتصف الليل) كلحظة زمنية */
+export function damascusDayStart(daysAgo = 0) {
+  const x = damascus();
+  // دمشق UTC+3 ثابتة
+  return new Date(Date.UTC(x.y, x.mo - 1, x.d - daysAgo, 0, 0, 0) - 3 * 3600 * 1000);
+}
+/** وقت (ساعة:دقيقة) بتوقيت دمشق */
+export const timeHM = (d: string | Date) => { const x = damascus(d); return `${String(x.h).padStart(2, "0")}:${String(x.mi).padStart(2, "0")}`; };
+
 export function date(d: string | Date, withTime = false, t?: Tr) {
   const tr = t ?? ((x: string) => x);
-  const x = new Date(d);
-  const base = `${x.getDate()} ${tr(months[x.getMonth()])} ${x.getFullYear()}`;
+  const x = damascus(d);
+  const base = `${x.d} ${tr(months[x.mo - 1])} ${x.y}`;
   if (!withTime) return base;
-  const h = x.getHours();
-  const m = String(x.getMinutes()).padStart(2, "0");
+  const h = x.h;
+  const m = String(x.mi).padStart(2, "0");
   return `${base} · ${h % 12 || 12}:${m} ${tr(h < 12 ? "ص" : "م")}`;
 }
 

@@ -18,8 +18,13 @@ const cached = <T>(key: string[], fn: () => Promise<T>, revalidate = 120) =>
 
 export async function getCategories(): Promise<(Category & { count: number })[]> {
   const data = await cached(["cats"], async () => {
-    const { data } = await publicClient().from("categories").select("id,slug,name,name_en,image_url,sort_order,product_categories(count)").eq("is_visible", true).order("sort_order");
-    return (data ?? []).map((c: any) => ({ ...c, count: c.product_categories?.[0]?.count ?? 0 }));
+    const sb = publicClient();
+    const [{ data }, { data: counts }] = await Promise.all([
+      sb.from("categories").select("id,slug,name,name_en,image_url,sort_order").eq("is_visible", true).order("sort_order"),
+      sb.from("category_product_counts").select("category_id,n"),
+    ]);
+    const m = new Map((counts ?? []).map((r: any) => [r.category_id, r.n]));
+    return (data ?? []).map((c: any) => ({ ...c, count: m.get(c.id) ?? 0 }));
   });
   return localize(data);
 }
@@ -34,7 +39,7 @@ export async function getBanners() {
 export type SortKey = "new" | "best" | "price_asc" | "price_desc";
 
 export async function getProducts(opts: { categorySlug?: string; sort?: SortKey; q?: string; limit?: number } = {}): Promise<Product[]> {
-  const data = await cached(["products", JSON.stringify(opts)], async () => {
+  const load = async () => {
   const sb = publicClient();
   let catId: string | null = null;
   if (opts.categorySlug) {
@@ -45,7 +50,8 @@ export async function getProducts(opts: { categorySlug?: string; sort?: SortKey;
   let query = sb.from("products").select(catId ? `${PRODUCT_COLS},product_categories!inner(category_id)` : PRODUCT_COLS).is("archived_at", null);
   if (catId) query = query.eq("product_categories.category_id", catId);
   if (opts.q) {
-    const term = opts.q.replace(/[%,()]/g, " ").trim();
+    const term = opts.q.replace(/[%,()"'\\*:.]/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
+    if (!term) return [];
     query = query.or(`name.ilike.%${term}%,subtitle.ilike.%${term}%,description.ilike.%${term}%`);
   }
   switch (opts.sort) {
@@ -57,7 +63,9 @@ export async function getProducts(opts: { categorySlug?: string; sort?: SortKey;
   if (opts.limit) query = query.limit(opts.limit);
   const { data } = await query;
   return (data ?? []) as unknown as Product[];
-  });
+  };
+  // البحث لا يُخزَّن (كل عبارة مختلفة)، والباقي يُخزَّن مؤقتاً
+  const data = opts.q ? await load() : await cached(["products", JSON.stringify(opts)], load);
   return localize(data);
 }
 

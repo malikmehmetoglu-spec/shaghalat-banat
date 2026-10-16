@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { lookupCustomer, posSale } from "../actions";
 import { placeholder, price } from "@/lib/format";
 import { code128 } from "../barcodes/code128";
@@ -10,6 +11,7 @@ type Line = Item & { qty: number };
 type Shop = { address: string; phone: string; footer: string; taxNumber: string };
 
 export function POS({ items, storeName, cashier, shop, shift }: { items: Item[]; storeName: string; cashier: string; shop: Shop; shift?: React.ReactNode }) {
+  const router = useRouter();
   const [q, setQ] = useState("");
   const [cart, setCart] = useState<Line[]>([]);
   const [discount, setDiscount] = useState(0);
@@ -42,7 +44,8 @@ export function POS({ items, storeName, cashier, shop, shift }: { items: Item[];
   function onScan(e: React.FormEvent) {
     e.preventDefault();
     const code = q.trim();
-    const exact = items.find((i) => i.barcode === code || i.sku.toLowerCase() === code.toLowerCase());
+    const code2 = code.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x660));
+    const exact = items.find((i) => i.barcode === code2 || i.barcode === code || i.sku.toLowerCase() === code.toLowerCase());
     if (exact) { add(exact); setQ(""); } else if (results.length === 1) { add(results[0]); setQ(""); }
   }
   const setQty = (id: string, qty: number) => setCart((c) => c.flatMap((l) => (l.id !== id ? [l] : qty <= 0 ? [] : [{ ...l, qty: Math.min(qty, l.stock) }])));
@@ -52,6 +55,7 @@ export function POS({ items, storeName, cashier, shop, shift }: { items: Item[];
       const r = await posSale(cart.map((l) => ({ variant_id: l.id, qty: l.qty })), payment, discount, anon ? "" : phone, anon ? "" : cname, !anon && marketing);
       if (!r.ok) { setMsg(r); return; }
       setReceipt({ number: r.number!, total: r.total!, lines: cart, discount, payment, at: new Date().toISOString() });
+      router.refresh();
       setCart([]); setDiscount(0); setPhone(""); setCname(""); setMarketing(false); setKnown(false); setAnon(false); setMsg(null);
     });
   }

@@ -122,7 +122,7 @@ export const EN: Record<string, string> = {
   "إضافة عنوان جديد": "Add new address",
   "الوصف": "Description",
   "التوصيل": "Delivery",
-  "التوصيل خلال 2 إلى 4 أيام عمل داخل سوريا. الشحن مجاني للطلبات فوق 300 ل.س، ويمكنك الاستبدال خلال 7 أيام من الاستلام. نغلّف طلبك بخصوصية تامة.": "Delivery within 2–4 business days across Syria. Free shipping on orders over 300 SYP, and exchanges within 7 days of delivery. Every order is packed discreetly.",
+  "التوصيل خلال 2 إلى 4 أيام عمل داخل سوريا. الشحن مجاني للطلبات فوق {f}، ويمكنك الاستبدال خلال 7 أيام من الاستلام. نغلّف طلبك بخصوصية تامة.": "Delivery within 2–4 business days across Syria. Free shipping on orders over {f}, and exchanges within 7 days of delivery. Every order is packed discreetly.",
   "التقييمات": "Reviews",
   "تقييم {r} من {n} عميلة.": "Rated {r} by {n} customers.",
   "[صورة المنتج]": "[Product image]",
@@ -327,4 +327,6 @@ export const EN: Record<string, string> = {
   "تواصلي معنا على واتساب": "Message us on WhatsApp",
   "مقاس واحد": "One size",
   "بدون لون": "No color",
+  "لم يعد الكود ينطبق على مجموع السلة الحالي": "This code no longer applies to your current cart total",
+  "التوصيل غير متاح حالياً، تواصلي معنا على واتساب لإتمام طلبك": "Delivery is unavailable right now — message us on WhatsApp to complete your order",
 };

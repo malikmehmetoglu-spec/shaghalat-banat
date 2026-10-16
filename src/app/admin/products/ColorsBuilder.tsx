@@ -21,13 +21,23 @@ type Color = { name: string; hex: string; sizes: Record<string, string> };
  * إدخال المنتج بأبسط شكل: كم لون ← من كل لون كم مقاس ← من كل مقاس كم قطعة.
  * النتيجة تُرسل مع النموذج في حقل variants_json، والنظام يُنشئ رموز SKU والكميات تلقائياً.
  */
-export function ColorsBuilder({ locations, title = "الألوان والمقاسات والكميات" }: { locations: { id: string; name: string; kind: string }[]; title?: string }) {
+/** عند تعديل منتج موجود: نبدأ بنفس شكل قطعه الحالية (بألوان أو بدون، ونوع المقاس) حتى لا تُخلط الأنواع */
+function inferShape(existing: { size: string | null; color_name: string | null }[]) {
+  if (!existing.length) return { withColors: true, sizeType: "clothes" };
+  const withColors = existing.some((v) => v.color_name);
+  const sizes = existing.map((v) => v.size).filter(Boolean) as string[];
+  const sizeType = !sizes.length ? "none" : sizes.every((x) => /مل/.test(x)) ? "volume" : sizes.every((x) => /^\d+$/.test(x)) ? "numbers" : "clothes";
+  return { withColors, sizeType };
+}
+
+export function ColorsBuilder({ locations, title = "الألوان والمقاسات والكميات", existing = [] }: { locations: { id: string; name: string; kind: string }[]; title?: string; existing?: { size: string | null; color_name: string | null }[] }) {
+  const shape = inferShape(existing);
   const [colors, setColors] = useState<Color[]>([]);
   const [custom, setCustom] = useState<string>("");
   const defLoc = locations.find((l) => l.kind === "warehouse")?.id ?? locations[0]?.id ?? "";
   const [loc, setLoc] = useState(defLoc);
-  const [withColors, setWithColors] = useState(true);
-  const [sizeType, setSizeType] = useState("clothes");
+  const [withColors, setWithColors] = useState(shape.withColors);
+  const [sizeType, setSizeType] = useState(shape.sizeType);
   const [plainQty, setPlainQty] = useState("");          // بدون ألوان وبدون مقاس
   const [plainSizes, setPlainSizes] = useState<Record<string, string>>({}); // بدون ألوان مع مقاسات
   const [plainColorsQty, setPlainColorsQty] = useState<Record<string, string>>({}); // ألوان بدون مقاس

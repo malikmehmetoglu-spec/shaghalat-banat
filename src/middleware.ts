@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
   if (!user && needsAuth) {
     const url = request.nextUrl.clone();
     url.pathname = path.startsWith("/admin") ? "/admin-login" : "/login";
-    url.searchParams.set("next", path);
+    url.searchParams.set("next", path + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
   // صلاحيات أقسام لوحة الإدارة حسب الدور

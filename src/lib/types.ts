@@ -47,4 +47,6 @@ export type CartLine = {
   unitPrice: number;
   qty: number;
   image?: string | null;
+  /** أقصى كمية متوفرة (تُحدَّث من قاعدة البيانات) */
+  max?: number;
 };

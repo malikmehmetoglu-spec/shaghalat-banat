@@ -2,6 +2,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setFxRate } from "./actions";
+import { date } from "@/lib/format";
 
 export function FxCard({ rate, auto, updatedAt, source, error, canEdit }: { rate: number; auto: boolean; updatedAt: string | null; source: string | null; error: string | null; canEdit: boolean }) {
   const router = useRouter();
@@ -9,7 +10,7 @@ export function FxCard({ rate, auto, updatedAt, source, error, canEdit }: { rate
   const [val, setVal] = useState(String(rate || ""));
   const [msg, setMsg] = useState<{ ok: boolean; message: string } | null>(null);
   const [pending, start] = useTransition();
-  const when = updatedAt ? new Date(updatedAt).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
+  const when = updatedAt ? date(updatedAt, true) : "—";
   const save = (autoMode: boolean) => start(async () => {
     const r = await setFxRate(Number(val), autoMode);
     setMsg(r); if (r.ok) router.refresh();

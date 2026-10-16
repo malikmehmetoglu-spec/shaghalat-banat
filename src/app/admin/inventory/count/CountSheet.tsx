@@ -33,7 +33,7 @@ export function CountSheet({ locationId, locationName, lines }: { locationId: st
         </form>
         <span className="adm-sub">{locationName} · تم عدّ {done} من {lines.length} · {diffs.length} فروقات</span>
         <button className="btn" disabled={pending || !done} onClick={() => start(async () => {
-          const r = await applyCount(locationId, lines.filter((l) => counts[l.id] !== undefined && counts[l.id] !== "").map((l) => ({ variantId: l.id, qty: Number(counts[l.id]) })), `جرد ${locationName}`);
+          const r = await applyCount(locationId, lines.filter((l) => counts[l.id] !== undefined && counts[l.id] !== "").map((l) => ({ variantId: l.id, qty: Number(counts[l.id]), system: l.system })), `جرد ${locationName}`);
           setMsg(r); if (r.ok) setCounts({});
         })}>{pending ? "جارٍ الاعتماد…" : "اعتماد الجرد"}</button>
       </div>

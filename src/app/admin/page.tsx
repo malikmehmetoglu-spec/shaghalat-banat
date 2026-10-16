@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { canAccess } from "@/lib/access";
 import { requireStaff } from "@/lib/admin";
-import { date, ORDER_STATUS, price, num } from "@/lib/format";
+import { damascusDayStart, date, ORDER_STATUS, price, num } from "@/lib/format";
 
 export const metadata = { title: "لوحة المؤشرات" };
 
 export default async function AdminHome({ searchParams }: { searchParams: Promise<{ denied?: string }> }) {
   const { denied } = await searchParams;
   const { sb, profile } = await requireStaff();
-  const startToday = new Date(); startToday.setHours(0, 0, 0, 0);
-  const start7 = new Date(startToday); start7.setDate(start7.getDate() - 6);
+  const startToday = damascusDayStart(0);
+  const start7 = damascusDayStart(6);
 
   const [{ data: week }, { data: recent }, { data: stock }, { count: newCustomers }] = await Promise.all([
     sb.from("orders").select("total,channel,created_at,status").gte("created_at", start7.toISOString()).neq("status", "cancelled"),
@@ -28,11 +28,11 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
 
   // مبيعات آخر 7 أيام لكل قناة
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(start7); d.setDate(d.getDate() + i);
-    const next = new Date(d); next.setDate(next.getDate() + 1);
+    const d = new Date(start7.getTime() + i * 86400000);
+    const next = new Date(d.getTime() + 86400000);
     const inDay = orders.filter((o) => { const t = new Date(o.created_at); return t >= d && t < next; });
     return {
-      label: d.toLocaleDateString("ar", { weekday: "short" }),
+      label: new Date(d.getTime() + 12 * 3600000).toLocaleDateString("ar", { weekday: "short", timeZone: "Asia/Damascus" }),
       on: inDay.filter((o) => o.channel === "online").reduce((s, o) => s + Number(o.total), 0),
       st: inDay.filter((o) => o.channel === "store").reduce((s, o) => s + Number(o.total), 0),
     };

@@ -24,7 +24,8 @@ type Guest = { name: string; phone: string; city: string; street: string };
 export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { addresses: Address[]; shipping: Ship[]; guest?: boolean }) {
   const t = useT();
   const router = useRouter();
-  const { lines, subtotal, clear, ready } = useCart();
+  const { lines, subtotal, clear, ready, sync } = useCart();
+  useEffect(() => { sync(); }, [sync]);
   const [addresses, setAddresses] = useState(initial);
   const [step, setStep] = useState(0);
   const [addr, setAddr] = useState(initial[0]?.id ?? "");
@@ -83,6 +84,7 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
   }
 
   const next = () => {
+    if (shipping.length === 0) { setErr(t("التوصيل غير متاح حالياً، تواصلي معنا على واتساب لإتمام طلبك")); return; }
     if (step === 0 && guest) {
       if (!guestValid) { setErr(t("أكملي الاسم ورقم الهاتف والعنوان")); return; }
       setErr(""); setStep(1); return;

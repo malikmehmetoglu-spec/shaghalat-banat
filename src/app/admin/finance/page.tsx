@@ -7,7 +7,7 @@ export const metadata = { title: "اللوحة المالية" };
 
 export default async function FinanceDashboard() {
   const { sb } = await requireStaff(FINANCE_ROLES);
-  const now = new Date();
+  const now = new Date(Date.now() + 3 * 3600 * 1000); // تاريخ دمشق (UTC+3) — الخادم يعمل بتوقيت UTC
   const m = periodRange("month");
   const sixAgo = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 5, 1)).toISOString().slice(0, 10);
 

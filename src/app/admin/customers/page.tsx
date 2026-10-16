@@ -15,7 +15,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const { q = "", f = "all" } = await searchParams;
   const { sb } = await requireStaff();
   let query = sb.from("customer_stats").select("*").order("last_order", { ascending: false, nullsFirst: false }).limit(300);
-  const s = q.trim().replace(/[,()%]/g, "");
+  const s = q.trim().replace(/[,()%"'\\*:.]/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
   if (s) {
     let d = s.replace(/\D/g, "");
     if (d.startsWith("0")) d = d.replace(/^0+/, "");

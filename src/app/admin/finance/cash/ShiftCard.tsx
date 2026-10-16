@@ -1,4 +1,5 @@
 "use client";
+import { timeHM } from "@/lib/format";
 import { useState, useTransition } from "react";
 import { closeShift, openShift } from "../actions";
 import { price } from "@/lib/format";
@@ -11,7 +12,7 @@ export function ShiftCard({ shift }: { shift: Shift | null }) {
   const [msg, setMsg] = useState<{ ok: boolean; message: string } | null>(null);
   const [pending, start] = useTransition();
   const [closed, setClosed] = useState<(Shift & { counted: number; diff: number }) | null>(null);
-  const time = (s: string) => new Date(s).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  const time = (s: string) => timeHM(s);
 
   if (closed) {
     return (

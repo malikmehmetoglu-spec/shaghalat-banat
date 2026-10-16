@@ -1,13 +1,13 @@
 "use client";
 import { useState, useTransition } from "react";
 import { postManualEntry } from "../actions";
-import { price } from "@/lib/format";
+import { price, todayISO } from "@/lib/format";
 
 type Line = { account: string; debit: string; credit: string };
 const blank = (account = ""): Line => ({ account, debit: "", credit: "" });
 
 export function ManualEntry({ accounts }: { accounts: { code: string; name: string }[] }) {
-  const [d, setD] = useState(new Date().toISOString().slice(0, 10));
+  const [d, setD] = useState(todayISO());
   const [memo, setMemo] = useState("");
   const [lines, setLines] = useState<Line[]>([blank("1110"), blank("3100")]);
   const [msg, setMsg] = useState<{ ok: boolean; message: string } | null>(null);

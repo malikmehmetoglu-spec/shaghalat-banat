@@ -9,6 +9,7 @@ type P = {
   id?: string; name?: string; name_en?: string | null; subtitle?: string | null; description?: string | null;
   price?: number; compare_at_price?: number | null; cost?: number | null; tag?: string | null; category_id?: string | null; category_ids?: string[];
   images?: string[]; is_online?: boolean; is_in_store?: boolean;
+  product_variants?: { size: string | null; color_name: string | null }[];
   currency?: string; price_usd?: number | null; compare_usd?: number | null; cost_usd?: number | null;
 };
 
@@ -41,7 +42,7 @@ export function ProductForm({ p = {}, categories, locations = [], rate }: { p?: 
         <label className="a-field">شارة<input name="tag" className="a-in" defaultValue={p.tag ?? ""} placeholder="جديد، الأكثر مبيعاً…" /></label>
       </div>
       <ImageUpload name="images" folder="products" multiple label="صور المنتج" initial={p.images ?? []} />
-      <ColorsBuilder key={state?.message ?? "c"} locations={locations} title={p.id ? "إضافة ألوان أو كميات جديدة" : "الألوان والمقاسات والكميات"} />
+      <ColorsBuilder key={state?.message ?? "c"} locations={locations} existing={p.product_variants ?? []} title={p.id ? "إضافة ألوان أو كميات جديدة" : "الألوان والمقاسات والكميات"} />
       <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}><input type="checkbox" name="is_online" defaultChecked={p.is_online ?? true} style={{ width: 18, height: 18, accentColor: "var(--magenta)" }} /> ظاهر في المتجر الإلكتروني</label>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}><input type="checkbox" name="is_in_store" defaultChecked={p.is_in_store ?? true} style={{ width: 18, height: 18, accentColor: "var(--magenta)" }} /> متوفر في المحل</label>

@@ -20,3 +20,9 @@ export function canAccess(role: string, path: string) {
   const rule = ACCESS.find(([p]) => path === p || path.startsWith(p + "/"));
   return rule ? rule[1].includes(role as StaffRole) : role === "owner";
 }
+
+/** الأدوار المسموح لها بقسم معيّن — تُستخدم أيضاً لحماية العمليات على الخادم */
+export function rolesFor(path: string): StaffRole[] {
+  const rule = ACCESS.find(([p]) => path === p || path.startsWith(p + "/"));
+  return rule ? rule[1] : ["owner"];
+}

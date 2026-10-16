@@ -8,7 +8,7 @@ import { Switch } from "../Switch";
 export function CategoryToggle({ id, visible }: { id: string; visible: boolean }) {
   const [v, setV] = useOptimistic(visible);
   const [, start] = useTransition();
-  return <Switch on={v} label="إظهار القسم" onChange={(n) => start(async () => { setV(n); await toggleCategory(id, n); })} />;
+  return <Switch on={v} label="إظهار القسم" onChange={(n) => start(async () => { setV(n); const r = await toggleCategory(id, n); if (!r.ok) alert(r.message); })} />;
 }
 
 export function BannerControls({ id, active }: { id: string; active: boolean }) {
@@ -16,8 +16,8 @@ export function BannerControls({ id, active }: { id: string; active: boolean }) 
   const [pending, start] = useTransition();
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-      <Switch on={v} label="تفعيل البانر" onChange={(n) => start(async () => { setV(n); await toggleBanner(id, n); })} />
-      <button type="button" className="btn soft" disabled={pending} onClick={() => confirm("حذف هذا البانر؟") && start(() => deleteBanner(id))}>حذف</button>
+      <Switch on={v} label="تفعيل البانر" onChange={(n) => start(async () => { setV(n); const r = await toggleBanner(id, n); if (!r.ok) alert(r.message); })} />
+      <button type="button" className="btn soft" disabled={pending} onClick={() => confirm("حذف هذا البانر؟") && start(async () => { const r = await deleteBanner(id); if (!r.ok) alert(r.message); })}>حذف</button>
     </div>
   );
 }
@@ -38,8 +38,8 @@ function ChangeImage({ folder, url, save }: { folder: string; url: string | null
     </>
   );
 }
-export const CategoryImage = ({ id, url }: { id: string; url: string | null }) => <ChangeImage folder="categories" url={url} save={(u) => setCategoryImage(id, u)} />;
-export const BannerImage = ({ id, url }: { id: string; url: string | null }) => <ChangeImage folder="banners" url={url} save={(u) => setBannerImage(id, u)} />;
+export const CategoryImage = ({ id, url }: { id: string; url: string | null }) => <ChangeImage folder="categories" url={url} save={async (u) => { const r = await setCategoryImage(id, u); if (!r.ok) throw new Error(r.message); }} />;
+export const BannerImage = ({ id, url }: { id: string; url: string | null }) => <ChangeImage folder="banners" url={url} save={async (u) => { const r = await setBannerImage(id, u); if (!r.ok) throw new Error(r.message); }} />;
 
 /** تعديل قسم موجود: الاسم والترتيب + حفظ / حذف */
 export function EditCategory({ id, name, nameEn, sort }: { id: string; name: string; nameEn: string | null; sort: number }) {

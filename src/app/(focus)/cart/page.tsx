@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { useCart } from "@/components/CartProvider";
 import { getBrowserClient } from "@/lib/supabase/client";
@@ -10,11 +10,20 @@ import { useT } from "@/components/LangProvider";
 
 export default function CartPage() {
   const t = useT();
-  const { lines, setQty, remove, subtotal, count, ready } = useCart();
+  const { lines, setQty, remove, subtotal, count, ready, sync } = useCart();
+  useEffect(() => { sync(); }, [sync]);
   const [code, setCode] = useState("");
   const [coupon, setCoupon] = useState<{ code: string; discount: number } | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
+  useEffect(() => {
+    if (!coupon) return;
+    getBrowserClient().rpc("validate_coupon", { code_in: coupon.code, subtotal_in: subtotal }).then(({ data }: { data: any }) => {
+      const row = Array.isArray(data) ? data[0] : null;
+      if (!row) { setCoupon(null); setMsg({ ok: false, text: t("لم يعد الكود ينطبق على مجموع السلة الحالي") }); try { sessionStorage.removeItem("sb-coupon"); } catch {} }
+      else setCoupon({ code: row.code, discount: Number(row.discount) });
+    });
+  }, [subtotal]); // eslint-disable-line react-hooks/exhaustive-deps
   const left = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const discount = coupon ? Math.min(coupon.discount, subtotal) : 0;
 

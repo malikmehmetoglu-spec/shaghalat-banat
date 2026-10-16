@@ -1,4 +1,5 @@
 "use server";
+import { price } from "@/lib/format";
 import { revalidatePath } from "next/cache";
 import { errMsg, FINANCE_ROLES, requireStaff } from "@/lib/admin";
 import type { ActionResult } from "../actions";
@@ -16,9 +17,11 @@ export async function recordExpense(_: ActionResult | null, fd: FormData): Promi
   let receipt: string | null = null;
   const file = fd.get("receipt");
   if (file instanceof File && file.size > 0) {
-    const path = `${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
+    const ext = (file.name.match(/\.[a-z0-9]{2,5}$/i)?.[0] ?? "").toLowerCase();
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
     const up = await sb.storage.from("receipts").upload(path, file);
-    if (!up.error) receipt = path;
+    if (up.error) return fail("تعذّر رفع صورة الإيصال — لم يُحفظ المصروف، حاولي مجدداً أو احفظيه بدون إيصال");
+    receipt = path;
   }
   const { error } = await sb.rpc("record_expense", {
     p_date: str(fd, "date") || null, p_category: str(fd, "category"), p_description: desc,
@@ -78,7 +81,7 @@ export async function closeShift(counted: number, note: string): Promise<ActionR
   if (error) return fail(errMsg(error));
   touch();
   const d = Number(data);
-  return { ...ok(d === 0 ? "تم إغلاق الوردية — الصندوق مطابق" : d > 0 ? `تم الإغلاق — فائض ${d}` : `تم الإغلاق — عجز ${-d}`), diff: d };
+  return { ...ok(d === 0 ? "تم إغلاق الوردية — الصندوق مطابق" : d > 0 ? `تم الإغلاق — فائض ${price(d)}` : `تم الإغلاق — عجز ${price(-d)}`), diff: d };
 }
 
 export async function saveSettings(_: ActionResult | null, fd: FormData): Promise<ActionResult> {

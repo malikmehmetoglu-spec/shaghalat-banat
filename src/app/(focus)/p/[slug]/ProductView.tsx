@@ -7,6 +7,7 @@ import { FavButton } from "@/components/FavButton";
 import { useCart } from "@/components/CartProvider";
 import { placeholder, price } from "@/lib/format";
 import type { ProductWithVariants } from "@/lib/types";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/shop";
 import { useT } from "@/components/LangProvider";
 
 const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -62,6 +63,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
       unitPrice: unit,
       qty: Math.min(qty, stock),
       image: img ?? null,
+      max: stock,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2200);
@@ -69,7 +71,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
 
   const tabs = [
     { label: t("الوصف"), text: p.description ?? "" },
-    { label: t("التوصيل"), text: t("التوصيل خلال 2 إلى 4 أيام عمل داخل سوريا. الشحن مجاني للطلبات فوق 300 ل.س، ويمكنك الاستبدال خلال 7 أيام من الاستلام. نغلّف طلبك بخصوصية تامة.") },
+    { label: t("التوصيل"), text: t("التوصيل خلال 2 إلى 4 أيام عمل داخل سوريا. الشحن مجاني للطلبات فوق {f}، ويمكنك الاستبدال خلال 7 أيام من الاستلام. نغلّف طلبك بخصوصية تامة.", { f: price(FREE_SHIPPING_THRESHOLD, t) }) },
     { label: t("التقييمات"), text: t("تقييم {r} من {n} عميلة.", { r: Number(p.rating).toFixed(1), n: p.rating_count }) },
   ];
 
@@ -97,7 +99,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
           <span style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.5, color: "var(--magenta)" }}>{price(unit, t)}</span>
-          {p.compare_at_price && <s className="caption">{price(p.compare_at_price, t)}</s>}
+          {Number(p.compare_at_price) > unit && <s className="caption">{price(p.compare_at_price, t)}</s>}
           <span className="caption ltr">★ {Number(p.rating).toFixed(1)} ({p.rating_count})</span>
         </div>
       </div>

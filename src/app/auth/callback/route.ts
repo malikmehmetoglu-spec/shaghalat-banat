@@ -6,7 +6,8 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const nextParam = url.searchParams.get("next") ?? "/";
-  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/";
+  let next = "/";
+  try { const u = new URL(nextParam, url.origin); if (u.origin === url.origin) next = u.pathname + u.search; } catch {}
 
   if (code) {
     const sb = await createClient();

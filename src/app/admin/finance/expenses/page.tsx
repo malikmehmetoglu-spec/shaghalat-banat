@@ -1,5 +1,5 @@
 import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
-import { date, price } from "@/lib/format";
+import { date, price, todayISO } from "@/lib/format";
 import { monthLabel, periodRange } from "@/lib/finance";
 import { FormCard } from "../../FormCard";
 import { addExpenseCategory, recordExpense } from "../actions";
@@ -53,7 +53,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
             <label className="a-field">البيان<input name="description" className="a-in" required placeholder="إيجار المحل لشهر أكتوبر" /></label>
             <div className="a-grid" style={{ gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
               <label className="a-field">المبلغ (ل.س)<input name="amount" type="number" min="1" step="0.01" className="a-in" required /></label>
-              <label className="a-field">التاريخ<input name="date" type="date" className="a-in" defaultValue={new Date().toISOString().slice(0, 10)} /></label>
+              <label className="a-field">التاريخ<input name="date" type="date" className="a-in" defaultValue={todayISO()} /></label>
             </div>
             <label className="a-field">دُفع من<select name="paid_from" className="a-in">{(cashAccs ?? []).map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}</select></label>
             <label className="a-field">صورة الإيصال (اختياري)<input name="receipt" type="file" accept="image/*,application/pdf" capture="environment" className="a-in" style={{ paddingTop: 10 }} /></label>

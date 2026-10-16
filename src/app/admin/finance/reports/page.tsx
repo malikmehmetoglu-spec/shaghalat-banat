@@ -22,7 +22,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   const sp = await searchParams;
   const { sb } = await requireStaff(FINANCE_ROLES);
   const per = periodRange(sp.p, sp.from, sp.to);
-  const now = new Date();
+  const now = new Date(Date.now() + 3 * 3600 * 1000); // تاريخ دمشق (UTC+3) — الخادم يعمل بتوقيت UTC
   const months = Array.from({ length: 6 }, (_, k) => {
     const d = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 5 + k, 1));
     const end = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0));

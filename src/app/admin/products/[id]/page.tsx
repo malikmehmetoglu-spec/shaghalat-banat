@@ -8,9 +8,9 @@ import { DeleteProduct } from "../DeleteProduct";
 
 export const metadata = { title: "تعديل منتج" };
 
-export default async function EditProduct({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string }> }) {
+export default async function EditProduct({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string; warn?: string }> }) {
   const { id } = await params;
-  const { created } = await searchParams;
+  const { created, warn } = await searchParams;
   const { sb, profile } = await requireStaff();
   const [{ data: p }, { data: cats }, locations, fx] = await Promise.all([
     sb.from("products").select("*,product_categories(category_id),product_variants(id,sku,barcode,size,color_name,color_hex,stock_levels(location_id,on_hand,reserved))").eq("id", id).maybeSingle(),
@@ -32,7 +32,8 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
           {profile.role === "owner" && <DeleteProduct id={p.id} name={p.name} redirectTo="/admin/products" />}
         </div>
       </div>
-      {created && (
+      {warn && <div className="a-flash tone-danger">{warn}</div>}
+      {created && !warn && (
         <div className="a-flash tone-success" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <span>تم إنشاء المنتج، وتولّد باركود لكل لون ومقاس تلقائياً.</span>
           <Link href={`/admin/barcodes/print?product=${p.id}`} className="btn" style={{ minHeight: 40 }}>اطبع الملصقات الآن</Link>
