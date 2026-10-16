@@ -48,7 +48,7 @@ export function ProductForm({ p = {}, categories, locations = [], rate }: { p?: 
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}><input type="checkbox" name="is_in_store" defaultChecked={p.is_in_store ?? true} style={{ width: 18, height: 18, accentColor: "var(--magenta)" }} /> متوفر في المحل</label>
       </div>
       {state && <span className={`a-flash ${state.ok ? "tone-success" : "tone-danger"}`}>{state.message}</span>}
-      <button type="submit" className="btn" disabled={pending} style={{ alignSelf: "flex-start", minWidth: 160 }}>{pending ? "جارٍ الحفظ…" : p.id ? "حفظ التغييرات" : "إنشاء المنتج"}</button>
+      <button type="submit" className="btn" disabled={pending} style={{ width: "100%", minHeight: 52, fontSize: 16 }}>{pending ? "جارٍ الحفظ…" : "حفظ المنتج"}</button>
     </form>
   );
 }

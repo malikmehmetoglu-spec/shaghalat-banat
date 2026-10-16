@@ -126,9 +126,11 @@ export async function saveProduct(_: ActionResult | null, fd: FormData): Promise
   const vr = await applyVariantsBulk(sb, data.id, str(fd, "variants_json"), str(fd, "stock_location"));
   const ce = await syncCategories(sb, data.id, fd.getAll("category_ids").map(String).filter(Boolean));
   const problems = [...vr.errors, ...(ce ? [ce] : [])];
-  if (problems.length) { revalidateTag("catalog"); redirect(`/admin/products/${data.id}?created=1&warn=${encodeURIComponent(problems.join(" · "))}`); }
   revalidateTag("catalog"); revalidatePath("/admin/products");
-  redirect(`/admin/products/${data.id}?created=1`);
+  if (problems.length) redirect(`/admin/products/${data.id}?created=1&warn=${encodeURIComponent(problems.join(" · "))}`);
+  revalidateTag("catalog"); revalidatePath("/admin/products");
+  // حُفظ كل شيء بضغطة واحدة — نعود لقائمة المنتجات مع تأكيد واضح
+  redirect(`/admin/products?saved=${data.id}`);
 }
 
 /** ربط المنتج بالأقسام المختارة (يمكن أكثر من قسم) */

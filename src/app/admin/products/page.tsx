@@ -9,8 +9,8 @@ import { DeleteProduct } from "./DeleteProduct";
 
 export const metadata = { title: "المنتجات" };
 
-export default async function AdminProducts({ searchParams }: { searchParams: Promise<{ cat?: string; q?: string }> }) {
-  const { cat = "", q = "" } = await searchParams;
+export default async function AdminProducts({ searchParams }: { searchParams: Promise<{ cat?: string; q?: string; saved?: string }> }) {
+  const { cat = "", q = "", saved } = await searchParams;
   const { sb, profile } = await requireStaff();
   const isOwner = profile.role === "owner";
   const [locations, { data: cats }] = await Promise.all([getLocations(), sb.from("categories").select("id,name").order("sort_order")]);
@@ -44,6 +44,14 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
           <Link href="/admin/products/new" className="btn">+ إضافة منتج</Link>
         </div>
       </div>
+      {saved && (() => { const sp = (products ?? []).find((x: any) => x.id === saved); return sp ? (
+        <div className="a-flash tone-success" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <span>✓ تم حفظ «{sp.name}» بكل ألوانه ومقاساته وكمياته، وتولّد باركود لكل قطعة.</span>
+          <span style={{ display: "flex", gap: 8 }}>
+            <Link href={`/admin/barcodes/print?product=${sp.id}`} className="btn" style={{ minHeight: 40 }}>اطبع الملصقات</Link>
+            <Link href="/admin/products/new" className="btn soft" style={{ minHeight: 40 }}>+ منتج آخر</Link>
+          </span>
+        </div>) : null; })()}
       <details className="fx-mini">
         <summary>💵 سعر الدولار: <b className="ltr">{fx.rate.toLocaleString("en-US", { maximumFractionDigits: 2 })}</b> ل.س {fx.auto ? "· تلقائي" : "· يدوي"}</summary>
         <div style={{ marginTop: 10, maxWidth: 520 }}><FxCard {...fx} canEdit={["owner", "accountant"].includes(profile.role)} /></div>
