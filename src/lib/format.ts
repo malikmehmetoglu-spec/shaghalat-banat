@@ -54,3 +54,6 @@ export const PAYMENT_LABEL: Record<string, string> = {
 
 /** رابط النسخة المصغّرة من صورة مرفوعة (t_ قبل اسم الملف) */
 export const thumbUrl = (u: string) => u.replace(/\/([^/]+)$/, "/t_$1");
+
+/** الروابط العربية تصل مُرمَّزة (%D9%82…) — نفكّها قبل البحث عنها */
+export const decodeSlug = (s: string) => { try { return decodeURIComponent(s); } catch { return s; } };

@@ -17,25 +17,37 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
   const { add, count } = useCart();
   const variants = p.product_variants;
 
-  const sizes = useMemo(() => {
-    const s = Array.from(new Set(variants.map((v) => v.size ?? "")));
-    return s.sort((a, b) => (SIZE_ORDER.indexOf(a) + 1 || 99) - (SIZE_ORDER.indexOf(b) + 1 || 99) || (parseFloat(a) || 0) - (parseFloat(b) || 0));
-  }, [variants]);
+  // اللون أولاً ثم المقاسات المتوفرة لذلك اللون — يدعم منتجات بلا لون أو بلا مقاس أو مزيج منهما
+  const sortSizes = (arr: string[]) => arr.sort((a, b) => (SIZE_ORDER.indexOf(a) + 1 || 99) - (SIZE_ORDER.indexOf(b) + 1 || 99) || (parseFloat(a) || 0) - (parseFloat(b) || 0));
   const colors = useMemo(() => {
-    const m = new Map<string, string>();
-    variants.forEach((v) => v.color_name && m.set(v.color_name, v.color_hex ?? "#ccc"));
-    return Array.from(m, ([name, hex]) => ({ name, hex }));
+    const m = new Map<string, { name: string; hex: string; avail: number }>();
+    variants.forEach((v) => {
+      const k = v.color_name ?? "";
+      const cur = m.get(k);
+      m.set(k, { name: k, hex: v.color_hex ?? cur?.hex ?? "#ccc", avail: (cur?.avail ?? 0) + (v.available ?? 0) });
+    });
+    return Array.from(m.values());
   }, [variants]);
+  const hasColors = colors.some((c) => c.name !== "");
 
   const firstAvail = variants.find((v) => v.available > 0) ?? variants[0];
-  const [size, setSize] = useState(firstAvail?.size ?? "");
   const [color, setColor] = useState(firstAvail?.color_name ?? "");
+  const [size, setSize] = useState(firstAvail?.size ?? "");
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState(0);
   const [added, setAdded] = useState(false);
 
-  const current = variants.find((v) => (v.size ?? "") === size && (colors.length ? v.color_name === color : true));
-  const sizeAvailable = (s: string) => variants.some((v) => (v.size ?? "") === s && (colors.length ? v.color_name === color : true) && v.available > 0);
+  const ofColor = (c: string) => variants.filter((v) => (v.color_name ?? "") === c);
+  const sizes = useMemo(() => sortSizes(Array.from(new Set(ofColor(color).map((v) => v.size ?? "")))), [variants, color]); // eslint-disable-line react-hooks/exhaustive-deps
+  const showSizes = sizes.some((x) => x !== "");
+  const current = ofColor(color).find((v) => (v.size ?? "") === size) ?? ofColor(color)[0];
+  const sizeAvailable = (sz: string) => ofColor(color).some((v) => (v.size ?? "") === sz && v.available > 0);
+  const pickColor = (c: string) => {
+    setColor(c); setQty(1);
+    const list = ofColor(c);
+    const keep = list.find((v) => (v.size ?? "") === size && v.available > 0);
+    setSize((keep ?? list.find((v) => v.available > 0) ?? list[0])?.size ?? "");
+  };
   const unit = Number(current?.price_override ?? p.price);
   const stock = current?.available ?? 0;
   const img = p.images?.[0];
@@ -91,26 +103,26 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
       </div>
 
       <div className="soft-card" style={{ gap: 20 }}>
-        {sizes.length > 0 && sizes[0] !== "" && (
+        {showSizes && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>{t("المقاس")}</span>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               {sizes.map((s) => (
-                <button key={s} type="button" className={`size${size === s ? " on" : ""}`} onClick={() => { setSize(s); setQty(1); }} disabled={!sizeAvailable(s)} aria-pressed={size === s}>{s}</button>
+                <button key={s || "-"} type="button" className={`size${(current?.size ?? "") === s ? " on" : ""}`} onClick={() => { setSize(s); setQty(1); }} disabled={!sizeAvailable(s)} aria-pressed={(current?.size ?? "") === s}>{s || t("مقاس واحد")}</button>
               ))}
             </div>
           </div>
         )}
-        {colors.length > 0 && (
+        {hasColors && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>{t("اللون:")}</span>
-              <span className="muted">{color}</span>
+              <span className="muted">{color || t("بدون لون")}</span>
             </div>
-            <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               {colors.map((c) => (
-                <button key={c.name} type="button" className={`swatch${color === c.name ? " on" : ""}`} onClick={() => { setColor(c.name); setQty(1); }} aria-label={c.name} aria-pressed={color === c.name}>
-                  <span style={{ background: c.hex }} />
+                <button key={c.name || "-"} type="button" className={`swatch${color === c.name ? " on" : ""}`} onClick={() => pickColor(c.name)} aria-label={c.name || t("بدون لون")} aria-pressed={color === c.name} title={c.name || t("بدون لون")} style={c.avail <= 0 ? { opacity: .35 } : undefined}>
+                  <span style={{ background: c.name ? c.hex : "repeating-linear-gradient(45deg,#eee 0 4px,#fff 4px 8px)" }} />
                 </button>
               ))}
             </div>

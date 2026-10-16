@@ -1,3 +1,4 @@
+import { decodeSlug } from "@/lib/format";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
@@ -16,7 +17,7 @@ const SORTS: { key: SortKey; label: string }[] = [
 
 export default async function CategoryPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ sort?: string }> }) {
   const t = await getT();
-  const { slug } = await params;
+  const slug = decodeSlug((await params).slug);
   const { sort = "new" } = await searchParams;
   const sb = await createClient();
   const { data: cat } = await sb.from("categories").select("id,name,name_en,slug,image_url").eq("slug", slug).maybeSingle();

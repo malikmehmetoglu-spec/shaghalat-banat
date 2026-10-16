@@ -325,4 +325,6 @@ export const EN: Record<string, string> = {
   "رقم الطلب": "Order number",
   "سنتواصل معك قريباً على رقمك لتأكيد الطلب وموعد التوصيل.": "We’ll contact you shortly to confirm your order and delivery time.",
   "تواصلي معنا على واتساب": "Message us on WhatsApp",
+  "مقاس واحد": "One size",
+  "بدون لون": "No color",
 };
