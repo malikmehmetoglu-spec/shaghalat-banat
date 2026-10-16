@@ -44,7 +44,7 @@ export default async function CatalogPage() {
               <label className="a-field">الاسم<input name="name" className="a-in" required /></label>
               <label className="a-field">الاسم بالإنجليزية<input name="name_en" className="a-in ltr" /></label>
               <label className="a-field">الترتيب<input name="sort_order" type="number" className="a-in" defaultValue={99} /></label>
-              <label className="a-field">رابط مختصر<input name="slug" className="a-in ltr" placeholder="dresses" /></label>
+              <label className="a-field">رابط مختصر<input name="slug" className="a-in ltr" placeholder="dresses (حروف إنجليزية، اختياري)" /></label>
             </div>
             <ImageUpload name="image_url" folder="categories" label="صورة القسم (اختياري)" ratio="3 / 4" />
           </FormCard>

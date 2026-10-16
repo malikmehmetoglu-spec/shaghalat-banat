@@ -75,9 +75,15 @@ export async function sendCampaign(_: ActionResult | null, fd: FormData): Promis
 }
 
 // ───────── المنتجات ─────────
+/** رمز قصير بحروف إنجليزية صغيرة وأرقام (بلا أحرف ملتبسة مثل 0/o و 1/l) */
+function shortCode(n = 6) {
+  const a = "abcdefghjkmnpqrstuvwxyz23456789";
+  return Array.from(crypto.getRandomValues(new Uint8Array(n)), (x) => a[x % a.length]).join("");
+}
+/** رابط مختصر: للأقسام من الاسم الإنجليزي إن وُجد، وللمنتجات رمز قصير دائماً */
 function slugify(s: string) {
-  const base = s.toLowerCase().replace(/[^a-z0-9؀-ۿ]+/g, "-").replace(/^-|-$/g, "");
-  return `${base || "p"}-${Math.random().toString(36).slice(2, 6)}`;
+  const base = s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24);
+  return base || shortCode();
 }
 
 export async function saveProduct(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
@@ -115,7 +121,7 @@ export async function saveProduct(_: ActionResult | null, fd: FormData): Promise
     if (problems.length) return fail(`حُفظ المنتج لكن: ${problems.join(" · ")}`);
     return ok("تم حفظ المنتج");
   }
-  const { data, error } = await sb.from("products").insert({ ...row, slug: slugify(str(fd, "name_en") || name) }).select("id").single();
+  const { data, error } = await sb.from("products").insert({ ...row, slug: shortCode() }).select("id").single();
   if (error || !data) return fail(errMsg(error));
   const vr = await applyVariantsBulk(sb, data.id, str(fd, "variants_json"), str(fd, "stock_location"));
   const ce = await syncCategories(sb, data.id, fd.getAll("category_ids").map(String).filter(Boolean));

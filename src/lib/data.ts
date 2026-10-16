@@ -69,6 +69,12 @@ export async function getProducts(opts: { categorySlug?: string; sort?: SortKey;
   return localize(data);
 }
 
+/** رابط قديم (قبل الروابط القصيرة) → الرابط الجديد */
+export async function findRenamedProduct(oldSlug: string): Promise<string | null> {
+  const { data } = await publicClient().from("products").select("slug").eq("old_slug", oldSlug).is("archived_at", null).maybeSingle();
+  return data?.slug ?? null;
+}
+
 export async function getProduct(slug: string): Promise<ProductWithVariants | null> {
   const data = await cached(["product", slug], async () => {
   const sb = publicClient();
