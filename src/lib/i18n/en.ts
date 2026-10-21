@@ -329,4 +329,7 @@ export const EN: Record<string, string> = {
   "بدون لون": "No color",
   "لم يعد الكود ينطبق على مجموع السلة الحالي": "This code no longer applies to your current cart total",
   "التوصيل غير متاح حالياً، تواصلي معنا على واتساب لإتمام طلبك": "Delivery is unavailable right now — message us on WhatsApp to complete your order",
+  "اللون": "Color",
+  "توصيل لكل سوريا": "Delivery across Syria",
+  "تغليف بخصوصية تامة": "Discreet packaging",
 };

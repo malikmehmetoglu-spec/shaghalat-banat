@@ -92,67 +92,71 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
       </div>
 
       <div className="pv-info">
-      <div className="row-between" style={{ alignItems: "flex-start" }}>
-        <div className="title-block">
-          <h1 style={{ fontSize: 24, fontWeight: 700, lineHeight: 1.5 }}>{p.name}</h1>
-          <p className="caption" style={{ fontSize: 13 }}>{p.subtitle}</p>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-          <span style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.5, color: "var(--magenta)" }}>{price(unit, t)}</span>
-          {Number(p.compare_at_price) > unit && <s className="caption">{price(p.compare_at_price, t)}</s>}
-          <span className="caption ltr">★ {Number(p.rating).toFixed(1)} ({p.rating_count})</span>
-        </div>
-      </div>
+        <header className="pv-head">
+          <h1 className="pv-title">{p.name}</h1>
+          {p.subtitle && <p className="pv-sub">{p.subtitle}</p>}
+          <div className="pv-price-row">
+            <span className="pv-price">{price(unit, t)}</span>
+            {Number(p.compare_at_price) > unit && <s className="pv-was">{price(p.compare_at_price, t)}</s>}
+            {Number(p.rating_count) > 0 && <span className="pv-rate ltr">★ {Number(p.rating).toFixed(1)} <span>({p.rating_count})</span></span>}
+          </div>
+        </header>
 
-      <div className="soft-card" style={{ gap: 20 }}>
-        {showSizes && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>{t("المقاس")}</span>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {sizes.map((s) => (
-                <button key={s || "-"} type="button" className={`size${(current?.size ?? "") === s ? " on" : ""}`} onClick={() => { setSize(s); setQty(1); }} disabled={!sizeAvailable(s)} aria-pressed={(current?.size ?? "") === s}>{s || t("مقاس واحد")}</button>
-              ))}
-            </div>
-          </div>
+        {(showSizes || hasColors) && (
+          <section className="pv-opts">
+            {hasColors && (
+              <div className="pv-opt">
+                <div className="pv-opt-label"><b>{t("اللون")}</b><span>{color || t("بدون لون")}</span></div>
+                <div className="pv-opt-row">
+                  {colors.map((c) => (
+                    <button key={c.name || "-"} type="button" className={`swatch${color === c.name ? " on" : ""}`} onClick={() => pickColor(c.name)} aria-label={c.name || t("بدون لون")} aria-pressed={color === c.name} title={c.name || t("بدون لون")} style={c.avail <= 0 ? { opacity: .35 } : undefined}>
+                      <span style={{ background: c.name ? c.hex : "repeating-linear-gradient(45deg,#eee 0 4px,#fff 4px 8px)" }} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {showSizes && (
+              <div className="pv-opt">
+                <div className="pv-opt-label"><b>{t("المقاس")}</b><span>{current?.size || t("مقاس واحد")}</span></div>
+                <div className="pv-opt-row">
+                  {sizes.map((s) => (
+                    <button key={s || "-"} type="button" className={`size${(current?.size ?? "") === s ? " on" : ""}`} onClick={() => { setSize(s); setQty(1); }} disabled={!sizeAvailable(s)} aria-pressed={(current?.size ?? "") === s}>{s || t("مقاس واحد")}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
         )}
-        {hasColors && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>{t("اللون:")}</span>
-              <span className="muted">{color || t("بدون لون")}</span>
-            </div>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              {colors.map((c) => (
-                <button key={c.name || "-"} type="button" className={`swatch${color === c.name ? " on" : ""}`} onClick={() => pickColor(c.name)} aria-label={c.name || t("بدون لون")} aria-pressed={color === c.name} title={c.name || t("بدون لون")} style={c.avail <= 0 ? { opacity: .35 } : undefined}>
-                  <span style={{ background: c.name ? c.hex : "repeating-linear-gradient(45deg,#eee 0 4px,#fff 4px 8px)" }} />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        <span className="caption" style={{ color: stock > 0 && stock < 4 ? "var(--warning-fg)" : stock > 0 ? "var(--success-fg)" : "var(--danger-fg)", fontWeight: 500 }}>
-          {stock <= 0 ? t("غير متوفر حالياً بهذا الخيار") : stock < 4 ? t("بقي {n} قطع فقط", { n: stock }) : t("متوفر")}
+
+        <span className={`pv-stock ${stock <= 0 ? "out" : stock < 4 ? "low" : "ok"}`}>
+          <i />{stock <= 0 ? t("غير متوفر حالياً بهذا الخيار") : stock < 4 ? t("بقي {n} قطع فقط", { n: stock }) : t("متوفر")}
         </span>
-      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div className="seg" role="tablist">
-          {tabs.map((tb, i) => <button key={tb.label} type="button" role="tab" aria-selected={tab === i} className={tab === i ? "on" : ""} onClick={() => setTab(i)}>{tb.label}</button>)}
+        <div className="action-bar">
+          <div className="qty lg">
+            <button type="button" aria-label={t("زيادة الكمية")} onClick={() => setQty((q) => Math.min(q + 1, Math.max(stock, 1)))}><Icon name="plus" size={16} stroke={2.4} /></button>
+            <span style={{ fontSize: 16 }}>{qty}</span>
+            <button type="button" aria-label={t("إنقاص الكمية")} onClick={() => setQty((q) => Math.max(1, q - 1))}><Icon name="minus" size={16} stroke={2.4} /></button>
+          </div>
+          <button type="button" className="btn cta" style={{ flex: 1 }} onClick={addToCart} disabled={stock <= 0}>
+            {added ? t("تمت الإضافة ✓") : stock <= 0 ? t("غير متوفر") : t("أضيفي إلى السلة")}
+            {!added && stock > 0 && <Icon name="bag" stroke={2} />}
+          </button>
         </div>
-        <p style={{ fontSize: 14, lineHeight: 1.9, color: "var(--neutral-fg)" }}>{tabs[tab].text}</p>
-      </div>
 
-      <div className="action-bar">
-        <div className="qty lg">
-          <button type="button" aria-label={t("زيادة الكمية")} onClick={() => setQty((q) => Math.min(q + 1, Math.max(stock, 1)))}><Icon name="plus" size={16} stroke={2.4} /></button>
-          <span style={{ fontSize: 16 }}>{qty}</span>
-          <button type="button" aria-label={t("إنقاص الكمية")} onClick={() => setQty((q) => Math.max(1, q - 1))}><Icon name="minus" size={16} stroke={2.4} /></button>
-        </div>
-        <button type="button" className="btn cta" style={{ flex: 1 }} onClick={addToCart} disabled={stock <= 0}>
-          {added ? t("تمت الإضافة ✓") : stock <= 0 ? t("غير متوفر") : t("أضيفي إلى السلة")}
-          {!added && stock > 0 && <Icon name="bag" stroke={2} />}
-        </button>
-      </div>
+        <ul className="pv-trust">
+          <li><Icon name="truck" size={18} /> {t("توصيل لكل سوريا")}</li>
+          <li><Icon name="return" size={18} /> {t("استبدال خلال 7 أيام")}</li>
+          <li><Icon name="shield" size={18} /> {t("تغليف بخصوصية تامة")}</li>
+        </ul>
+
+        <section className="pv-tabs">
+          <div className="seg" role="tablist">
+            {tabs.map((tb, i) => <button key={tb.label} type="button" role="tab" aria-selected={tab === i} className={tab === i ? "on" : ""} onClick={() => setTab(i)}>{tb.label}</button>)}
+          </div>
+          <p>{tabs[tab].text}</p>
+        </section>
       </div>
     </main>
   );

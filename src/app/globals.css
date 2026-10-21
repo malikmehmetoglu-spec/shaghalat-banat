@@ -544,12 +544,10 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 @media (min-width: 1024px) and (max-width: 1599px) { :root { --z: .9; } }
 @media (min-width: 1024px) and (max-width: 1599px) and (max-height: 760px) { :root { --z: .88; } }
 @media (min-width: 1024px) {
-  body { zoom: var(--z); }
+  html { zoom: var(--z); }
   .app, .adm, main[style*="100dvh"] { min-height: calc(100dvh / var(--z)) !important; }
   .adm-side { height: calc(100dvh / var(--z)) !important; }
   /* صفحة المنتج: الصورة لا تتجاوز ارتفاع الشاشة وتبقى ثابتة أثناء التمرير */
-  .pv-media { height: min(620px, calc(100dvh / var(--z) - 230px)) !important; position: sticky !important; top: 24px; }
-  .pv { padding-top: 24px !important; gap: 40px !important; }
 }
 
 /* زجاج مدخّن بلون التوت: النص الأبيض واضح فوق أي صورة مهما كانت فاتحة */
@@ -562,3 +560,48 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 .pc-glass .pc-name, .pc-glass .pc-price b { text-shadow: 0 1px 4px rgba(40, 0, 24, .35); }
 .pc-glass .pc-sub { color: rgba(255, 255, 255, .88); }
 .pc-glass .pc-price s { color: rgba(255, 228, 239, .75); }
+
+/* ═════ صفحة المنتج — تصميم متوازن ═════ */
+.pv-info { gap: 22px; }
+.pv-head { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; border-bottom: 1px solid rgba(142, 2, 84, .10); }
+.pv-title { margin: 0; font-size: 24px; font-weight: 800; line-height: 1.45; color: var(--dark-plum); letter-spacing: -.2px; }
+.pv-sub { margin: 0; font-size: 14px; line-height: 1.7; color: var(--text-muted); }
+.pv-price-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+.pv-price { font-size: 28px; font-weight: 800; line-height: 1.3; color: var(--magenta); }
+.pv-was { font-size: 15px; color: var(--text-subtle); }
+.pv-rate { font-size: 13px; color: var(--deep-berry); padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.7); }
+.pv-rate span { color: var(--text-subtle); }
+
+.pv-opts { display: flex; flex-direction: column; gap: 20px; }
+.pv-opt { display: flex; flex-direction: column; gap: 12px; }
+.pv-opt-label { display: flex; align-items: baseline; gap: 8px; font-size: 14px; line-height: 1.5; }
+.pv-opt-label b { font-weight: 700; color: var(--dark-plum); }
+.pv-opt-label span { color: var(--text-muted); }
+.pv-opt-label b::after { content: ":"; }
+.pv-opt-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.pv-opt .size { min-width: 56px; height: 46px; padding: 0 16px; border-radius: 14px; font-size: 14px; font-weight: 600; }
+.pv-opt .swatch { width: 46px; height: 46px; }
+.pv-opt .swatch span { width: 34px; height: 34px; }
+
+.pv-stock { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; font-size: 13px; font-weight: 600; line-height: 1.4; padding: 6px 12px; border-radius: 999px; }
+.pv-stock i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.pv-stock.ok { color: var(--success-fg); background: rgba(46, 125, 50, .08); }
+.pv-stock.low { color: var(--warning-fg); background: rgba(198, 120, 0, .10); }
+.pv-stock.out { color: var(--danger-fg); background: rgba(198, 40, 40, .08); }
+
+.pv-trust { list-style: none; margin: 0; padding: 14px 4px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; border-block: 1px solid rgba(142, 2, 84, .10); }
+.pv-trust li { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12.5px; line-height: 1.4; color: var(--deep-berry); text-align: center; }
+.pv-trust li svg { flex-shrink: 0; color: var(--magenta); }
+
+.pv-tabs { display: flex; flex-direction: column; gap: 14px; }
+.pv-tabs p { margin: 0; font-size: 14px; line-height: 1.9; color: var(--neutral-fg); }
+
+@media (min-width: 1024px) {
+  .pv { max-width: 1240px !important; margin-inline: auto; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) !important; gap: 64px !important; align-items: start !important; padding-top: 32px !important; }
+  .pv-media { position: sticky !important; top: 24px; width: 100%; max-width: none !important; height: min(640px, calc(100dvh - 140px)) !important; aspect-ratio: auto !important; }
+  .pv-info { padding-top: 12px; gap: 24px; }
+  .pv-title { font-size: 30px; }
+  .pv-price { font-size: 30px; }
+  .pv-info .action-bar { gap: 12px; }
+  .pv-info .action-bar .btn { min-height: 56px; font-size: 16px; }
+}
