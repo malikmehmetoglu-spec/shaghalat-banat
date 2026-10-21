@@ -530,3 +530,8 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 
 /* صور مصغّرة تملأ حاويتها */
 .pic-fill { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* على الكمبيوتر: شريط الإضافة للسلة جزء من الصفحة بلا خلفية بيضاء */
+@media (min-width: 1024px) {
+  .action-bar { background: none; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
+}
