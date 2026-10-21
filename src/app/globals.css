@@ -540,9 +540,9 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
    التصميم على الكمبيوتر كان كبيراً على شاشات 13–15 إنش (يحتاج تمريراً لرؤية المحتوى).
    نصغّر الواجهة كلها بنسبة متناسقة على شاشات اللابتوب، ونعوّض وحدات ارتفاع الشاشة. */
 :root { --z: 1; }
-@media (min-width: 1024px) and (max-width: 1919px) { :root { --z: .9; } }
-@media (min-width: 1024px) and (max-width: 1599px) { :root { --z: .82; } }
-@media (min-width: 1024px) and (max-height: 820px) { :root { --z: .78; } }
+@media (min-width: 1024px) and (max-width: 1919px) { :root { --z: .95; } }
+@media (min-width: 1024px) and (max-width: 1599px) { :root { --z: .9; } }
+@media (min-width: 1024px) and (max-width: 1599px) and (max-height: 760px) { :root { --z: .88; } }
 @media (min-width: 1024px) {
   body { zoom: var(--z); }
   .app, .adm, main[style*="100dvh"] { min-height: calc(100dvh / var(--z)) !important; }
