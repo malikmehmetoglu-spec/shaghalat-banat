@@ -38,7 +38,7 @@ export async function getBanners() {
 
 export type SortKey = "new" | "best" | "price_asc" | "price_desc";
 
-export async function getProducts(opts: { categorySlug?: string; sort?: SortKey; q?: string; limit?: number } = {}): Promise<Product[]> {
+export async function getProducts(opts: { categorySlug?: string; sort?: SortKey; q?: string; limit?: number; minPrice?: number; maxPrice?: number; onSale?: boolean } = {}): Promise<Product[]> {
   const load = async () => {
   const sb = publicClient();
   let catId: string | null = null;
@@ -54,6 +54,9 @@ export async function getProducts(opts: { categorySlug?: string; sort?: SortKey;
     if (!term) return [];
     query = query.or(`name.ilike.%${term}%,subtitle.ilike.%${term}%,description.ilike.%${term}%`);
   }
+  if (opts.minPrice != null) query = query.gte("price", opts.minPrice);
+  if (opts.maxPrice != null) query = query.lte("price", opts.maxPrice);
+  if (opts.onSale) query = query.not("compare_at_price", "is", null);
   switch (opts.sort) {
     case "best": query = query.order("sold_count", { ascending: false }); break;
     case "price_asc": query = query.order("price", { ascending: true }); break;
@@ -62,7 +65,11 @@ export async function getProducts(opts: { categorySlug?: string; sort?: SortKey;
   }
   if (opts.limit) query = query.limit(opts.limit);
   const { data } = await query;
-  return (data ?? []) as unknown as Product[];
+  let rows = (data ?? []) as unknown as Product[];
+  // العروض: السعر القديم أعلى فعلاً من الحالي، والأكبر خصماً أولاً
+  if (opts.onSale) rows = rows.filter((p) => Number(p.compare_at_price) > Number(p.price))
+    .sort((a, b) => (1 - b.price / Number(b.compare_at_price)) - (1 - a.price / Number(a.compare_at_price)));
+  return rows;
   };
   // البحث لا يُخزَّن (كل عبارة مختلفة)، والباقي يُخزَّن مؤقتاً
   const data = opts.q ? await load() : await cached(["products", JSON.stringify(opts)], load);
@@ -118,4 +125,20 @@ export async function getUnreadCount(): Promise<number> {
   if (!u.user) return 0;
   const { count } = await sb.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", u.user.id).eq("is_read", false);
   return count ?? 0;
+}
+
+/** آراء الزبونات الظاهرة */
+export async function getTestimonials(): Promise<{ id: string; name: string; city: string | null; body: string; rating: number }[]> {
+  return cached(["testimonials"], async () => {
+    const { data } = await publicClient().from("testimonials").select("id,name,city,body,rating").eq("is_visible", true).order("created_at", { ascending: false }).limit(12);
+    return data ?? [];
+  });
+}
+
+/** روابط التواصل العامة للمتجر */
+export async function getStoreProfile(): Promise<{ instagram_url: string | null; whatsapp: string | null }> {
+  return cached(["store_profile"], async () => {
+    const { data } = await publicClient().from("store_profile").select("instagram_url,whatsapp").eq("id", 1).maybeSingle();
+    return data ?? { instagram_url: null, whatsapp: null };
+  });
 }

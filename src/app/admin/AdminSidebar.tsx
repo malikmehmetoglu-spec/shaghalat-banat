@@ -19,6 +19,7 @@ const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean
     { href: "/admin/products", label: "المنتجات", icon: "tag" },
     { href: "/admin/catalog", label: "الأقسام والبانرات", icon: "star" },
     { href: "/admin/coupons", label: "الكوبونات", icon: "tag" },
+    { href: "/admin/reviews", label: "آراء الزبونات", icon: "chat" },
     { href: "/admin/push", label: "إرسال الإشعارات", icon: "bell" },
   ] },
   { title: "المخزون", items: [

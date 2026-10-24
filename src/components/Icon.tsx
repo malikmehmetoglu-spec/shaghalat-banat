@@ -2,9 +2,11 @@
 type Name =
   | "home" | "grid" | "heart" | "bag" | "user" | "bell" | "search" | "back" | "forward"
   | "plus" | "minus" | "trash" | "pin" | "truck" | "card" | "check" | "close" | "chat"
-  | "shield" | "logout" | "edit" | "sort" | "filter" | "star" | "clock" | "globe" | "return" | "tag" | "info" | "barcode" | "boxes";
+  | "shield" | "logout" | "edit" | "sort" | "filter" | "star" | "clock" | "globe" | "return" | "tag" | "info" | "barcode" | "boxes" | "instagram" | "fire";
 
 const paths: Record<Name, React.ReactNode> = {
+  instagram: (<><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="4" /><path d="M17 7v.01" /></>),
+  fire: <path d="M12 21c-4 0-7-2.7-7-6.5 0-3 2-5 3.5-6.5.2 2 1.3 3 2.5 3.5C11 8 12 5.5 11.5 3c3.5 2 7.5 6 7.5 11.5 0 3.8-3 6.5-7 6.5z" />,
   home: <path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />,
   grid: (<><rect x="4" y="4" width="6.5" height="6.5" rx="2" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="2" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="2" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="2" /></>),
   heart: <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />,

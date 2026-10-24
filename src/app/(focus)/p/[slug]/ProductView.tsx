@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { pushRecent } from "@/components/home/RecentlyViewed";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { FavButton } from "@/components/FavButton";
@@ -17,6 +18,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
   const router = useRouter();
   const { add, count } = useCart();
   const variants = p.product_variants;
+  useEffect(() => { pushRecent({ slug: p.slug, name: p.name, price: Number(p.price), img: p.images?.[0] ?? null }); }, [p.slug, p.name, p.price, p.images]);
 
   // اللون أولاً ثم المقاسات المتوفرة لذلك اللون — يدعم منتجات بلا لون أو بلا مقاس أو مزيج منهما
   const sortSizes = (arr: string[]) => arr.sort((a, b) => (SIZE_ORDER.indexOf(a) + 1 || 99) - (SIZE_ORDER.indexOf(b) + 1 || 99) || (parseFloat(a) || 0) - (parseFloat(b) || 0));

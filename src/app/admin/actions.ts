@@ -355,6 +355,35 @@ export async function toggleCoupon(code: string, active: boolean): Promise<Actio
   return ok("تم");
 }
 
+// ───────── آراء الزبونات ─────────
+export async function saveTestimonial(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const { sb } = await requireStaff(rolesFor("/admin/reviews"));
+  const name = str(fd, "name"), body = str(fd, "body");
+  if (!name) return fail("اسم الزبونة مطلوب");
+  if (body.length < 5) return fail("اكتبي نص الرأي");
+  const rating = Math.min(5, Math.max(1, Number(asciiCode(str(fd, "rating")) || 5)));
+  const { error } = await sb.from("testimonials").insert({ name, body: body.slice(0, 400), city: str(fd, "city") || null, rating });
+  if (error) return fail(errMsg(error));
+  revalidateTag("catalog"); revalidatePath("/admin/reviews");
+  return ok("تمت إضافة الرأي");
+}
+
+export async function toggleTestimonial(id: string, visible: boolean): Promise<ActionResult> {
+  const { sb } = await requireStaff(rolesFor("/admin/reviews"));
+  const { error } = await sb.from("testimonials").update({ is_visible: visible }).eq("id", id);
+  if (error) return fail(errMsg(error));
+  revalidateTag("catalog"); revalidatePath("/admin/reviews");
+  return ok("تم");
+}
+
+export async function deleteTestimonial(id: string): Promise<ActionResult> {
+  const { sb } = await requireStaff(rolesFor("/admin/reviews"));
+  const { error } = await sb.from("testimonials").delete().eq("id", id);
+  if (error) return fail(errMsg(error));
+  revalidateTag("catalog"); revalidatePath("/admin/reviews");
+  return ok("تم الحذف");
+}
+
 // ───────── الموظفون ─────────
 export async function setRole(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
   const { sb, profile } = await requireStaff();

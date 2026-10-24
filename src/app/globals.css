@@ -633,3 +633,91 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .hero-dots { bottom: 32px; inset-inline-start: 64px; }
   .hero-mark { width: 420px; inset-inline-end: 34%; bottom: -120px; }
 }
+
+/* ═════════ أقسام الصفحة الرئيسية الإضافية (24 أكتوبر 2026) ═════════ */
+.sec-head { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.sec-head .sec-title { display: flex; align-items: center; gap: 8px; }
+.sec-sub { font-size: 13px; line-height: 1.6; color: #6B5560; }
+
+/* صف منتجات أفقي يُسحب */
+.prow { display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px; padding: 2px 20px 6px; scroll-snap-type: x mandatory; }
+.prow-item { position: relative; flex: 0 0 58%; flex-shrink: 0; scroll-snap-align: start; }
+.off-badge, .rank-badge { position: absolute; z-index: 3; top: 12px; inset-inline-start: 12px; pointer-events: none; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; line-height: 1.4; }
+.off-badge { padding: 4px 10px; border-radius: 14px; background: var(--magenta); color: #fff; font-size: 12px; box-shadow: 0 6px 14px rgba(214,3,127,.35); }
+.rank-badge { width: 32px; height: 32px; border-radius: 50%; background: var(--deep-berry); color: #fff; font-size: 14px; }
+.prow-item .tag { display: none; }
+.prow-item .pc-price b, .prow-item .pc-price s { white-space: nowrap; }
+
+/* عروض اليوم */
+.deals { background: var(--light-blush); border-radius: 28px; padding: 24px 20px; }
+.deals .prow { margin: 0 -20px; }
+.deals-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.deals-head .sec-title { color: var(--deep-berry); }
+.deals > .link-btn { align-self: flex-start; }
+.deal-timer { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 14px; border-radius: 18px; background: var(--deep-berry); color: #fff; flex-shrink: 0; }
+.deal-timer-lbl { font-size: 11px; line-height: 1.4; color: var(--rosy-gray); }
+.deal-timer-v { font-size: 18px; font-weight: 700; line-height: 1.4; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+
+/* بانر التشكيلة — نفس روح السلايدر */
+.collect { position: relative; overflow: hidden; display: flex; align-items: flex-end; gap: 16px; padding: 28px 24px 0; border-radius: 28px; background: var(--magenta); color: #fff; text-decoration: none; box-shadow: 0 22px 48px rgba(214,3,127,.25); }
+.collect-mark { position: absolute; width: 240px; inset-inline-end: 30%; bottom: -80px; filter: brightness(0) invert(1); opacity: .09; pointer-events: none; }
+.collect-text { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; align-self: center; padding-bottom: 28px; }
+.collect .hero-kicker { color: var(--light-blush); }
+.collect-title { font-size: 24px; font-weight: 800; line-height: 1.45; }
+.collect-sub { font-size: 13px; line-height: 1.6; color: var(--light-blush); }
+.collect .btn.collect-cta { margin-top: 6px; height: 44px; font-size: 14px; padding: 0 20px; background: #fff; color: var(--deep-berry); box-shadow: none; }
+.collect-arch { position: relative; flex-shrink: 0; width: 38%; max-width: 170px; aspect-ratio: 3 / 4; border-radius: 50% 50% 0 0 / 34% 34% 0 0; overflow: hidden; outline: 3px solid rgba(255,255,255,.2); outline-offset: -3px; }
+
+/* تسوّقي حسب السعر */
+.band-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.band { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 24px 12px; border-radius: 24px; background: #fff; border: 1.5px solid var(--rosy-gray); text-decoration: none; color: var(--dark-plum); transition: border-color .2s, transform .2s; }
+.band:hover { border-color: var(--magenta); transform: translateY(-2px); }
+.band-lbl { font-size: 13px; line-height: 1.5; color: #6B5560; }
+.band-num { font-size: 28px; font-weight: 800; line-height: 1.4; color: var(--magenta); }
+.band-cur { font-size: 12px; line-height: 1.5; color: #6B5560; }
+.band-lux { background: var(--deep-berry); border-color: var(--deep-berry); }
+.band-lux .band-lbl, .band-lux .band-cur { color: var(--rosy-gray); }
+.band-lux .band-num { color: #fff; }
+
+/* شاهدتِ مؤخراً */
+.rv-row { display: flex; gap: 12px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px; padding: 2px 20px 6px; }
+.rv-card { flex: 0 0 120px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--dark-plum); }
+.rv-img { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: 20px; overflow: hidden; }
+.rv-name { font-size: 13px; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-price { font-size: 13px; line-height: 1.4; color: var(--deep-berry); }
+
+/* قالوا عنّا */
+.rev-row { display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px; padding: 2px 20px 6px; }
+.rev { flex: 0 0 82%; flex-shrink: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; padding: 24px; border-radius: 24px; background: #fff; border: 1px solid var(--rosy-gray); box-shadow: 0 10px 24px rgba(142,2,84,.06); }
+.rev-stars { color: var(--magenta); letter-spacing: 2px; font-size: 15px; line-height: 1.4; }
+.rev-stars span { color: var(--rosy-gray); }
+.rev blockquote { margin: 0; flex: 1; font-size: 14px; line-height: 1.7; color: var(--dark-plum); }
+.rev figcaption { font-size: 13px; line-height: 1.5; color: #6B5560; }
+.rev figcaption b { color: var(--dark-plum); }
+
+/* إنستغرام */
+.ig-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ig-tile { position: relative; display: block; aspect-ratio: 1; border-radius: 18px; overflow: hidden; }
+.ig-ov { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(142,2,84,.45); color: #fff; opacity: 0; transition: opacity .25s; }
+.ig-tile:hover .ig-ov, .ig-tile:focus-visible .ig-ov { opacity: 1; }
+
+@media (min-width: 1024px) {
+  .prow { margin: 0; padding: 2px 0 6px; }
+  .prow-item { flex-basis: calc((100% - 4 * 20px) / 5); }
+  .prow { gap: 20px; }
+  .deals { padding: 36px 40px; }
+  .deals .prow { margin: 0; }
+  .collect { padding: 48px 64px 0; }
+  .collect-title { font-size: 40px; }
+  .collect-arch { width: 300px; max-width: none; }
+  .collect-text { padding-bottom: 48px; gap: 12px; }
+  .collect-mark { width: 380px; bottom: -120px; }
+  .band-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+  .band { padding: 32px 16px; }
+  .band-num { font-size: 36px; }
+  .rv-row, .rev-row { margin: 0; padding: 2px 0 6px; }
+  .rv-card { flex-basis: 150px; }
+  .rev { flex-basis: calc((100% - 2 * 20px) / 3); }
+  .rev-row { gap: 20px; }
+  .ig-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+}

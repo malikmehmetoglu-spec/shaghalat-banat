@@ -4,19 +4,38 @@ import { Icon } from "@/components/Icon";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { ProductCard } from "@/components/ProductCard";
 import { SearchBar } from "@/components/SearchBar";
-import { getBanners, getCategories, getFavoriteIds, getProducts, getUnreadCount } from "@/lib/data";
+import { DealCountdown } from "@/components/home/DealCountdown";
+import { NewArrivals } from "@/components/home/NewArrivals";
+import { RecentlyViewed } from "@/components/home/RecentlyViewed";
+import { getBanners, getCategories, getFavoriteIds, getProducts, getStoreProfile, getTestimonials, getUnreadCount } from "@/lib/data";
 import { placeholder } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 
+/** حدود «تسوّقي حسب السعر» بالليرة السورية الجديدة */
+const PRICE_BANDS = [500, 1000, 2000];
+
 export default async function Home() {
   const t = await getT();
-  const [cats, products, favs, unread, banners] = await Promise.all([
+  const [cats, latest, favs, unread, banners, deals, best, reviews, store] = await Promise.all([
     getCategories(),
-    getProducts({ sort: "new", limit: 8 }),
+    getProducts({ sort: "new", limit: 24 }),
     getFavoriteIds(),
     getUnreadCount(),
     getBanners(),
+    getProducts({ onSale: true }),
+    getProducts({ sort: "best", limit: 10 }),
+    getTestimonials(),
+    getStoreProfile(),
   ]);
+
+  // الأكثر مبيعاً يظهر بهذا الاسم فقط حين توجد مبيعات فعلية، وإلا «مختارات لكِ» بحسب التقييم
+  const hasSales = best.some((p) => p.sold_count > 0);
+  const picks = hasSales ? best.filter((p) => p.sold_count > 0) : [...latest].sort((a, b) => Number(b.rating) - Number(a.rating)).slice(0, 10);
+  // بانر التشكيلة: القسم الأغنى بالمنتجات
+  const feature = [...cats].filter((c) => c.count > 0).sort((a, b) => b.count - a.count)[0];
+  const featureImg = feature && (feature.image_url || (await getProducts({ categorySlug: feature.slug, sort: "new", limit: 6 })).find((p) => p.images?.[0])?.images[0]);
+  const insta = latest.filter((p) => p.images?.[0]).slice(0, 6);
+  const igHandle = store.instagram_url?.replace(/\/+$/, "").split("/").pop();
 
   return (
     <main className="page wide">
@@ -49,15 +68,130 @@ export default async function Home() {
         </div>
       </section>
 
+      {deals.length > 0 && (
+        <section className="sec deals">
+          <div className="deals-head">
+            <div className="sec-head">
+              <h2 className="sec-title"><Icon name="fire" size={22} stroke={2} /> {t("عروض اليوم")}</h2>
+              <span className="sec-sub">{t("خصومات حتى {n}% لفترة محدودة", { n: Math.round(Math.max(...deals.map((p) => (1 - p.price / Number(p.compare_at_price)) * 100))) })}</span>
+            </div>
+            <DealCountdown label={t("ينتهي خلال")} />
+          </div>
+          <div className="prow scr">
+            {deals.slice(0, 10).map((p) => (
+              <div key={p.id} className="prow-item">
+                <span className="off-badge ltr">-{Math.round((1 - p.price / Number(p.compare_at_price)) * 100)}%</span>
+                <ProductCard p={p} isFav={favs.has(p.id)} />
+              </div>
+            ))}
+          </div>
+          <Link href="/search?sale=1" className="link-btn">{t("كل العروض ({n})", { n: deals.length })}</Link>
+        </section>
+      )}
+
+      {picks.length > 0 && (
+        <section className="sec">
+          <div className="row-between">
+            <div className="sec-head">
+              <h2 className="sec-title">{hasSales ? t("الأكثر مبيعاً") : t("مختارات لكِ")}</h2>
+              <span className="sec-sub">{hasSales ? t("ما اختارته البنات هذا الموسم") : t("قطع اخترناها لكِ بعناية")}</span>
+            </div>
+            <Link href="/search?sort=best" className="link-btn">{t("عرض الكل")}</Link>
+          </div>
+          <div className="prow scr">
+            {picks.map((p, n) => (
+              <div key={p.id} className="prow-item">
+                {hasSales && <span className="rank-badge ltr">{n + 1}</span>}
+                <ProductCard p={p} isFav={favs.has(p.id)} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {feature && (
+        <Link href={`/c/${feature.slug}`} className="collect">
+          <img src="/icons/logo-mark.svg" alt="" aria-hidden="true" className="collect-mark" />
+          <span className="collect-text">
+            <span className="hero-kicker">{t("تشكيلة مختارة")}</span>
+            <span className="collect-title">{t("عالم {name}", { name: feature.name })}</span>
+            <span className="collect-sub">{t("{n} قطعة بانتظاركِ", { n: feature.count })}</span>
+            <span className="btn cta collect-cta">{t("اكتشفي التشكيلة")}</span>
+          </span>
+          <span className="arch collect-arch" style={{ background: placeholder(feature.slug) }}>
+            {featureImg && <Pic src={featureImg} />}
+          </span>
+        </Link>
+      )}
+
+      <section className="sec">
+        <div className="sec-head">
+          <h2 className="sec-title">{t("تسوّقي حسب السعر")}</h2>
+          <span className="sec-sub">{t("لكل ميزانية شيء جميل")}</span>
+        </div>
+        <div className="band-grid">
+          {PRICE_BANDS.map((m) => (
+            <Link key={m} href={`/search?max=${m}`} className="band">
+              <span className="band-lbl">{t("أقل من")}</span>
+              <b className="band-num ltr">{m.toLocaleString("en-US")}</b>
+              <span className="band-cur">{t("ل.س")}</span>
+            </Link>
+          ))}
+          <Link href={`/search?min=${PRICE_BANDS[PRICE_BANDS.length - 1]}`} className="band band-lux">
+            <span className="band-lbl">{t("قطع فاخرة")}</span>
+            <b className="band-num ltr">{PRICE_BANDS[PRICE_BANDS.length - 1].toLocaleString("en-US")}+</b>
+            <span className="band-cur">{t("ل.س")}</span>
+          </Link>
+        </div>
+      </section>
+
       <section className="sec">
         <div className="row-between">
           <h2 className="sec-title">{t("وصل حديثاً")}</h2>
           <Link href="/search" className="link-btn">{t("عرض الكل")}</Link>
         </div>
-        <div className="grid-2">
-          {products.map((p) => <ProductCard key={p.id} p={p} isFav={favs.has(p.id)} />)}
-        </div>
+        <NewArrivals products={latest} cats={cats.map((c) => ({ id: c.id, name: c.name }))} favIds={[...favs]} />
       </section>
+
+      <RecentlyViewed />
+
+      {reviews.length > 0 && (
+        <section className="sec">
+          <div className="sec-head">
+            <h2 className="sec-title">{t("قالوا عنّا")}</h2>
+            <span className="sec-sub">{t("آراء زبوناتنا بكلماتهنّ")}</span>
+          </div>
+          <div className="rev-row scr">
+            {reviews.map((r) => (
+              <figure key={r.id} className="rev">
+                <span className="rev-stars" aria-label={t("{n} من 5", { n: r.rating })}>{"★".repeat(r.rating)}<span>{"★".repeat(5 - r.rating)}</span></span>
+                <blockquote>{r.body}</blockquote>
+                <figcaption><b>{r.name}</b>{r.city && <span> · {r.city}</span>}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {store.instagram_url && insta.length >= 3 && (
+        <section className="sec">
+          <div className="row-between">
+            <div className="sec-head">
+              <h2 className="sec-title">{t("تابعينا على إنستغرام")}</h2>
+              {igHandle && <span className="sec-sub ltr" style={{ alignSelf: "flex-end" }}>@{igHandle}</span>}
+            </div>
+            <a href={store.instagram_url} target="_blank" rel="noopener noreferrer" className="link-btn">{t("تابعينا")}</a>
+          </div>
+          <div className="ig-grid">
+            {insta.map((p) => (
+              <a key={p.id} href={store.instagram_url!} target="_blank" rel="noopener noreferrer" className="ig-tile" aria-label={t("إنستغرام")}>
+                <Pic src={p.images[0]} alt="" />
+                <span className="ig-ov"><Icon name="instagram" size={26} /></span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="promise">
         {[
