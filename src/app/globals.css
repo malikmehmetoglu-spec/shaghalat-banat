@@ -489,7 +489,7 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .hero-text { flex: 1; min-width: 0; gap: 10px; }
   .hero-title { font-size: 24px; line-height: 1.45; }
   .hero-kicker { font-size: 12px; }
-  .hero-cta { height: 44px; font-size: 14px; padding: 0 20px; }
+  .hero .btn.hero-cta { height: 44px; font-size: 14px; padding: 0 20px; }
   .hero-arch { width: 40%; max-width: 160px; align-self: center; flex-shrink: 0; }
 }
 
@@ -604,4 +604,32 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .pv-price { font-size: 30px; }
   .pv-info .action-bar { gap: 12px; }
   .pv-info .action-bar .btn { min-height: 56px; font-size: 16px; }
+}
+
+/* ═════════ سلايدر الواجهة — كتلة التوت الجريئة (24 أكتوبر 2026) ═════════ */
+.hero { background: var(--deep-berry); box-shadow: 0 22px 48px rgba(142,2,84,.28); border-radius: 28px; padding: 28px 24px 24px; }
+.hero-mark { filter: brightness(0) invert(1); opacity: .07; }
+.hero-kicker { color: var(--banat-pink); }
+.hero-title { color: #fff; }
+.hero-slide { flex-direction: row; align-items: flex-end; gap: 16px; }
+.hero-text { flex: 1; min-width: 0; align-self: center; padding-bottom: 28px; }
+.hero-arch { flex-shrink: 0; align-self: flex-end; width: 40%; max-width: 170px; aspect-ratio: 3 / 4;
+  margin-bottom: -24px; margin-inline-end: -8px; border-radius: 50% 50% 0 0 / 34% 34% 0 0;
+  box-shadow: none; outline: 3px solid rgba(255,255,255,.18); outline-offset: -3px; }
+.hero-cta { background: var(--magenta); color: #fff; }
+.hero-dots { position: absolute; bottom: 20px; inset-inline-start: 24px; justify-content: flex-start; z-index: 1; }
+.hero-dots button { background: rgba(255,255,255,.3); }
+.hero-dots button.on { background: #fff; }
+@media (max-width: 1023px) {
+  .hero-title { font-size: 24px; line-height: 1.45; }
+  .hero .btn.hero-cta { height: 44px; font-size: 14px; padding: 0 20px; }
+}
+@media (min-width: 1024px) {
+  .hero { padding: 56px 64px 28px; }
+  .hero-slide { min-height: 400px; gap: 48px; }
+  .hero-title { font-size: 56px; }
+  .hero-text { padding-bottom: 56px; }
+  .hero-arch { width: 380px; max-width: none; margin-bottom: -28px; margin-inline-end: 0; }
+  .hero-dots { bottom: 32px; inset-inline-start: 64px; }
+  .hero-mark { width: 420px; inset-inline-end: 34%; bottom: -120px; }
 }
