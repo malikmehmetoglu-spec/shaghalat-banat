@@ -6,7 +6,7 @@ import { price } from "@/lib/format";
 
 type Shift = { openedAt: string; by: string | null; opening: number; sales: number; expenses: number; draws: number; expected: number };
 
-export function ShiftCard({ shift }: { shift: Shift | null }) {
+export function ShiftCard({ shift, onDone, title = "إغلاق وردية المحل" }: { shift: Shift | null; onDone?: () => void; title?: string }) {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; message: string } | null>(null);
@@ -28,7 +28,7 @@ export function ShiftCard({ shift }: { shift: Shift | null }) {
         <div className="kv"><b>الفرق</b><b>{closed.diff === 0 ? "مطابق" : price(closed.diff)}</b></div>
         <div className="no-print" style={{ display: "flex", gap: 8 }}>
           <button className="btn" style={{ flex: 1 }} onClick={() => window.print()}>طباعة</button>
-          <button className="btn soft" style={{ flex: 1 }} onClick={() => setClosed(null)}>تم</button>
+          <button className="btn soft" style={{ flex: 1 }} onClick={() => { setClosed(null); onDone?.(); }}>تم</button>
         </div>
       </div>
     );
@@ -48,7 +48,7 @@ export function ShiftCard({ shift }: { shift: Shift | null }) {
   const diff = amount === "" ? null : counted - shift.expected;
   return (
     <div className="acard" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <h2 className="adm-h2">إغلاق وردية المحل</h2>
+      <h2 className="adm-h2">{title}</h2>
       <span className="caption">الوردية الحالية: {shift.by || "—"} · منذ {time(shift.openedAt)}</span>
       <div className="kv"><span className="adm-sub">رصيد بداية الوردية</span><span>{price(shift.opening)}</span></div>
       <div className="kv"><span className="adm-sub">مبيعات نقدية</span><span style={{ color: "#1a7f4b" }}>+ {price(shift.sales)}</span></div>
