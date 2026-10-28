@@ -40,6 +40,17 @@ export async function cashMove(_: ActionResult | null, fd: FormData): Promise<Ac
   return ok("تم تسجيل الحركة");
 }
 
+export async function ownerDraw(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const { sb, profile } = await fin();
+  if (profile.role !== "owner") return fail("السحب إلى الخزنة الشخصية مخصّص لصاحب المتجر فقط");
+  const amount = Number(str(fd, "amount"));
+  if (!(amount > 0)) return fail("أدخل مبلغاً أكبر من صفر");
+  const { error } = await sb.rpc("cash_move", { p_kind: "withdraw", p_amount: amount, p_from: str(fd, "from"), p_to: null, p_note: str(fd, "note") });
+  if (error) return fail(errMsg(error));
+  touch();
+  return ok(`تم سحب ${price(amount)} إلى خزنتك`);
+}
+
 export async function recordPayment(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
   const { sb } = await fin();
   const { error } = await sb.rpc("record_payment", { p_party_type: str(fd, "party_type"), p_party_id: str(fd, "party_id") || "courier", p_amount: Number(str(fd, "amount")), p_account: str(fd, "account"), p_note: str(fd, "note") });

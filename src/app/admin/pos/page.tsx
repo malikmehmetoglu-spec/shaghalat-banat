@@ -25,6 +25,6 @@ export default async function PosPage() {
   return (
     <POS items={items} storeName={store?.name ?? "المحل"} cashier={profile.full_name || ""}
       shop={{ address: settings?.store_address ?? "", phone: settings?.store_phone ?? "", footer: settings?.invoice_footer ?? "شكراً لتسوّقك من شغلات بنات", taxNumber: settings?.tax_number ?? "" }}
-      shift={<ShiftCard shift={sh ? { openedAt: sh.opened_at, by: sh.opened_by_name, opening: Number(sh.opening), sales: Number(sh.cash_sales), expenses: Number(sh.cash_expenses), expected: Number(sh.expected) } : null} />} />
+      shift={<ShiftCard shift={sh ? { openedAt: sh.opened_at, by: sh.opened_by_name, opening: Number(sh.opening), sales: Number(sh.cash_sales), expenses: Number(sh.cash_expenses), draws: Number(sh.cash_draws ?? 0), expected: Number(sh.expected) } : null} />} />
   );
 }

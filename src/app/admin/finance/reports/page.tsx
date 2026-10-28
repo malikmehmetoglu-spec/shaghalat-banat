@@ -15,7 +15,9 @@ function summarize(rows: AccTotal[]) {
   const goods = v("5100");
   const expenses = rows.filter((r) => r.type === "expense" && r.code !== "5100").map((r) => ({ name: r.name, v: balanceOf(r) })).filter((x) => x.v > 0).sort((a, b) => b.v - a.v);
   const exp = expenses.reduce((s, x) => s + x.v, 0);
-  return { online, store, shipping, other, sales, goods, gross: sales - goods, expenses, exp, net: sales - goods - exp };
+  const d = rows.find((x) => x.code === "3200");
+  const draws = d ? Number(d.debit) - Number(d.credit) : 0; // حساب ملكية: المسحوبات في المدين
+  return { online, store, shipping, other, sales, goods, gross: sales - goods, expenses, exp, net: sales - goods - exp, draws };
 }
 
 export default async function ReportsPage({ searchParams }: { searchParams: Promise<{ p?: string; from?: string; to?: string }> }) {
@@ -36,7 +38,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
     ["تقرير الأرباح", per.label], [],
     ["مبيعات المتجر الإلكتروني", s.online], ["مبيعات المحل", s.store], ["أجور الشحن", s.shipping], ["إيرادات أخرى", s.other], ["إجمالي ما دخل", s.sales],
     ["ثمن البضاعة التي بعناها", s.goods], ["الربح من البيع", s.gross],
-    ...s.expenses.map((e) => [e.name, e.v]), ["إجمالي المصاريف", s.exp], ["صافي الربح", s.net], [],
+    ...s.expenses.map((e) => [e.name, e.v]), ["إجمالي المصاريف", s.exp], ["صافي الربح", s.net], ["مسحوبات المالك", s.draws], ["بقي في المحل من الربح", s.net - s.draws], [],
     ["الشهر", "المبيعات", "ثمن البضاعة", "المصاريف", "صافي الربح"], ...trend.map((t) => [t.label, t.sales, t.goods, t.exp, t.net]),
   ];
   const q = (o: Record<string, string>) => "?" + new URLSearchParams({ p: sp.p ?? "month", ...o }).toString();
@@ -84,6 +86,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
           {s.expenses.map((e) => <Row key={e.name} l={e.name} v={e.v} sub />)}
           <div style={{ borderTop: "2px solid var(--rosy-gray)" }} />
           <Row l="صافي الربح" v={s.net} strong tone={s.net >= 0 ? "good" : "bad"} />
+          {s.draws > 0 && (<>
+            <Row l="ناقص: ما سحبه المالك إلى خزنته" v={-s.draws} />
+            <Row l="بقي في المحل من الربح" v={s.net - s.draws} strong tone={s.net - s.draws >= 0 ? "good" : "bad"} />
+            <span className="caption" style={{ lineHeight: 1.7 }}>المسحوبات لا تُنقص الربح، فهي ربح أخذه المالك. {s.net - s.draws < 0 ? "السحب أكبر من ربح الفترة، أي أنه أُخذ من رأس مال المحل." : ""}</span>
+          </>)}
           {s.goods === 0 && s.sales > 0 && <span className="caption" style={{ lineHeight: 1.7 }}>ثمن البضاعة صفر لأن «سعر التكلفة» غير مُدخل للمنتجات. أدخله في صفحة كل منتج ليكون الربح دقيقاً.</span>}
         </div>
         <div className="acard flush narrow">

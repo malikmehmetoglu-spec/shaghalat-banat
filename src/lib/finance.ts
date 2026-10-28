@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const TYPE_LABEL: Record<string, string> = { asset: "أصول", liability: "خصوم", equity: "حقوق ملكية", revenue: "إيرادات", expense: "مصاريف" };
 export const SOURCE_LABEL: Record<string, string> = {
-  manual: "يدوي", sale: "مبيعات", sale_return: "مرتجع", purchase: "مشتريات", expense: "مصروف", payment: "دفعة", transfer: "تحويل", shift: "وردية",
+  manual: "يدوي", sale: "مبيعات", sale_return: "مرتجع", purchase: "مشتريات", expense: "مصروف", payment: "دفعة", transfer: "تحويل", shift: "وردية", owner_draw: "سحب المالك",
 };
 /** الحسابات ذات الطبيعة المدينة (الرصيد = مدين − دائن) */
 export const isDebitNature = (type: string) => type === "asset" || type === "expense";

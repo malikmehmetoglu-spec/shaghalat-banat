@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { closeShift, openShift } from "../actions";
 import { price } from "@/lib/format";
 
-type Shift = { openedAt: string; by: string | null; opening: number; sales: number; expenses: number; expected: number };
+type Shift = { openedAt: string; by: string | null; opening: number; sales: number; expenses: number; draws: number; expected: number };
 
 export function ShiftCard({ shift }: { shift: Shift | null }) {
   const [amount, setAmount] = useState("");
@@ -22,6 +22,7 @@ export function ShiftCard({ shift }: { shift: Shift | null }) {
         <div className="kv"><span className="adm-sub">رصيد البداية</span><span>{price(closed.opening)}</span></div>
         <div className="kv"><span className="adm-sub">مبيعات نقدية</span><span>{price(closed.sales)}</span></div>
         <div className="kv"><span className="adm-sub">مصاريف من الصندوق</span><span>{price(closed.expenses)}</span></div>
+        {closed.draws > 0 && <div className="kv"><span className="adm-sub">مسحوبات المالك</span><span>{price(closed.draws)}</span></div>}
         <div className="kv"><span className="adm-sub">المتوقع</span><span>{price(closed.expected)}</span></div>
         <div className="kv"><span className="adm-sub">المعدود</span><span>{price(closed.counted)}</span></div>
         <div className="kv"><b>الفرق</b><b>{closed.diff === 0 ? "مطابق" : price(closed.diff)}</b></div>
@@ -52,6 +53,7 @@ export function ShiftCard({ shift }: { shift: Shift | null }) {
       <div className="kv"><span className="adm-sub">رصيد بداية الوردية</span><span>{price(shift.opening)}</span></div>
       <div className="kv"><span className="adm-sub">مبيعات نقدية</span><span style={{ color: "#1a7f4b" }}>+ {price(shift.sales)}</span></div>
       <div className="kv"><span className="adm-sub">مصاريف من الصندوق</span><span style={{ color: "var(--magenta)" }}>- {price(shift.expenses)}</span></div>
+      {shift.draws > 0 && <div className="kv"><span className="adm-sub">مسحوبات المالك</span><span style={{ color: "var(--magenta)" }}>- {price(shift.draws)}</span></div>}
       <div className="kv" style={{ borderTop: "1px solid var(--border-row)", paddingTop: 10 }}><b>المتوقع في الدرج</b><b>{price(shift.expected)}</b></div>
       <label className="a-field">المبلغ المعدود فعلياً<input className="a-in" type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
       {diff !== null && <span className={`a-flash ${diff === 0 ? "tone-success" : "tone-warning"}`}>{diff === 0 ? "مطابق" : diff > 0 ? `فائض ${price(diff)}` : `عجز ${price(-diff)}`}</span>}
