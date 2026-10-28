@@ -159,7 +159,9 @@ textarea.a-in { height: 100px; padding: 12px 14px; line-height: 1.7; resize: ver
 .pos-cust-toggle b { margin-inline-start: 6px; color: var(--deep-berry); }
 .pos-cust { display: flex; flex-direction: column; gap: 10px; }
 .pos-check { display: flex; gap: 8px; align-items: center; font-size: 13.5px; line-height: 1.5; cursor: pointer; }
-.pos-check input { width: 18px; height: 18px; accent-color: var(--magenta); }
+.pos-check input { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--magenta); }
+.pos-mkt { padding: 10px 12px; border-radius: 14px; background: #fff; border: 1px solid var(--border-soft); }
+.pos-mkt.on { background: rgba(214,3,127,.08); border-color: transparent; }
 .pos-row2 { display: flex; gap: 10px; align-items: center; }
 .pos-disc { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; flex: 1; min-width: 0; }
 .pos-disc .a-in { flex: 1; min-width: 0; height: 44px; }

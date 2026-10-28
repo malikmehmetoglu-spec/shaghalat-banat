@@ -68,7 +68,7 @@ function Register({ items, storeName, cashier, shop, shift, onClose }: { items: 
   const [q, setQ] = useState("");
   const [cart, setCart] = useState<Line[]>([]);
   const [discount, setDiscount] = useState(0);
-  const [showCustomer, setShowCustomer] = useState(false);
+  const [anon, setAnon] = useState(false);
   const [phone, setPhone] = useState("");
   const [cname, setCname] = useState("");
   const [marketing, setMarketing] = useState(false);
@@ -106,12 +106,12 @@ function Register({ items, storeName, cashier, shop, shift, onClose }: { items: 
     if (exact) { add(exact); setQ(""); } else if (results.length === 1) { add(results[0]); setQ(""); }
   }
   const setQty = (id: string, qty: number) => setCart((c) => c.flatMap((l) => (l.id !== id ? [l] : qty <= 0 ? [] : [{ ...l, qty: Math.min(qty, l.stock) }])));
-  const reset = () => { setCart([]); setDiscount(0); setPhone(""); setCname(""); setMarketing(false); setKnown(false); setShowCustomer(false); setPayment("cash"); setMsg(null); };
+  const reset = () => { setCart([]); setDiscount(0); setPhone(""); setCname(""); setMarketing(false); setKnown(false); setAnon(false); setPayment("cash"); setMsg(null); };
 
   function checkout() {
     if (discount > sub) { setMsg({ ok: false, message: "الخصم أكبر من المجموع" }); return; }
     start(async () => {
-      const r = await posSale(cart.map((l) => ({ variant_id: l.id, qty: l.qty })), payment, discount, phone.trim(), phone.trim() ? cname : "", !!phone.trim() && marketing);
+      const r = await posSale(cart.map((l) => ({ variant_id: l.id, qty: l.qty })), payment, discount, anon ? "" : phone.trim(), anon ? "" : cname, !anon && marketing);
       if (!r.ok) { setMsg(r); return; }
       setReceipt({ number: r.number!, total: r.total!, lines: cart, discount, payment, at: new Date().toISOString() });
       setSheet(false); reset(); router.refresh();
@@ -183,27 +183,25 @@ function Register({ items, storeName, cashier, shop, shift, onClose }: { items: 
         </div>
 
         <div className="pos-foot">
-          <button type="button" className="pos-cust-toggle" aria-expanded={showCustomer} onClick={() => setShowCustomer((v) => !v)}>
-            <span>بيانات الزبونة {phone ? <b className="ltr">{phone}</b> : <span className="caption">(اختياري)</span>}</span>
-            <span aria-hidden="true">{showCustomer ? "▴" : "▾"}</span>
-          </button>
-          {showCustomer && (
-            <div className="pos-cust">
+          <div className="pos-cust">
+            <label className="pos-check">
+              <input type="checkbox" checked={anon} onChange={(e) => setAnon(e.target.checked)} />
+              الزبونة لا ترغب بإعطاء بياناتها
+            </label>
+            {!anon && <>
               <div className="a-grid" style={{ gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
-                <label className="a-field">الهاتف<input className="a-in ltr" inputMode="tel" value={phone} placeholder="09xxxxxxxx"
+                <label className="a-field">هاتف الزبونة<input className="a-in ltr" inputMode="tel" value={phone} placeholder="09xxxxxxxx"
                   onChange={(e) => { setPhone(e.target.value); setKnown(false); }}
                   onBlur={async () => { if (!phone.trim()) return; const c = await lookupCustomer(phone); if (c) { setKnown(true); if (c.name && !cname) setCname(c.name); if (c.marketing) setMarketing(true); } }} /></label>
-                <label className="a-field">الاسم<input className="a-in" value={cname} onChange={(e) => setCname(e.target.value)} /></label>
+                <label className="a-field">اسم الزبونة<input className="a-in" value={cname} onChange={(e) => setCname(e.target.value)} /></label>
               </div>
               {known && <span className="caption tone-success">زبونة مسجّلة سابقاً ✓</span>}
-              {phone.trim() && (
-                <label className="pos-check">
-                  <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} />
-                  وافقت على إضافتها لمجموعات العروض
-                </label>
-              )}
-            </div>
-          )}
+              <label className={`pos-check pos-mkt${marketing ? " on" : ""}`}>
+                <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} />
+                وافقت على إضافتها لقنوات ومجموعات العروض
+              </label>
+            </>}
+          </div>
 
           <div className="pos-row2">
             <label className="pos-disc">خصم<input className="a-in" type="number" inputMode="numeric" min="0" value={discount || ""} placeholder="0" onChange={(e) => setDiscount(Math.max(0, Number(e.target.value)))} /></label>
