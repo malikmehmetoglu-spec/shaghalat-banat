@@ -86,7 +86,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
           <div style={{ display: "flex", gap: 10 }}>
             <FavButton productId={p.id} initial={isFav} className="icon-btn" size={20} />
             <Link href="/cart" className="icon-btn" aria-label={t("السلة")} style={{ width: 44, height: 44, background: "rgba(255,255,255,.92)" }}>
-              <Icon name="bag" />
+              <Icon name="cart" />
               {count > 0 && <span className="badge-count">{count}</span>}
             </Link>
           </div>
@@ -143,7 +143,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
           </div>
           <button type="button" className="btn cta" style={{ flex: 1 }} onClick={addToCart} disabled={stock <= 0}>
             {added ? t("تمت الإضافة ✓") : stock <= 0 ? t("غير متوفر") : t("أضيفي إلى السلة")}
-            {!added && stock > 0 && <Icon name="bag" stroke={2} />}
+            {!added && stock > 0 && <Icon name="cart" stroke={2} />}
           </button>
         </div>
 

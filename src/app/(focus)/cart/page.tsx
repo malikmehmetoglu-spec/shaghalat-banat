@@ -50,7 +50,7 @@ export default function CartPage() {
           <Link href="/" className="ph-logo" aria-label="شغلات بنات"><img src="/icons/logo-mark.svg" alt="" /></Link>
         </div>
         <div className="empty">
-          <span className="ring"><Icon name="bag" size={40} stroke={1.6} /></span>
+          <span className="ring"><Icon name="cart" size={40} stroke={1.6} /></span>
           <div className="title-block"><span className="h-section">{t("سلّتك فارغة")}</span><span className="muted">{t("أضيفي ما يعجبك وسيظهر هنا")}</span></div>
           <Link href="/" className="btn" style={{ height: 48, padding: "0 28px" }}>{t("تسوّقي الآن")}</Link>
         </div>

@@ -10,7 +10,7 @@ export function CartBadgeLink() {
   const { count } = useCart();
   return (
     <Link href="/cart" className="icon-btn" aria-label={t("السلة")}>
-      <Icon name="bag" />
+      <Icon name="cart" />
       {count > 0 && <span className="badge-count">{count}</span>}
     </Link>
   );
