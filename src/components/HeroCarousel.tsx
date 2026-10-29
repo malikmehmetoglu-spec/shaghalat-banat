@@ -6,6 +6,8 @@ import { useT } from "@/components/LangProvider";
 type Banner = { id: string; kicker: string | null; title: string; link: string | null; image_url: string | null };
 const FALLBACK_BG = "linear-gradient(170deg,var(--banat-pink),var(--magenta) 55%,var(--deep-berry))";
 const INTERVAL = 6000;
+/** صور المنتجات لها نسخة مصغّرة t_ تكفي لقوس السلايدر وتُحمَّل أسرع بكثير */
+const slideImg = (u: string) => (u.includes("/media/products/") ? u.replace(/\/([^/]+)$/, "/t_$1") : u);
 
 /** بانرات الواجهة: تتقلّب تلقائياً كل 6 ثوانٍ، مع نقاط تنقّل وسحب باللمس، وتتوقف عند مرور الفأرة */
 export function HeroCarousel({ banners, fallbackTitle }: { banners: Banner[]; fallbackTitle: string }) {
@@ -13,6 +15,9 @@ export function HeroCarousel({ banners, fallbackTitle }: { banners: Banner[]; fa
   const slides = banners.length ? banners : [{ id: "f", kicker: null, title: fallbackTitle, link: "/search", image_url: null }];
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
+  // تحميل كسول: صورة الشريحة الحالية والتالية فقط، وما شوهد يبقى محمّلاً
+  const [seen, setSeen] = useState<Set<number>>(() => new Set([0, 1]));
+  useEffect(() => { setSeen((s) => (s.has(i) && s.has((i + 1) % slides.length) ? s : new Set([...s, i, (i + 1) % slides.length]))); }, [i, slides.length]);
   const touchX = useRef<number | null>(null);
   const go = useCallback((n: number) => setI((n + slides.length) % slides.length), [slides.length]);
 
@@ -42,7 +47,7 @@ export function HeroCarousel({ banners, fallbackTitle }: { banners: Banner[]; fa
               {n === 0 ? <h1 className="hero-title">{b.title}</h1> : <h2 className="hero-title">{b.title}</h2>}
               <Link href={b.link || "/search"} className="btn cta hero-cta" tabIndex={n === i ? 0 : -1}>{t("تسوّقي الآن")}</Link>
             </div>
-            <div className="arch hero-arch" style={{ background: b.image_url ? `url(${b.image_url}) center/cover` : FALLBACK_BG }} />
+            <div className="arch hero-arch" style={{ background: !b.image_url ? FALLBACK_BG : seen.has(n) ? `url(${slideImg(b.image_url)}) center/cover` : "var(--light-blush)" }} />
           </div>
         ))}
       </div>
