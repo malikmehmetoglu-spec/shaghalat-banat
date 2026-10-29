@@ -546,7 +546,7 @@ export async function archiveProduct(id: string): Promise<ActionResult> {
 
 // ───────── روابط التواصل (صفحة /qr) ─────────
 export async function saveStoreProfile(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/catalog"));
+  const { sb } = await requireStaff(rolesFor("/admin/settings"));
   const url = (v: string) => (v && !/^https?:\/\//.test(v) ? `https://${v}` : v) || null;
   const { error } = await sb.from("store_profile").update({
     whatsapp: str(fd, "whatsapp").replace(/[^\d+]/g, "") || null,
@@ -558,7 +558,7 @@ export async function saveStoreProfile(_: ActionResult | null, fd: FormData): Pr
     updated_at: new Date().toISOString(),
   }).eq("id", 1);
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/qr"); revalidatePath("/order-placed");
+  revalidateTag("catalog"); revalidatePath("/qr"); revalidatePath("/order-placed"); revalidatePath("/admin/settings");
   return ok("تم الحفظ");
 }
 

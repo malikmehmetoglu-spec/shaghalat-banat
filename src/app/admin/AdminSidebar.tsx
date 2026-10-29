@@ -41,7 +41,10 @@ const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean
     { href: "/admin/finance/reports", label: "تقرير الأرباح", icon: "star" },
     { href: "/admin/finance/settings", label: "الإعدادات", icon: "shield" },
   ] },
-  { title: "النظام", items: [{ href: "/admin/staff", label: "الموظفون والأدوار", icon: "shield" }] },
+  { title: "النظام", items: [
+    { href: "/admin/settings", label: "إعدادات المتجر", icon: "edit" },
+    { href: "/admin/staff", label: "الموظفون والأدوار", icon: "shield" },
+  ] },
 ];
 
 export function AdminSidebar({ name, role, roleKey }: { name: string; role: string; roleKey: string }) {
