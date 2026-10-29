@@ -778,3 +778,17 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 .co-bar { display: flex; gap: 10px; align-items: center; }
 .co-bar .co-more { flex: 0 0 auto; height: 56px; padding: 0 18px; font-size: 14px; white-space: nowrap; }
 .co-bar .co-main { flex: 1; min-width: 0; }
+
+/* صفحة المنتج: «أضيفي إلى السلة» + «شراء المنتج» */
+.pv-buy { flex: 1; min-width: 0; display: flex; gap: 8px; }
+.pv-buy .btn { flex: 1 1 0; min-width: 0; padding: 0 10px; gap: 6px; white-space: nowrap; font-size: 14px; }
+.pv-buy .pv-add { border-color: var(--magenta); color: var(--magenta); background: #fff; }
+@media (max-width: 380px) { .pv-buy .btn { font-size: 13px; padding: 0 6px; } .pv-buy .pv-add svg { display: none; } }
+@media (max-width: 767px) {
+  .action-bar:has(.pv-buy) { flex-wrap: wrap; row-gap: 10px; }
+  .pv-buy { display: contents; }
+  .pv-buy .pv-add { flex: 1 1 0; height: 52px; }
+  .pv-buy .pv-now { flex: 1 1 100%; order: 3; height: 54px; font-size: 16px; }
+  .pv-buy .pv-add svg { display: inline-block !important; }
+  .pv-buy .btn { font-size: 14px !important; padding: 0 12px !important; }
+}

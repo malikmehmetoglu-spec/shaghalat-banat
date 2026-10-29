@@ -39,6 +39,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState(0);
   const [added, setAdded] = useState(false);
+  const [buying, setBuying] = useState(false);
 
   const ofColor = (c: string) => variants.filter((v) => (v.color_name ?? "") === c);
   const sizes = useMemo(() => sortSizes(Array.from(new Set(ofColor(color).map((v) => v.size ?? "")))), [variants, color]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -55,7 +56,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
   const stock = current?.available ?? 0;
   const img = p.images?.[0];
 
-  function addToCart() {
+  function addToCart(buyNow = false) {
     if (!current || stock <= 0) return;
     add({
       variantId: current.id,
@@ -67,9 +68,10 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
       image: img ?? null,
       max: stock,
     });
+    // «شراء المنتج»: يضيف القطعة وينقل مباشرة لإتمام الطلب
+    if (buyNow) { setBuying(true); router.push("/checkout"); return; }
     setAdded(true);
-    // التسوّق في سوريا ما زال جديداً على كثيرات: نأخذها مباشرة لإتمام الطلب، ومن هناك «تابعي التسوّق»
-    router.push("/checkout");
+    setTimeout(() => setAdded(false), 2200);
   }
 
   const tabs = [
@@ -79,7 +81,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
   ];
 
   return (
-    <main className="page tight wide pv" style={{ paddingBottom: 140 }}>
+    <main className="page tight wide pv" style={{ paddingBottom: 210 }}>
       <div className="pv-media" style={{ position: "relative", height: 420, borderRadius: 32, overflow: "hidden", background: img ? `url(${img}) center/cover` : placeholder(p.slug), boxShadow: "0 16px 36px rgba(142,2,84,0.22)" }}>
         {!img && <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "rgba(255,255,255,.75)" }}>{t("[صورة المنتج]")}</div>}
         <div className="pv-actions" style={{ position: "absolute", top: 16, right: 16, left: 16, display: "flex", justifyContent: "space-between" }}>
@@ -142,10 +144,18 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
             <span style={{ fontSize: 16 }}>{qty}</span>
             <button type="button" aria-label={t("إنقاص الكمية")} onClick={() => setQty((q) => Math.max(1, q - 1))}><Icon name="minus" size={16} stroke={2.4} /></button>
           </div>
-          <button type="button" className="btn cta" style={{ flex: 1 }} onClick={addToCart} disabled={stock <= 0 || added}>
-            {added ? t("جارٍ الانتقال لإتمام الطلب…") : stock <= 0 ? t("غير متوفر") : t("أضيفي إلى السلة")}
-            {!added && stock > 0 && <Icon name="cart" stroke={2} />}
-          </button>
+          {stock <= 0 ? (
+            <button type="button" className="btn cta" style={{ flex: 1 }} disabled>{t("غير متوفر")}</button>
+          ) : (
+            <div className="pv-buy">
+              <button type="button" className="btn secondary pv-add" onClick={() => addToCart()} disabled={buying}>
+                {added ? t("تمت الإضافة ✓") : <><Icon name="cart" stroke={2} />{t("أضيفي إلى السلة")}</>}
+              </button>
+              <button type="button" className="btn cta pv-now" onClick={() => addToCart(true)} disabled={buying}>
+                {buying ? t("لحظة…") : t("شراء المنتج")}
+              </button>
+            </div>
+          )}
         </div>
 
         <ul className="pv-trust">
