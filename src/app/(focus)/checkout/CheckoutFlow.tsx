@@ -12,9 +12,8 @@ import { useT } from "@/components/LangProvider";
 
 type Ship = { code: string; name: string; description: string | null; price: number };
 const PAYMENTS = [
-  { code: "cod", title: "الدفع عند الاستلام", line: "نقداً للمندوب عند التسليم", enabled: true },
-  { code: "transfer", title: "تحويل", line: "نرسل لك بيانات التحويل ويُؤكَّد الطلب بعده", enabled: true },
-  { code: "card", title: "بطاقة بنكية", line: "قريباً", enabled: false },
+  { code: "shamcash", title: "شام كاش", line: "امسحي رمز الدفع بعد تأكيد الطلب وحوّلي المبلغ من هاتفك", icon: "card" as const },
+  { code: "support", title: "الدفع عبر خدمة العملاء", line: "تتواصل معك مسؤولة خدمة العملاء وترشدك لإتمام الدفع", icon: "chat" as const },
 ];
 const STEPS = ["العنوان", "الشحن", "الدفع"];
 
@@ -30,7 +29,7 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
   const [step, setStep] = useState(0);
   const [addr, setAddr] = useState(initial[0]?.id ?? "");
   const [ship, setShip] = useState(shipping[0]?.code ?? "standard");
-  const [pay, setPay] = useState("cod");
+  const [pay, setPay] = useState("shamcash");
   const [adding, setAdding] = useState(initial.length === 0);
   const [coupon, setCoupon] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -62,7 +61,7 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
       try { localStorage.setItem(GKEY, JSON.stringify(g)); sessionStorage.removeItem("sb-coupon"); } catch {}
       const d = data as { number: string; total: number };
       clear();
-      router.replace(`/order-placed?n=${encodeURIComponent(d.number)}&t=${d.total}`);
+      router.replace(`/order-placed?n=${encodeURIComponent(d.number)}&t=${d.total}&pay=${pay}`);
       return;
     }
     const { data, error } = await getBrowserClient().rpc("place_order", {
@@ -80,7 +79,7 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
     }
     try { sessionStorage.removeItem("sb-coupon"); } catch {}
     clear();
-    router.replace(`/orders/${(data as { id: string }).id}?placed=1`);
+    router.replace(`/order-placed?id=${(data as { id: string }).id}&pay=${pay}`);
   }
 
   const next = () => {
@@ -180,8 +179,8 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
         <section style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <h2 className="h-section">{t("طريقة الدفع")}</h2>
           {PAYMENTS.map((p) => (
-            <button key={p.code} type="button" disabled={!p.enabled} className={`option${pay === p.code ? " on" : ""}`} onClick={() => setPay(p.code)} style={{ opacity: p.enabled ? 1 : 0.5 }}>
-              <span className="icon-tile"><Icon name="card" /></span>
+            <button key={p.code} type="button" className={`option${pay === p.code ? " on" : ""}`} onClick={() => setPay(p.code)}>
+              <span className="icon-tile"><Icon name={p.icon} /></span>
               <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
                 <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>{t(p.title)}</span>
                 <span className="caption" style={{ fontSize: 13 }}>{t(p.line)}</span>

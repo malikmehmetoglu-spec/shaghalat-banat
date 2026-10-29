@@ -65,6 +65,8 @@ export const ORDER_STATUS: Record<string, { label: string; tone: string }> = {
 };
 
 export const PAYMENT_LABEL: Record<string, string> = {
+  shamcash: "شام كاش",
+  support: "عبر خدمة العملاء",
   cod: "الدفع عند الاستلام",
   card: "بطاقة بنكية",
   transfer: "تحويل بنكي",

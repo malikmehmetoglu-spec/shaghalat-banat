@@ -19,7 +19,7 @@ export async function setOrderStatus(orderId: string, status: string, note?: str
   const { error } = await sb.rpc("admin_set_order_status", { order_id: orderId, new_status: status, note: note || null });
   if (error) return fail(errMsg(error));
   await notifyOrderStatus(sb, orderId, status).catch(() => {});
-  revalidateTag("catalog"); revalidatePath("/admin/orders");
+  revalidateTag("catalog"); revalidatePath("/admin/orders"); revalidatePath("/admin/shop-orders");
   revalidateTag("catalog"); revalidatePath("/admin");
   return ok("تم تحديث حالة الطلب");
 }
@@ -553,11 +553,13 @@ export async function saveStoreProfile(_: ActionResult | null, fd: FormData): Pr
     facebook_url: url(str(fd, "facebook_url")),
     instagram_url: url(str(fd, "instagram_url")),
     tagline: str(fd, "tagline") || null,
+    shamcash_name: str(fd, "shamcash_name") || null,
+    shamcash_qr_url: str(fd, "shamcash_qr_url").split("\n")[0].trim() || null,
     updated_at: new Date().toISOString(),
   }).eq("id", 1);
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/qr");
-  return ok("تم حفظ روابط التواصل");
+  revalidateTag("catalog"); revalidatePath("/qr"); revalidatePath("/order-placed");
+  return ok("تم الحفظ");
 }
 
 /** مرتجع في المحل / تراجع عن الشراء: تعود القطع للمخزون ويُسجّل المبلغ المُعاد */

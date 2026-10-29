@@ -10,7 +10,8 @@ type Item = { href: string; label: string; icon: Parameters<typeof Icon>[0]["nam
 const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean }[] = [
   { title: "عام", items: [{ href: "/admin", label: "لوحة المؤشرات", icon: "grid", exact: true }] },
   { title: "المبيعات", items: [
-    { href: "/admin/orders", label: "الطلبات", icon: "bag" },
+    { href: "/admin/shop-orders", label: "طلبات المتجر", icon: "truck" },
+    { href: "/admin/orders", label: "سجل كل الطلبات", icon: "bag" },
     { href: "/admin/customers", label: "العملاء", icon: "user" },
     { href: "/admin/pos", label: "نقطة البيع (المحل)", icon: "card" },
     { href: "/admin/returns", label: "المرتجعات", icon: "return" },

@@ -6,6 +6,7 @@ const ACCESS: [string, StaffRole[]][] = [
   ["/admin/staff", ["owner", "sales", "inventory", "accountant", "cashier"]], // غير المدير يرى تغيير كلمة مروره فقط
   ["/admin/pos", ["owner", "sales", "cashier"]],
   ["/admin/orders", ["owner", "sales"]],
+  ["/admin/shop-orders", ["owner", "sales"]],
   ["/admin/customers", ["owner", "sales"]],
   ["/admin/returns", ["owner", "sales", "cashier"]],
   ["/admin/catalog", ["owner", "sales"]],
