@@ -727,3 +727,21 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .sh-icons .icon-btn { background: rgba(255,255,255,.75); box-shadow: none; }
   .sh-nav a { color: #6B4A5A; }
 }
+
+/* ═════════ سلايدر أقصر لتظهر الأقسام في أول شاشة (29 أكتوبر 2026) ═════════ */
+@media (max-width: 1023px) {
+  .hero { padding: 20px 20px 18px; }
+  .hero-text { padding-bottom: 22px; gap: 8px; }
+  .hero-title { font-size: 22px; }
+  .hero-arch { max-width: 140px; margin-bottom: -18px; }
+  .hero-dots { bottom: 16px; }
+}
+@media (min-width: 1024px) {
+  .hero { padding: 36px 56px 0; }
+  .hero-slide { min-height: 0; gap: 40px; }
+  .hero-text { padding-bottom: 40px; gap: 14px; }
+  .hero-title { font-size: 40px; line-height: 1.35; }
+  .hero-arch { width: 250px; margin-bottom: 0; }
+  .hero-dots { bottom: 22px; inset-inline-start: 56px; }
+  .hero-mark { width: 300px; bottom: -90px; }
+}
