@@ -670,16 +670,6 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 .collect .btn.collect-cta { margin-top: 6px; height: 44px; font-size: 14px; padding: 0 20px; background: #fff; color: var(--deep-berry); box-shadow: none; }
 .collect-arch { position: relative; flex-shrink: 0; width: 38%; max-width: 170px; aspect-ratio: 3 / 4; border-radius: 50% 50% 0 0 / 34% 34% 0 0; overflow: hidden; outline: 3px solid rgba(255,255,255,.2); outline-offset: -3px; }
 
-/* تسوّقي حسب السعر */
-.band-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.band { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 24px 12px; border-radius: 24px; background: #fff; border: 1.5px solid var(--rosy-gray); text-decoration: none; color: var(--dark-plum); transition: border-color .2s, transform .2s; }
-.band:hover { border-color: var(--magenta); transform: translateY(-2px); }
-.band-lbl { font-size: 13px; line-height: 1.5; color: #6B5560; }
-.band-num { font-size: 28px; font-weight: 800; line-height: 1.4; color: var(--magenta); }
-.band-cur { font-size: 12px; line-height: 1.5; color: #6B5560; }
-.band-lux { background: var(--deep-berry); border-color: var(--deep-berry); }
-.band-lux .band-lbl, .band-lux .band-cur { color: var(--rosy-gray); }
-.band-lux .band-num { color: #fff; }
 
 /* شاهدتِ مؤخراً */
 .rv-row { display: flex; gap: 12px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px; padding: 2px 20px 6px; }
@@ -714,9 +704,6 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .collect-arch { width: 300px; max-width: none; }
   .collect-text { padding-bottom: 48px; gap: 12px; }
   .collect-mark { width: 380px; bottom: -120px; }
-  .band-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
-  .band { padding: 32px 16px; }
-  .band-num { font-size: 36px; }
   .rv-row, .rev-row { margin: 0; padding: 2px 0 6px; }
   .rv-card { flex-basis: 150px; }
   .rev { flex-basis: calc((100% - 2 * 20px) / 3); }

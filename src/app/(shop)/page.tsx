@@ -12,9 +12,6 @@ import { getBanners, getCategories, getFavoriteIds, getProducts, getStoreProfile
 import { placeholder } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 
-/** حدود «تسوّقي حسب السعر» بالليرة السورية الجديدة */
-const PRICE_BANDS = [500, 1000, 2000];
-
 export default async function Home() {
   const t = await getT();
   const [cats, latest, favs, unread, banners, deals, best, reviews, store] = await Promise.all([
@@ -123,27 +120,6 @@ export default async function Home() {
           </span>
         </Link>
       )}
-
-      <section className="sec">
-        <div className="sec-head">
-          <h2 className="sec-title">{t("تسوّقي حسب السعر")}</h2>
-          <span className="sec-sub">{t("لكل ميزانية شيء جميل")}</span>
-        </div>
-        <div className="band-grid">
-          {PRICE_BANDS.map((m) => (
-            <Link key={m} href={`/search?max=${m}`} className="band">
-              <span className="band-lbl">{t("أقل من")}</span>
-              <b className="band-num ltr">{m.toLocaleString("en-US")}</b>
-              <span className="band-cur">{t("ل.س")}</span>
-            </Link>
-          ))}
-          <Link href={`/search?min=${PRICE_BANDS[PRICE_BANDS.length - 1]}`} className="band band-lux">
-            <span className="band-lbl">{t("قطع فاخرة")}</span>
-            <b className="band-num ltr">{PRICE_BANDS[PRICE_BANDS.length - 1].toLocaleString("en-US")}+</b>
-            <span className="band-cur">{t("ل.س")}</span>
-          </Link>
-        </div>
-      </section>
 
       <section className="sec">
         <div className="row-between">
