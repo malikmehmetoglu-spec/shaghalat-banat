@@ -2,6 +2,8 @@ import Link from "next/link";
 import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
 import { date, ORDER_STATUS, PAYMENT_LABEL, price } from "@/lib/format";
 import { PrintButton } from "../PrintButton";
+import { ClickRow } from "../../ClickRow";
+import { ReverseInvoice } from "./ReverseInvoice";
 
 export const metadata = { title: "الفواتير" };
 
@@ -11,7 +13,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
   const { data: settings } = await sb.from("finance_settings").select("*").eq("id", 1).single();
   const rate = Number(settings?.tax_rate ?? 0);
 
-  type Inv = { id: string; number: string; date: string; who: string; total: number; status: string; tone: string; lines: { name: string; qty: number; unit: number }[]; shipping: number; discount: number; payment?: string };
+  type Inv = { id: string; number: string; date: string; who: string; total: number; status: string; tone: string; lines: { name: string; qty: number; unit: number }[]; shipping: number; discount: number; payment?: string; reversible?: boolean; store?: boolean; shipped?: boolean };
   let list: Inv[] = [];
   if (tab === "purchases") {
     const { data } = await sb.from("purchase_orders").select("id,number,created_at,status,supplier:suppliers(name),po_items(qty,unit_cost,variant:product_variants(sku,product:products(name)))").order("created_at", { ascending: false }).limit(100);
@@ -21,10 +23,12 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
       total: p.po_items.reduce((s: number, i: any) => s + i.qty * Number(i.unit_cost), 0),
     }));
   } else {
-    const { data } = await sb.from("orders").select("id,number,created_at,status,channel,payment_method,is_paid,total,shipping,discount,customer_phone,address_snapshot,profile:profiles!orders_user_id_fkey(full_name),order_items(product_name,variant_label,unit_price,qty)").neq("status", "cancelled").order("created_at", { ascending: false }).limit(100);
+    const { data } = await sb.from("orders").select("id,number,created_at,status,channel,payment_method,is_paid,total,shipping,discount,customer_phone,address_snapshot,profile:profiles!orders_user_id_fkey(full_name),order_items(product_name,variant_label,unit_price,qty)").order("created_at", { ascending: false }).limit(100);
     list = (data ?? []).map((o: any) => ({
       id: o.id, number: o.number, date: o.created_at, who: (o.channel === "store" ? "المحل · " : "أونلاين · ") + (o.profile?.full_name || o.address_snapshot?.name || o.customer_phone || "عميلة"),
-      status: o.status === "returned" ? "مرتجعة" : o.is_paid ? "مدفوعة" : ORDER_STATUS[o.status]?.label ?? o.status, tone: o.status === "returned" ? "tone-neutral" : o.is_paid ? "tone-success" : "tone-warning",
+      status: o.status === "returned" ? "مسترجعة" : o.status === "cancelled" ? "ملغاة" : o.is_paid ? "مدفوعة" : ORDER_STATUS[o.status]?.label ?? o.status,
+      tone: o.status === "returned" || o.status === "cancelled" ? "tone-neutral" : o.is_paid ? "tone-success" : "tone-warning",
+      reversible: !["returned", "cancelled"].includes(o.status), store: o.channel === "store", shipped: ["shipped", "delivered"].includes(o.status),
       lines: o.order_items.map((i: any) => ({ name: `${i.product_name}${i.variant_label ? ` · ${i.variant_label}` : ""}`, qty: i.qty, unit: Number(i.unit_price) })),
       shipping: Number(o.shipping), discount: Number(o.discount), total: Number(o.total), payment: PAYMENT_LABEL[o.payment_method],
     }));
@@ -46,11 +50,11 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
             <thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>{tab === "purchases" ? "المورد" : "العميلة"}</th><th>المبلغ</th><th>الحالة</th></tr></thead>
             <tbody>
               {list.map((x) => (
-                <tr key={x.id} className={sel?.id === x.id ? "sel" : ""}>
+                <ClickRow key={x.id} href={`/admin/finance/invoices?tab=${tab}&id=${x.id}`} className={sel?.id === x.id ? "sel" : ""}>
                   <td><Link className="rowlink ltr" href={`/admin/finance/invoices?tab=${tab}&id=${x.id}`}>#{x.number}</Link></td>
                   <td className="caption">{date(x.date)}</td><td>{x.who}</td><td style={{ fontWeight: 600 }}>{price(x.total)}</td>
                   <td><span className={`pill ${x.tone}`}>{x.status}</span></td>
-                </tr>
+                </ClickRow>
               ))}
               {!list.length && <tr><td colSpan={5} className="caption" style={{ textAlign: "center", padding: 24 }}>لا فواتير بعد</td></tr>}
             </tbody>
@@ -88,6 +92,9 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
                 <a className="btn secondary" style={{ flex: 1 }} target="_blank" rel="noreferrer"
                   href={`https://wa.me/?text=${encodeURIComponent(`فاتورة شغلات بنات #${sel.number}\n${sel.lines.map((l) => `${l.name} × ${l.qty}`).join("\n")}\nالإجمالي: ${price(grand)}`)}`}>إرسال واتساب</a>
               </div>
+              {tab !== "purchases" && sel.reversible && (
+                <div className="no-print" style={{ display: "flex" }}><ReverseInvoice id={sel.id} number={sel.number} total={sel.total} store={!!sel.store} shipped={!!sel.shipped} /></div>
+              )}
             </div>
           </div>
         )}

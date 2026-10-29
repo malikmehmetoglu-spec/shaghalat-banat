@@ -51,6 +51,17 @@ export async function ownerDraw(_: ActionResult | null, fd: FormData): Promise<A
   return ok(`تم سحب ${price(amount)} إلى خزنتك`);
 }
 
+/** التراجع عن فاتورة مبيعات: القطع تعود للمخزون، والفاتورة تبقى في السجل بحالة مسترجعة/ملغاة */
+export async function reverseInvoice(orderId: string, reason: string): Promise<ActionResult> {
+  const { sb } = await fin();
+  const { data, error } = await sb.rpc("reverse_invoice", { p_order: orderId, p_reason: reason || null });
+  if (error) return fail(errMsg(error));
+  touch();
+  for (const p of ["/admin", "/admin/orders", "/admin/shop-orders", "/admin/products", "/admin/pos", "/admin/customers"]) revalidatePath(p);
+  revalidatePath("/admin/inventory", "layout");
+  return ok(`تم التراجع عن الفاتورة #${data}`);
+}
+
 export async function recordPayment(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
   const { sb } = await fin();
   const { error } = await sb.rpc("record_payment", { p_party_type: str(fd, "party_type"), p_party_id: str(fd, "party_id") || "courier", p_amount: Number(str(fd, "amount")), p_account: str(fd, "account"), p_note: str(fd, "note") });
