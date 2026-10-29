@@ -37,18 +37,20 @@ export default async function Home() {
 
   return (
     <main className="page wide">
-      <div className="topbar m-only">
-        <Link href="/categories" className="icon-btn" aria-label={t("الأقسام")} style={{ boxShadow: "none", background: "transparent" }}>
-          <Icon name="grid" size={22} />
-        </Link>
-        <Link href="/" className="home-logo"><img src="/icons/logo-horizontal.svg" alt={t("شغلات بنات")} /></Link>
-        <Link href="/notifications" className="icon-btn" aria-label={t("الإشعارات")}>
-          <Icon name="bell" />
-          {unread > 0 && <span className="dot" />}
-        </Link>
-      </div>
+      <header className="m-head m-only">
+        <div className="topbar">
+          <Link href="/categories" className="icon-btn" aria-label={t("الأقسام")} style={{ boxShadow: "none", background: "transparent" }}>
+            <Icon name="grid" size={22} />
+          </Link>
+          <Link href="/" className="home-logo"><img src="/icons/logo-horizontal.svg" alt={t("شغلات بنات")} /></Link>
+          <Link href="/notifications" className="icon-btn" aria-label={t("الإشعارات")}>
+            <Icon name="bell" />
+            {unread > 0 && <span className="dot" />}
+          </Link>
+        </div>
 
-      <div className="m-only"><SearchBar /></div>
+        <SearchBar />
+      </header>
 
       <HeroCarousel banners={banners} fallbackTitle={t("كل ما تحبّه البنات في مكان واحد")} />
 

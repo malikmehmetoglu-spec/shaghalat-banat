@@ -717,3 +717,13 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 .row-arrow { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--rosy-gray); background: #fff; color: var(--deep-berry); display: grid; place-items: center; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
 .row-arrow:hover:not(:disabled) { background: var(--magenta); border-color: var(--magenta); color: #fff; }
 .row-arrow:disabled { opacity: .35; cursor: default; }
+
+/* ═════════ الهيدر: تدرّج وردي ناعم من الهوية (29 أكتوبر 2026) ═════════ */
+:root { --head-grad: linear-gradient(120deg, #FCE4EE 0%, #F8D0E0 55%, #F3BCD3 100%); }
+.m-head { display: flex; flex-direction: column; gap: 16px; margin: -24px -20px 0; padding: 20px 20px 22px; border-radius: 0 0 30px 30px; background: var(--head-grad); box-shadow: 0 12px 30px rgba(214,3,127,.10); }
+.m-head .icon-btn { background: rgba(255,255,255,.75) !important; box-shadow: none !important; }
+@media (min-width: 1024px) {
+  .site-header { background: var(--head-grad); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom-color: rgba(214,3,127,.12); box-shadow: 0 8px 24px rgba(214,3,127,.08); }
+  .sh-icons .icon-btn { background: rgba(255,255,255,.75); box-shadow: none; }
+  .sh-nav a { color: #6B4A5A; }
+}
