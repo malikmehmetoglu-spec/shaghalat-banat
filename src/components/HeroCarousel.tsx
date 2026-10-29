@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useT } from "@/components/LangProvider";
+import { Icon } from "@/components/Icon";
 
 type Banner = { id: string; kicker: string | null; title: string; link: string | null; image_url: string | null };
 const FALLBACK_BG = "linear-gradient(170deg,var(--banat-pink),var(--magenta) 55%,var(--deep-berry))";
@@ -9,7 +10,7 @@ const INTERVAL = 6000;
 /** صور المنتجات لها نسخة مصغّرة t_ تكفي لقوس السلايدر وتُحمَّل أسرع بكثير */
 const slideImg = (u: string) => (u.includes("/media/products/") ? u.replace(/\/([^/]+)$/, "/t_$1") : u);
 
-/** بانرات الواجهة: تتقلّب تلقائياً كل 6 ثوانٍ، مع نقاط تنقّل وسحب باللمس، وتتوقف عند مرور الفأرة */
+/** بانرات الواجهة: تتقلّب تلقائياً كل 6 ثوانٍ، مع نقاط تنقّل وسحب باللمس، وتتوقف أثناء اللمس فقط */
 export function HeroCarousel({ banners, fallbackTitle }: { banners: Banner[]; fallbackTitle: string }) {
   const t = useT();
   const slides = banners.length ? banners : [{ id: "f", kicker: null, title: fallbackTitle, link: "/search", image_url: null }];
@@ -23,14 +24,12 @@ export function HeroCarousel({ banners, fallbackTitle }: { banners: Banner[]; fa
 
   useEffect(() => {
     if (slides.length < 2 || paused) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const id = setInterval(() => setI((x) => (x + 1) % slides.length), INTERVAL);
     return () => clearInterval(id);
   }, [slides.length, paused, i]);
 
   return (
     <section className="hero" aria-roledescription="carousel" aria-label={t("العروض")}
-      onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
       onTouchStart={(e) => { touchX.current = e.touches[0].clientX; setPaused(true); }}
       onTouchEnd={(e) => {
         const start = touchX.current; touchX.current = null; setPaused(false);
@@ -51,6 +50,12 @@ export function HeroCarousel({ banners, fallbackTitle }: { banners: Banner[]; fa
           </div>
         ))}
       </div>
+      {slides.length > 1 && (
+        <div className="hero-arrows d-only">
+          <button type="button" className="hero-arrow" aria-label={t("السابق")} onClick={() => go(i - 1)}><Icon name="back" size={20} stroke={2.2} /></button>
+          <button type="button" className="hero-arrow" aria-label={t("التالي")} onClick={() => go(i + 1)}><Icon name="forward" size={20} stroke={2.2} /></button>
+        </div>
+      )}
       {slides.length > 1 && (
         <div className="hero-dots">
           {slides.map((b, n) => (

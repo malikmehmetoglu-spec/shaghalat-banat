@@ -745,3 +745,12 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .hero-dots { bottom: 22px; inset-inline-start: 56px; }
   .hero-mark { width: 300px; bottom: -90px; }
 }
+
+/* أسهم السلايدر على الكمبيوتر */
+.hero-arrows { display: none; }
+@media (min-width: 1024px) {
+  .hero-arrows.d-only { display: flex; gap: 8px; position: absolute; z-index: 2; bottom: 14px; inset-inline-start: 56px; }
+  .hero-dots { inset-inline-start: 160px !important; bottom: 28px !important; }
+  .hero-arrow { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.12); color: #fff; display: grid; place-items: center; cursor: pointer; transition: background .2s; }
+  .hero-arrow:hover { background: rgba(255,255,255,.28); }
+}
