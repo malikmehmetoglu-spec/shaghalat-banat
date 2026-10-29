@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { ProductCard } from "@/components/ProductCard";
-import { getFavoriteIds, getProducts, type SortKey } from "@/lib/data";
-import { createClient } from "@/lib/supabase/server";
+import { getCategories, getFavoriteIds, getProducts, type SortKey } from "@/lib/data";
+import { MoreLink } from "@/components/MoreLink";
+import { shownCount } from "@/lib/paging";
 import { placeholder } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 
@@ -15,14 +16,14 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "price_desc", label: "السعر: الأعلى أولاً" },
 ];
 
-export default async function CategoryPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ sort?: string }> }) {
+export default async function CategoryPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ sort?: string; n?: string }> }) {
   const t = await getT();
   const slug = decodeSlug((await params).slug);
-  const { sort = "new" } = await searchParams;
-  const sb = await createClient();
-  const { data: cat } = await sb.from("categories").select("id,name,name_en,slug,image_url").eq("slug", slug).maybeSingle();
+  const { sort = "new", n } = await searchParams;
+  const [cats, products, favs] = await Promise.all([getCategories(), getProducts({ categorySlug: slug, sort: sort as SortKey }), getFavoriteIds()]);
+  const cat = cats.find((c) => c.slug === slug);
   if (!cat) notFound();
-  const [products, favs] = await Promise.all([getProducts({ categorySlug: slug, sort: sort as SortKey }), getFavoriteIds()]);
+  const shown = shownCount(n);
 
   return (
     <main className="page tight wide" style={{ paddingBottom: 40 }}>
@@ -34,7 +35,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
       <section className="cat-hero">
         <img src="/icons/logo-mark.svg" alt="" aria-hidden="true" className="hero-mark" />
         <div className="cat-hero-text">
-          <h1 className="hero-title" style={{ margin: 0 }}>{(t("ل.س") !== "ل.س" && cat.name_en) || cat.name}</h1>
+          <h1 className="hero-title" style={{ margin: 0 }}>{cat.name}</h1>
           <span className="muted">{products.length} {t("منتج")}</span>
         </div>
         <span className="arch cat-hero-arch" style={{ background: cat.image_url ? `url(${cat.image_url}) center/cover` : placeholder(cat.slug) }} />
@@ -50,9 +51,11 @@ export default async function CategoryPage({ params, searchParams }: { params: P
 
       {products.length ? (
         <div className="grid-2">
-          {products.map((p) => <ProductCard key={p.id} p={p} isFav={favs.has(p.id)} />)}
+          {products.slice(0, shown).map((p) => <ProductCard key={p.id} p={p} isFav={favs.has(p.id)} />)}
         </div>
-      ) : (
+      ) : null}
+      {products.length > 0 && <MoreLink href={`/c/${slug}?sort=${sort}&n=${shown + 24}`} shown={shown} total={products.length} label={t("عرض المزيد ({n})", { n: products.length - shown })} />}
+      {!products.length && (
         <div className="empty">
           <span className="ring"><Icon name="grid" size={40} stroke={1.6} /></span>
           <div className="title-block"><span className="h-section">{t("لا توجد منتجات بعد")}</span><span className="muted">{t("سنضيف قطعاً جديدة قريباً")}</span></div>

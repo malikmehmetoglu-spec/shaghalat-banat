@@ -5,6 +5,8 @@ import { getLang } from "@/lib/i18n/server";
 import type { Category, Product, ProductWithVariants } from "@/lib/types";
 
 const PRODUCT_COLS = "id,slug,name,name_en,subtitle,description,price,compare_at_price,tag,images,rating,rating_count,category_id,created_at,sold_count";
+/** للقوائم والبطاقات: بلا الوصف (نص طويل لا يظهر في البطاقة) */
+const LIST_COLS = "id,slug,name,name_en,subtitle,price,compare_at_price,tag,images,rating,rating_count,category_id,created_at,sold_count";
 
 /** بالإنجليزية: نستخدم name_en إن وُجد */
 async function localize<T extends { name: string; name_en?: string | null }>(rows: T[]): Promise<T[]> {
@@ -47,7 +49,7 @@ export async function getProducts(opts: { categorySlug?: string; sort?: SortKey;
     if (!c) return [];
     catId = c.id;
   }
-  let query = sb.from("products").select(catId ? `${PRODUCT_COLS},product_categories!inner(category_id)` : PRODUCT_COLS).is("archived_at", null);
+  let query = sb.from("products").select(catId ? `${LIST_COLS},product_categories!inner(category_id)` : LIST_COLS).is("archived_at", null);
   if (catId) query = query.eq("product_categories.category_id", catId);
   if (opts.q) {
     const term = opts.q.replace(/[%,()"'\\*:.]/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
@@ -65,7 +67,8 @@ export async function getProducts(opts: { categorySlug?: string; sort?: SortKey;
   }
   if (opts.limit) query = query.limit(opts.limit);
   const { data } = await query;
-  let rows = (data ?? []) as unknown as Product[];
+  // البطاقة تعرض صورة واحدة فقط: لا نرسل باقي الصور للمتصفح
+  let rows = ((data ?? []) as any[]).map(({ product_categories: _pc, ...p }) => ({ ...p, description: null, images: (p.images ?? []).slice(0, 1) })) as Product[];
   // العروض: السعر القديم أعلى فعلاً من الحالي، والأكبر خصماً أولاً
   if (opts.onSale) rows = rows.filter((p) => Number(p.compare_at_price) > Number(p.price))
     .sort((a, b) => (1 - b.price / Number(b.compare_at_price)) - (1 - a.price / Number(a.compare_at_price)));

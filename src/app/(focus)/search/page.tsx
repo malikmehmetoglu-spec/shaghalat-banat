@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ProductCard } from "@/components/ProductCard";
 import { Icon } from "@/components/Icon";
 import { getFavoriteIds, getProducts } from "@/lib/data";
+import { MoreLink } from "@/components/MoreLink";
+import { shownCount } from "@/lib/paging";
 
 import { getT } from "@/lib/i18n/server";
 
@@ -9,7 +11,7 @@ export const metadata = { title: "البحث" };
 
 const POPULAR = ["عبايات", "لانجري", "عطر", "بيجاما", "روب", "ساتان"];
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string; min?: string; max?: string; sale?: string; sort?: string }> }) {
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string; min?: string; max?: string; sale?: string; sort?: string; n?: string }> }) {
   const t = await getT();
   const sp = await searchParams;
   const term = (sp.q ?? "").trim();
@@ -21,6 +23,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     getFavoriteIds(),
   ]);
   const fmt = (v: number) => v.toLocaleString("en-US");
+  const shown = shownCount(sp.n);
+  const more = new URLSearchParams(Object.entries({ q: term, min: sp.min, max: sp.max, sale: sp.sale, sort: sp.sort }).filter(([, v]) => v) as [string, string][]);
+  more.set("n", String(shown + 24));
   const title = term
     ? (results.length ? t("{n} نتائج", { n: results.length }) : t("لا توجد نتائج، جرّبي كلمة أخرى"))
     : onSale ? t("كل العروض")
@@ -54,8 +59,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <section style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <h1 className="sec-title" style={{ margin: 0 }}>{title}</h1>
         <div className="grid-2">
-          {results.map((p) => <ProductCard key={p.id} p={p} isFav={favs.has(p.id)} />)}
+          {results.slice(0, shown).map((p) => <ProductCard key={p.id} p={p} isFav={favs.has(p.id)} />)}
         </div>
+        <MoreLink href={`/search?${more}`} shown={shown} total={results.length} label={t("عرض المزيد ({n})", { n: results.length - shown })} />
       </section>
     </main>
   );
