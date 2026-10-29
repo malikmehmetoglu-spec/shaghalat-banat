@@ -309,9 +309,11 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .hero-mark { width: 420px; inset-inline-start: auto; inset-inline-end: 30%; bottom: -120px; }
   .sec { gap: 22px; }
   .sec-title { font-size: 28px; }
-  .cat-row { margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 24px; overflow: visible; }
-  .cat-tile { width: auto; }
-  .cat-arch { width: 100%; border-radius: 50% 50% 24px 24px / 37.5% 37.5% 24px 24px; }
+  /* صف أفقي كالهاتف، مع مساحة للظل وأسهم في الرأس */
+  .cat-row { margin: -6px 0 -30px; padding: 6px 2px 34px; gap: 24px; scroll-snap-type: x mandatory; scroll-behavior: smooth; }
+  .cat-tile { width: 150px; scroll-snap-align: start; }
+  .cat-arch { width: 150px; border-radius: 50% 50% 24px 24px / 37.5% 37.5% 24px 24px; transition: transform .2s; }
+  .cat-tile:hover .cat-arch { transform: translateY(-4px); }
   .cat-name { font-size: 15px; }
   .pc-name { font-size: 15px; }
   .pc-price b { font-size: 16px; }
@@ -721,3 +723,10 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .rev-row { gap: 20px; }
   .ig-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
 }
+
+/* أسهم الصفوف الأفقية على الكمبيوتر */
+.row-arrows { display: none; gap: 8px; }
+@media (min-width: 1024px) { .row-arrows.d-only { display: flex; } }
+.row-arrow { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--rosy-gray); background: #fff; color: var(--deep-berry); display: grid; place-items: center; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
+.row-arrow:hover:not(:disabled) { background: var(--magenta); border-color: var(--magenta); color: #fff; }
+.row-arrow:disabled { opacity: .35; cursor: default; }

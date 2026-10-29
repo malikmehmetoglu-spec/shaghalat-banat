@@ -1,6 +1,8 @@
 /** الترجمة الإنجليزية لواجهة العميلات. المفتاح = النص العربي. */
 export const EN: Record<string, string> = {
   "الأقسام": "Categories",
+  "السابق": "Previous",
+  "التالي": "Next",
   "شغلات بنات": "Shaghalat Banat",
   "الإشعارات": "Notifications",
   "اكتشفي": "Discover",

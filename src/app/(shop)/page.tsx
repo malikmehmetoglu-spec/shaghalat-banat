@@ -7,6 +7,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { DealCountdown } from "@/components/home/DealCountdown";
 import { NewArrivals } from "@/components/home/NewArrivals";
 import { RecentlyViewed } from "@/components/home/RecentlyViewed";
+import { ScrollRow } from "@/components/home/ScrollRow";
 import { getBanners, getCategories, getFavoriteIds, getProducts, getStoreProfile, getTestimonials, getUnreadCount } from "@/lib/data";
 import { placeholder } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
@@ -55,8 +56,7 @@ export default async function Home() {
       <HeroCarousel banners={banners} fallbackTitle={t("كل ما تحبّه البنات في مكان واحد")} />
 
       <section className="sec">
-        <h2 className="sec-title">{t("تسوّقي حسب القسم")}</h2>
-        <div className="cat-row scr">
+        <ScrollRow title={t("تسوّقي حسب القسم")} className="cat-row">
           {cats.map((c) => (
             <Link key={c.id} href={`/c/${c.slug}`} className="cat-tile">
               <span className="arch cat-arch" style={{ background: placeholder(c.slug) }}>
@@ -65,7 +65,7 @@ export default async function Home() {
               <span className="cat-name">{c.name}</span>
             </Link>
           ))}
-        </div>
+        </ScrollRow>
       </section>
 
       {deals.length > 0 && (
