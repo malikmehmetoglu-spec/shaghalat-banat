@@ -773,3 +773,8 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 .op-steps { margin: 0; padding: 0 22px 0 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.7; color: var(--dark-plum); }
 .op-note, .op-text { text-align: center; line-height: 1.8; margin: 0; }
 .op-text { font-size: 14px; color: var(--dark-plum); }
+
+/* إتمام الطلب: «تابعي التسوّق» بجانب زر المتابعة */
+.co-bar { display: flex; gap: 10px; align-items: center; }
+.co-bar .co-more { flex: 0 0 auto; height: 56px; padding: 0 18px; font-size: 14px; white-space: nowrap; }
+.co-bar .co-main { flex: 1; min-width: 0; }

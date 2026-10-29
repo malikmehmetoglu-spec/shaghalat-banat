@@ -68,7 +68,8 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
       max: stock,
     });
     setAdded(true);
-    setTimeout(() => setAdded(false), 2200);
+    // التسوّق في سوريا ما زال جديداً على كثيرات: نأخذها مباشرة لإتمام الطلب، ومن هناك «تابعي التسوّق»
+    router.push("/checkout");
   }
 
   const tabs = [
@@ -141,8 +142,8 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
             <span style={{ fontSize: 16 }}>{qty}</span>
             <button type="button" aria-label={t("إنقاص الكمية")} onClick={() => setQty((q) => Math.max(1, q - 1))}><Icon name="minus" size={16} stroke={2.4} /></button>
           </div>
-          <button type="button" className="btn cta" style={{ flex: 1 }} onClick={addToCart} disabled={stock <= 0}>
-            {added ? t("تمت الإضافة ✓") : stock <= 0 ? t("غير متوفر") : t("أضيفي إلى السلة")}
+          <button type="button" className="btn cta" style={{ flex: 1 }} onClick={addToCart} disabled={stock <= 0 || added}>
+            {added ? t("جارٍ الانتقال لإتمام الطلب…") : stock <= 0 ? t("غير متوفر") : t("أضيفي إلى السلة")}
             {!added && stock > 0 && <Icon name="cart" stroke={2} />}
           </button>
         </div>

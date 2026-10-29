@@ -201,10 +201,11 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
 
       {err && <div className="alert tone-danger" role="alert">{err}</div>}
 
-      <div className="action-bar">
+      <div className="action-bar co-bar">
+        <Link href="/" className="btn secondary co-more">{t("تابعي التسوّق")}</Link>
         {step < 2
-          ? <button type="button" className="btn cta block" onClick={next}>{t("متابعة")}</button>
-          : <button type="button" className="btn cta block" onClick={placeOrder} disabled={busy}>{busy ? t("جارٍ إرسال الطلب…") : `${t("تأكيد الطلب")} · ${price(subtotal + shipCost, t)}`}</button>}
+          ? <button type="button" className="btn cta block co-main" onClick={next}>{t("متابعة")}</button>
+          : <button type="button" className="btn cta block co-main" onClick={placeOrder} disabled={busy}>{busy ? t("جارٍ إرسال الطلب…") : `${t("تأكيد الطلب")} · ${price(subtotal + shipCost, t)}`}</button>}
       </div>
     </main>
   );

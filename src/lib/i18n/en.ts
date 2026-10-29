@@ -2,6 +2,8 @@
 export const EN: Record<string, string> = {
   "الأقسام": "Categories",
   "السابق": "Previous",
+  "تابعي التسوّق": "Keep shopping",
+  "جارٍ الانتقال لإتمام الطلب…": "Going to checkout…",
   "جارٍ التحميل…": "Loading…",
   "عرض المزيد ({n})": "Show more ({n})",
   "التالي": "Next",
