@@ -27,15 +27,22 @@ export function smsText(stage: Stage, o: MsgOrder): string {
   }
 }
 
-export function whatsappText(stage: Stage, o: MsgOrder): string {
+/** تعريف الموظفة: «معك ريم من خدمة العملاء في متجر شغلات بنات» */
+const intro = (agent?: string | null) => {
+  const first = agent?.trim().split(/\s+/)[0];
+  return first ? `معك ${first} من خدمة العملاء في متجر ${STORE}.` : `معك خدمة العملاء في متجر ${STORE}.`;
+};
+
+export function whatsappText(stage: Stage, o: MsgOrder, agent?: string | null): string {
   const n = orderNo(o.number);
+  const head = `${hello(o.name)} 🌸\n${intro(agent)}\n`;
   switch (stage) {
     case "new": return o.payment === "support"
-      ? `${hello(o.name)} 🌸\nمعك خدمة عملاء ${STORE}.\nاستلمنا طلبك رقم ${n} بقيمة ${amount(o.total)}.\nسأرشدك الآن لطريقة الدفع عبر شام كاش لنؤكد طلبك ونبدأ تجهيزه.`
-      : `${hello(o.name)} 🌸\nمعك ${STORE}.\nاستلمنا طلبك رقم ${n} بقيمة ${amount(o.total)}.\nبانتظار إشعار التحويل عبر شام كاش لتأكيد الطلب. إن احتجتِ أي مساعدة نحن هنا.`;
-    case "preparing": return `${hello(o.name)} 🌸\nتم تأكيد الدفع لطلبك رقم ${n} ✅\nطلبك الآن قيد التجهيز، وسنخبرك فور تسليمه لشركة الشحن.`;
-    case "shipped": return `${hello(o.name)} 🚚\nطلبك رقم ${n} أصبح مع شركة الشحن وفي طريقه إليكِ.\nسيتواصل معك المندوب عند الوصول.`;
-    case "delivered": return `${hello(o.name)} 💗\nتم تسليم طلبك رقم ${n}.\nشكراً لثقتك بـ${STORE}، نتمنى أن تنال القطع إعجابك. يسعدنا سماع رأيك!`;
+      ? `${head}استلمنا طلبك رقم ${n} بقيمة ${amount(o.total)}.\nسأرشدك الآن لطريقة الدفع عبر شام كاش لنؤكد طلبك ونبدأ تجهيزه.`
+      : `${head}استلمنا طلبك رقم ${n} بقيمة ${amount(o.total)}.\nبانتظار إشعار التحويل عبر شام كاش لتأكيد الطلب، وإن احتجتِ أي مساعدة أنا هنا.`;
+    case "preparing": return `${head}تم تأكيد الدفع لطلبك رقم ${n} ✅\nطلبك الآن قيد التجهيز، وسأخبرك فور تسليمه لشركة الشحن.`;
+    case "shipped": return `${head}طلبك رقم ${n} أصبح مع شركة الشحن وفي طريقه إليكِ 🚚\nسيتواصل معك المندوب عند الوصول.`;
+    case "delivered": return `${head}تم تسليم طلبك رقم ${n} 💗\nشكراً لثقتك بنا، نتمنى أن تنال القطع إعجابك ويسعدنا سماع رأيك.`;
   }
 }
 

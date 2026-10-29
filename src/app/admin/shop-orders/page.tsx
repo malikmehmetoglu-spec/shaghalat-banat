@@ -7,7 +7,7 @@ export const metadata = { title: "طلبات المتجر" };
 export const dynamic = "force-dynamic";
 
 export default async function ShopOrders() {
-  const { sb } = await requireStaff(rolesFor("/admin/shop-orders"));
+  const { sb, profile } = await requireStaff(rolesFor("/admin/shop-orders"));
   const since = new Date(Date.now() - 14 * 864e5).toISOString();
   const cols = "id,number,status,payment_method,is_paid,total,subtotal,shipping,discount,created_at,customer_phone,address_snapshot,note,user:profiles!orders_user_id_fkey(full_name,phone),order_items(product_name,variant_label,qty,unit_price)";
   const [{ data: open }, { data: done }] = await Promise.all([
@@ -24,5 +24,5 @@ export default async function ShopOrders() {
       items: (o.order_items ?? []).map((i: any) => ({ name: i.product_name, label: i.variant_label, qty: i.qty, price: Number(i.unit_price) })),
     };
   });
-  return <Board orders={orders} />;
+  return <Board orders={orders} agent={profile.full_name ?? ""} />;
 }
