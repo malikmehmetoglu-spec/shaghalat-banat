@@ -13,6 +13,7 @@ import "./globals.css";
 import { CartProvider } from "@/components/CartProvider";
 import { SwRegister } from "@/components/SwRegister";
 import { LangProvider } from "@/components/LangProvider";
+import { PushOwnerSync } from "@/components/PushOwnerSync";
 import { getLang } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
@@ -38,6 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
       <body>
         <LangProvider lang={lang}>
+          <PushOwnerSync />
           <CartProvider>
             {children}
           </CartProvider>

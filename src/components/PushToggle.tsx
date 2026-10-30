@@ -11,6 +11,34 @@ function b64ToBytes(s: string) {
   return Uint8Array.from(b, (c) => c.charCodeAt(0));
 }
 
+/** عنوان اشتراك هذا الجهاز إن وُجد */
+async function deviceEndpoint(): Promise<{ kind: "web" | "fcm"; endpoint: string; keys: unknown } | null> {
+  try {
+    if (isNative()) { const e = localStorage.getItem("push-endpoint"); return e ? { kind: "fcm", endpoint: e, keys: null } : null; }
+    if (!("serviceWorker" in navigator) || typeof Notification === "undefined" || Notification.permission !== "granted") return null;
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = await reg?.pushManager.getSubscription();
+    if (!sub) return null;
+    const j = sub.toJSON();
+    return { kind: "web", endpoint: j.endpoint!, keys: j.keys };
+  } catch { return null; }
+}
+
+/** تسجيل الخروج الآمن: يُفصل الجهاز عن الحساب أولاً حتى لا تصل إشعاراته لمن يستخدم الجهاز بعده */
+export async function signOutSafely() {
+  const sb = getBrowserClient();
+  const d = await deviceEndpoint();
+  if (d) await sb.rpc("unlink_push", { p_endpoint: d.endpoint }).then(() => {}, () => {});
+  await sb.auth.signOut();
+}
+
+/** يربط اشتراك الجهاز بالحساب المسجّل حالياً (يُستدعى عند تسجيل الدخول) */
+export async function syncPushOwner(lang: string) {
+  const d = await deviceEndpoint();
+  if (!d) return;
+  await getBrowserClient().rpc("register_push", { p_kind: d.kind, p_endpoint: d.endpoint, p_keys: d.keys, p_lang: lang }).then(() => {}, () => {});
+}
+
 /** تفعيل الإشعارات: Web Push في المتصفح/PWA، و FCM داخل تطبيق Android/iOS */
 export async function enablePush(lang: string): Promise<"on" | "denied" | "unsupported" | "error"> {
   const sb = getBrowserClient();
@@ -20,7 +48,7 @@ export async function enablePush(lang: string): Promise<"on" | "denied" | "unsup
       const perm = await PushNotifications.requestPermissions();
       if (perm.receive !== "granted") return "denied";
       await new Promise<void>((resolve, reject) => {
-        PushNotifications.addListener("registration", async (tk) => { await sb.rpc("register_push", { p_kind: "fcm", p_endpoint: tk.value, p_keys: null, p_lang: lang }); resolve(); });
+        PushNotifications.addListener("registration", async (tk) => { try { localStorage.setItem("push-endpoint", tk.value); } catch {} await sb.rpc("register_push", { p_kind: "fcm", p_endpoint: tk.value, p_keys: null, p_lang: lang }); resolve(); });
         PushNotifications.addListener("registrationError", () => reject());
         PushNotifications.register();
       });

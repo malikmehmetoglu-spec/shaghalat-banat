@@ -36,7 +36,7 @@ async function notifyOrderStatus(sb: Awaited<ReturnType<typeof requireStaff>>["s
   if (!m) return;
   const { data: o } = await sb.from("orders").select("user_id,number").eq("id", orderId).maybeSingle();
   if (!o?.user_id) return;
-  await sb.from("notifications").insert({ user_id: o.user_id, kind: "order", title: m[0], body: m[1].replace("{n}", o.number) });
+  // الإشعار داخل الحساب تضيفه دالة admin_set_order_status في قاعدة البيانات؛ هنا نرسل Push فقط
   const { data: subs } = await sb.from("push_subscriptions").select("id,kind,endpoint,keys,lang").eq("user_id", o.user_id);
   for (const lang of ["ar", "en"]) {
     const group = (subs ?? []).filter((s: any) => (s.lang === "en") === (lang === "en"));
