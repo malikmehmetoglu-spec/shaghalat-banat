@@ -1,3 +1,4 @@
+import { homeSettings } from "@/lib/homeSettings";
 import { Pic } from "@/components/Pic";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
@@ -32,8 +33,11 @@ export default async function Home() {
   const hasSales = best.some((p) => p.sold_count > 0);
   const picks = hasSales ? best.filter((p) => p.sold_count > 0) : [...latest].sort((a, b) => Number(b.rating) - Number(a.rating)).slice(0, 10);
   // بانر التشكيلة: القسم الأغنى بالمنتجات
-  const feature = [...cats].filter((c) => c.count > 0).sort((a, b) => b.count - a.count)[0];
-  const featureImg = feature && (feature.image_url || (await getProducts({ categorySlug: feature.slug, sort: "new", limit: 6 })).find((p) => p.images?.[0])?.images[0]);
+  const hs = homeSettings(store.home);
+  const feature = hs.collect_show ? ((hs.collect_category && cats.find((c) => c.slug === hs.collect_category)) || [...cats].filter((c) => c.count > 0).sort((a, b) => b.count - a.count)[0]) : undefined;
+  const featureImg = feature && (hs.collect_image || feature.image_url || (await getProducts({ categorySlug: feature.slug, sort: "new", limit: 6 })).find((p) => p.images?.[0])?.images[0]);
+  const dealsEnd = hs.deals_ends_at ? new Date(hs.deals_ends_at).getTime() : null;
+  const showDeals = hs.deals_show && deals.length > 0 && (!dealsEnd || dealsEnd > Date.now());
   const insta = latest.filter((p) => p.images?.[0]).slice(0, 6);
   const igHandle = store.instagram_url?.replace(/\/+$/, "").split("/").pop();
 
@@ -69,17 +73,17 @@ export default async function Home() {
         </ScrollRow>
       </section>
 
-      {deals.length > 0 && (
+      {showDeals && (
         <section className="sec deals">
           <div className="deals-head">
             <div className="sec-head">
-              <h2 className="sec-title"><Icon name="fire" size={22} stroke={2} /> {t("عروض اليوم")}</h2>
-              <span className="sec-sub">{t("خصومات حتى {n}% لفترة محدودة", { n: Math.round(Math.max(...deals.map((p) => (1 - p.price / Number(p.compare_at_price)) * 100))) })}</span>
+              <h2 className="sec-title"><Icon name="fire" size={22} stroke={2} /> {hs.deals_title || t("عروض اليوم")}</h2>
+              <span className="sec-sub">{hs.deals_sub || t("خصومات حتى {n}% لفترة محدودة", { n: Math.round(Math.max(...deals.map((p) => (1 - p.price / Number(p.compare_at_price)) * 100))) })}</span>
             </div>
-            <DealCountdown label={t("ينتهي خلال")} />
+            <DealCountdown label={t("ينتهي خلال")} endsAt={dealsEnd} />
           </div>
           <div className="prow scr">
-            {deals.slice(0, 10).map((p) => (
+            {deals.slice(0, hs.deals_limit || 10).map((p) => (
               <div key={p.id} className="prow-item">
                 <span className="off-badge ltr">-{Math.round((1 - p.price / Number(p.compare_at_price)) * 100)}%</span>
                 <ProductCard p={p} isFav={favs.has(p.id)} />
@@ -111,13 +115,13 @@ export default async function Home() {
       )}
 
       {feature && (
-        <Link href={`/c/${feature.slug}`} className="collect">
+        <Link href={`/c/${feature.slug}`} className={`collect collect-${hs.collect_tone}`}>
           <img src="/icons/logo-mark.svg" alt="" aria-hidden="true" className="collect-mark" />
           <span className="collect-text">
-            <span className="hero-kicker">{t("تشكيلة مختارة")}</span>
-            <span className="collect-title">{t("عالم {name}", { name: feature.name })}</span>
-            <span className="collect-sub">{t("{n} قطعة بانتظاركِ", { n: feature.count })}</span>
-            <span className="btn cta collect-cta">{t("اكتشفي التشكيلة")}</span>
+            <span className="hero-kicker">{hs.collect_kicker || t("تشكيلة مختارة")}</span>
+            <span className="collect-title">{hs.collect_title || t("عالم {name}", { name: feature.name })}</span>
+            <span className="collect-sub">{hs.collect_sub || t("{n} قطعة بانتظاركِ", { n: feature.count })}</span>
+            <span className="btn cta collect-cta">{hs.collect_cta || t("اكتشفي التشكيلة")}</span>
           </span>
           <span className="arch collect-arch" style={{ background: placeholder(feature.slug) }}>
             {featureImg && <Pic src={featureImg} />}

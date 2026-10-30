@@ -5,6 +5,7 @@ import { date } from "@/lib/format";
 import { ReviewControls } from "./ReviewControls";
 import { ClearSamples } from "./ClearSamples";
 import { CatalogSection } from "./CatalogSection";
+import { HomeSection } from "./HomeSection";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { ImageUpload } from "../ImageUpload";
@@ -13,6 +14,7 @@ export const metadata = { title: "إعدادات المتجر" };
 
 const TABS = [
   { key: "contact", label: "التواصل والدفع", icon: "card" },
+  { key: "home", label: "الصفحة الرئيسية", icon: "grid" },
   { key: "catalog", label: "الأقسام والبانرات", icon: "star" },
   { key: "reviews", label: "آراء الزبونات", icon: "chat" },
 ] as const;
@@ -28,7 +30,7 @@ export default async function StoreSettings({ searchParams }: { searchParams: Pr
   const samples = (reviews ?? []).filter((r) => r.is_sample).length;
   return (
     <>
-      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">إعدادات المتجر</h1><span className="adm-sub">التواصل والدفع، والأقسام والبانرات، وآراء الزبونات</span></div></div>
+      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">إعدادات المتجر</h1><span className="adm-sub">التواصل والدفع، وأقسام الصفحة الرئيسية، والأقسام والبانرات، وآراء الزبونات</span></div></div>
       <nav className="inv-tabs" aria-label="إعدادات المتجر">
         {TABS.map((t) => (
           <Link key={t.key} href={t.key === "contact" ? "/admin/settings" : `/admin/settings?tab=${t.key}`} className={`inv-tab${tab === t.key ? " on" : ""}`} aria-current={tab === t.key ? "page" : undefined}>
@@ -37,6 +39,7 @@ export default async function StoreSettings({ searchParams }: { searchParams: Pr
         ))}
       </nav>
       {tab === "catalog" && <CatalogSection />}
+      {tab === "home" && <HomeSection />}
       {tab === "contact" && <div style={{ maxWidth: 900 }}>
     <FormCard title="التواصل والدفع" action={saveStoreProfile} submitLabel="حفظ" resetOnSuccess={false}>
       <span className="caption">تظهر في صفحة <a href="/qr" target="_blank" className="ltr">shaghalat-banat.com/qr</a> التي يفتحها رمز QR المطبوع على الأكياس والكروت.</span>

@@ -795,3 +795,11 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 /* رأي تجريبي: يظهر لفريق العمل فقط */
 .rev-sample { position: relative; border-style: dashed; }
 .rev-tag { align-self: flex-start; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 10px; background: #E8F3FF; color: #1D5FA8; }
+
+/* ألوان بانر التشكيلة (من إعدادات المتجر) */
+.collect-berry { background: linear-gradient(135deg, #A8036A, var(--deep-berry)); }
+.collect-plum { background: linear-gradient(135deg, #4A3540, var(--dark-plum)); box-shadow: 0 22px 48px rgba(58,42,48,.25); }
+.collect-blush { background: linear-gradient(135deg, #FDE7F1, #F8CFE0); color: var(--deep-berry); box-shadow: 0 22px 48px rgba(214,3,127,.12); }
+.collect-blush .hero-kicker, .collect-blush .collect-sub { color: var(--deep-berry); opacity: .8; }
+.collect-blush .collect-mark { filter: none; opacity: .08; }
+.collect-blush .btn.collect-cta { background: var(--magenta); color: #fff; }

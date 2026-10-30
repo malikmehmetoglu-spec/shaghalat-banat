@@ -580,6 +580,32 @@ export async function archiveProduct(id: string): Promise<ActionResult> {
 }
 
 // ───────── روابط التواصل (صفحة /qr) ─────────
+/** إعدادات أقسام الصفحة الرئيسية: عروض اليوم وبانر التشكيلة */
+export async function saveHomeSettings(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
+  const { sb } = await requireStaff("/admin/settings");
+  const tone = str(fd, "collect_tone");
+  const ends = str(fd, "deals_ends_at");
+  const home = {
+    deals_show: fd.get("deals_show") === "on",
+    deals_title: str(fd, "deals_title").slice(0, 60),
+    deals_sub: str(fd, "deals_sub").slice(0, 120),
+    deals_ends_at: ends ? new Date(ends + ":00+03:00").toISOString() : "",
+    deals_limit: Math.min(20, Math.max(4, Number(str(fd, "deals_limit")) || 10)),
+    collect_show: fd.get("collect_show") === "on",
+    collect_category: str(fd, "collect_category"),
+    collect_kicker: str(fd, "collect_kicker").slice(0, 40),
+    collect_title: str(fd, "collect_title").slice(0, 60),
+    collect_sub: str(fd, "collect_sub").slice(0, 120),
+    collect_cta: str(fd, "collect_cta").slice(0, 30),
+    collect_image: str(fd, "collect_image").split("\n")[0].trim(),
+    collect_tone: ["magenta", "berry", "plum", "blush"].includes(tone) ? tone : "magenta",
+  };
+  const { error } = await sb.from("store_profile").update({ home, updated_at: new Date().toISOString() }).eq("id", 1);
+  if (error) return fail(errMsg(error));
+  revalidateTag("catalog"); revalidateTag("store_profile"); revalidatePath("/"); revalidatePath("/admin/settings");
+  return ok("تم الحفظ — تظهر التغييرات على الصفحة الرئيسية خلال لحظات");
+}
+
 export async function saveStoreProfile(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
   const { sb } = await requireStaff("/admin/settings");
   const url = (v: string) => (v && !/^https?:\/\//.test(v) ? `https://${v}` : v) || null;

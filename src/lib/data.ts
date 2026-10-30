@@ -139,10 +139,10 @@ export async function getTestimonials(): Promise<{ id: string; name: string; cit
 }
 
 /** روابط التواصل العامة للمتجر */
-export async function getStoreProfile(): Promise<{ instagram_url: string | null; whatsapp: string | null }> {
+export async function getStoreProfile(): Promise<{ instagram_url: string | null; whatsapp: string | null; home: unknown }> {
   return cached(["store_profile"], async () => {
-    const { data } = await publicClient().from("store_profile").select("instagram_url,whatsapp").eq("id", 1).maybeSingle();
-    return data ?? { instagram_url: null, whatsapp: null };
+    const { data } = await publicClient().from("store_profile").select("instagram_url,whatsapp,home").eq("id", 1).maybeSingle();
+    return data ?? { instagram_url: null, whatsapp: null, home: {} };
   });
 }
 
