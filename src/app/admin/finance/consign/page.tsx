@@ -1,11 +1,11 @@
-import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import { moneySnapshot, monthBounds } from "@/lib/money";
 import { ConsignView, type Trader } from "./ConsignView";
 
 export const metadata = { title: "تجار الأمانة" };
 
 export default async function ConsignPage() {
-  const { sb } = await requireStaff(FINANCE_ROLES);
+  const { sb } = await requireStaff("/admin/finance");
   const mb = monthBounds();
   const [{ data: cons }, { data: led }, { data: prods }, { data: sold }, snap, { data: fx }] = await Promise.all([
     sb.from("consignors").select("id,name,phone,mode,commission_pct,note,is_active").order("is_active", { ascending: false }).order("name"),

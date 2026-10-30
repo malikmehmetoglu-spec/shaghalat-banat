@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import { date, ORDER_STATUS, PAYMENT_LABEL, price } from "@/lib/format";
 import { PrintButton } from "../PrintButton";
 import { ClickRow } from "../../ClickRow";
@@ -9,7 +9,7 @@ export const metadata = { title: "الفواتير" };
 
 export default async function InvoicesPage({ searchParams }: { searchParams: Promise<{ tab?: string; id?: string }> }) {
   const { tab = "sales", id } = await searchParams;
-  const { sb } = await requireStaff(FINANCE_ROLES);
+  const { sb } = await requireStaff("/admin/finance");
   const { data: settings } = await sb.from("finance_settings").select("*").eq("id", 1).single();
   const rate = Number(settings?.tax_rate ?? 0);
 

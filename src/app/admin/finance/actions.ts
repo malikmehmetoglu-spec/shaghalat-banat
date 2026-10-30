@@ -1,13 +1,13 @@
 "use server";
 import { price } from "@/lib/format";
 import { revalidatePath } from "next/cache";
-import { errMsg, FINANCE_ROLES, requireStaff } from "@/lib/admin";
+import { errMsg, requireStaff } from "@/lib/admin";
 import type { ActionResult } from "../actions";
 
 const ok = (message: string): ActionResult => ({ ok: true, message });
 const fail = (message: string): ActionResult => ({ ok: false, message });
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
-const fin = () => requireStaff(FINANCE_ROLES);
+const fin = () => requireStaff("/admin/finance");
 const touch = () => revalidatePath("/admin/finance", "layout");
 
 export async function recordExpense(_: ActionResult | null, fd: FormData): Promise<ActionResult> {

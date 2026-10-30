@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import { monthBounds, movements, type Kind } from "@/lib/money";
 import { MovementList } from "../_ui/MovementRow";
 
@@ -18,7 +18,7 @@ const BOX = [{ key: "", label: "كل الأماكن" }, { key: "1120", label: "�
 
 export default async function Movements({ searchParams }: { searchParams: Promise<{ type?: string; box?: string; m?: string }> }) {
   const sp = await searchParams;
-  const { sb } = await requireStaff(FINANCE_ROLES);
+  const { sb } = await requireStaff("/admin/finance");
   const mb = monthBounds(sp.m && /^\d{4}-\d{2}$/.test(sp.m) ? `${sp.m}-15` : undefined);
   const f = FILTERS.find((x) => x.key === sp.type) ?? FILTERS[0];
   let list = await movements(sb, { from: mb.from, to: mb.to, limit: 1000 });

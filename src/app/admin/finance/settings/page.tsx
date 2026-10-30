@@ -1,4 +1,4 @@
-import { FINANCE_ROLES, getFx, requireStaff } from "@/lib/admin";
+import { getFx, requireStaff } from "@/lib/admin";
 import { FxCard } from "../../FxCard";
 import { FormCard } from "../../FormCard";
 import { saveSettings } from "../actions";
@@ -7,7 +7,7 @@ export const metadata = { title: "الضرائب والإعدادات" };
 const _M = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
 export default async function SettingsPage() {
-  const { sb, profile } = await requireStaff(FINANCE_ROLES);
+  const { sb, profile } = await requireStaff("/admin/finance");
   const fx = await getFx();
   const { data: s } = await sb.from("finance_settings").select("*").eq("id", 1).single();
   if (!s) return null;

@@ -59,8 +59,8 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
           <span className="adm-sub">ملخّص أداء المتجر اليوم، {date(new Date())}</span>
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          {canAccess(profile.role, "/admin/pos") && <Link href="/admin/pos" className="btn">نقطة البيع</Link>}
-          {canAccess(profile.role, "/admin/products") && <Link href="/admin/products/new" className="btn secondary">إضافة منتج</Link>}
+          {canAccess(profile.role, "/admin/pos", profile.extra_access) && <Link href="/admin/pos" className="btn">نقطة البيع</Link>}
+          {canAccess(profile.role, "/admin/products", profile.extra_access) && <Link href="/admin/products/new" className="btn secondary">إضافة منتج</Link>}
         </div>
       </div>
 

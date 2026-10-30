@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import { price } from "@/lib/format";
 import { accountTotals, balanceOf, monthShort, periodRange, type AccTotal } from "@/lib/finance";
 import { PrintButton } from "../PrintButton";
@@ -22,7 +22,7 @@ function summarize(rows: AccTotal[]) {
 
 export default async function ReportsPage({ searchParams }: { searchParams: Promise<{ p?: string; from?: string; to?: string }> }) {
   const sp = await searchParams;
-  const { sb } = await requireStaff(FINANCE_ROLES);
+  const { sb } = await requireStaff("/admin/finance");
   const per = periodRange(sp.p, sp.from, sp.to);
   const now = new Date(Date.now() + 3 * 3600 * 1000); // تاريخ دمشق (UTC+3) — الخادم يعمل بتوقيت UTC
   const months = Array.from({ length: 6 }, (_, k) => {

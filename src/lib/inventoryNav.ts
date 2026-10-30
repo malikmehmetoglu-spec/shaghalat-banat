@@ -11,7 +11,7 @@ export const INV_TABS = [
   { href: "/admin/barcodes", label: "الباركود والملصقات", icon: "filter" },
 ] as const;
 
-export const invTabsFor = (role: string) => INV_TABS.filter((t) => canAccess(role, t.href));
+export const invTabsFor = (role: string, extra: string[] = []) => INV_TABS.filter((t) => canAccess(role, t.href, extra));
 export const isInvPath = (path: string) => INV_TABS.some((t) => path === t.href || path.startsWith(t.href + "/"));
 export const invTabActive = (path: string, t: (typeof INV_TABS)[number]) =>
   "exact" in t && t.exact ? path === t.href : path === t.href || path.startsWith(t.href + "/");

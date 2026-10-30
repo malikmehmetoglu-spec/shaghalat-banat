@@ -3,14 +3,13 @@ import { cell, loadVariants, variantLabel } from "@/lib/inventory";
 import { POS } from "./POS";
 import { PosTabs } from "./PosTabs";
 import { ReturnsTab } from "./ReturnsTab";
-import { rolesFor } from "@/lib/access";
 
 export const metadata = { title: "نقطة البيع" };
 
 export default async function PosPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const { tab } = await searchParams;
   if (tab === "returns") {
-    await requireStaff(rolesFor("/admin/returns"));
+    await requireStaff("/admin/returns");
     return (
       <>
         <div className="adm-top"><div className="title-block"><h1 className="adm-h1">نقطة البيع</h1><span className="adm-sub">المرتجعات والاستبدال</span></div><PosTabs active="returns" /></div>
@@ -18,7 +17,7 @@ export default async function PosPage({ searchParams }: { searchParams: Promise<
       </>
     );
   }
-  const { sb, profile } = await requireStaff(rolesFor("/admin/pos"));
+  const { sb, profile } = await requireStaff("/admin/pos");
   const [locs, all, { data: settings }, { data: shiftRows }] = await Promise.all([
     getLocations(), loadVariants(sb),
     sb.from("finance_settings").select("store_address,store_phone,invoice_footer,tax_number").eq("id", 1).maybeSingle(),

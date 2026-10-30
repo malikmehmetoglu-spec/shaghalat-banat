@@ -2,7 +2,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { errMsg, requireStaff } from "@/lib/admin";
-import { rolesFor } from "@/lib/access";
+import { ROLE_BASE, SECTIONS } from "@/lib/access";
 import { audienceSubs, sendToSubs } from "@/lib/push";
 
 export type ActionResult = { ok: boolean; message: string };
@@ -15,7 +15,7 @@ const numOrNull = (v: string) => { if (v === "") return null; const n = Number(a
 
 // ───────── الطلبات ─────────
 export async function setOrderStatus(orderId: string, status: string, note?: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/orders"));
+  const { sb } = await requireStaff("/admin/orders");
   const { error } = await sb.rpc("admin_set_order_status", { order_id: orderId, new_status: status, note: note || null });
   if (error) return fail(errMsg(error));
   await notifyOrderStatus(sb, orderId, status).catch(() => {});
@@ -46,7 +46,7 @@ async function notifyOrderStatus(sb: Awaited<ReturnType<typeof requireStaff>>["s
 
 // ───────── الإشعارات (حملات) ─────────
 export async function sendCampaign(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb, profile } = await requireStaff(rolesFor("/admin/push"));
+  const { sb, profile } = await requireStaff("/admin/push");
   const title = str(fd, "title"), body = str(fd, "body");
   if (!title || !body) return fail("العنوان والنص مطلوبان");
   const isTest = str(fd, "test") === "1";
@@ -87,7 +87,7 @@ function slugify(s: string) {
 }
 
 export async function saveProduct(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/products"));
+  const { sb } = await requireStaff("/admin/products");
   const id = str(fd, "id");
   const name = str(fd, "name");
   const currency = str(fd, "currency") === "USD" ? "USD" : "SYP";
@@ -147,7 +147,7 @@ async function syncCategories(sb: any, productId: string, ids: string[]): Promis
 }
 
 export async function toggleProductOnline(id: string, value: boolean): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/products"));
+  const { sb } = await requireStaff("/admin/products");
   const { error } = await sb.from("products").update({ is_online: value }).eq("id", id)
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/products");
@@ -155,7 +155,7 @@ export async function toggleProductOnline(id: string, value: boolean): Promise<A
 }
 
 export async function addVariant(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/products"));
+  const { sb } = await requireStaff("/admin/products");
   const productId = str(fd, "product_id");
   const sku = asciiCode(str(fd, "sku"));
   if (!sku) return fail("رمز SKU مطلوب");
@@ -176,7 +176,7 @@ export async function addVariant(_: ActionResult | null, fd: FormData): Promise<
 }
 
 export async function deleteVariant(variantId: string, productId: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/products"));
+  const { sb } = await requireStaff("/admin/products");
   const { error } = await sb.from("product_variants").delete().eq("id", variantId);
   if (error) return fail("لا يمكن حذف متغير له طلبات أو حركات مخزون؛ يمكنك تصفير كميته بدلاً من ذلك");
   revalidatePath(`/admin/products/${productId}`);
@@ -185,7 +185,7 @@ export async function deleteVariant(variantId: string, productId: string): Promi
 
 /** تحديث كمية متغير في موقع (إدخال أو تسوية) */
 export async function setStock(variantId: string, locationId: string, qty: number, reason: "in" | "adjust" = "adjust", note?: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/products"));
+  const { sb } = await requireStaff("/admin/products");
   const { error } = await sb.rpc("stock_set", { variant: variantId, loc: locationId, new_qty: qty, reason, note: note || null });
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/inventory");
@@ -195,7 +195,7 @@ export async function setStock(variantId: string, locationId: string, qty: numbe
 
 // ───────── المخزون ─────────
 export async function transferStock(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/inventory"));
+  const { sb } = await requireStaff("/admin/inventory");
   const { error } = await sb.rpc("stock_transfer", {
     variant: str(fd, "variant_id"),
     from_loc: str(fd, "from"),
@@ -210,7 +210,7 @@ export async function transferStock(_: ActionResult | null, fd: FormData): Promi
 }
 
 export async function applyCount(locationId: string, counts: { variantId: string; qty: number; system?: number }[], note: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/inventory"));
+  const { sb } = await requireStaff("/admin/inventory");
   const bad = counts.find((c) => !Number.isFinite(c.qty) || c.qty < 0);
   if (bad) return fail("يوجد عدد غير صحيح في الجرد");
   // إن تغيّرت الكمية أثناء الجرد (بيع أو تحويل)، نطبّق الفرق فقط حتى لا نمسح تلك الحركة
@@ -232,7 +232,7 @@ export async function applyCount(locationId: string, counts: { variantId: string
 
 // ───────── الموردون وأوامر الشراء ─────────
 export async function addSupplier(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/inventory"));
+  const { sb } = await requireStaff("/admin/inventory");
   const name = str(fd, "name");
   if (!name) return fail("اسم المورد مطلوب");
   const { error } = await sb.from("suppliers").insert({ name, category: str(fd, "category") || null, phone: str(fd, "phone") || null, lead_days: numOrNull(str(fd, "lead_days")) });
@@ -242,7 +242,7 @@ export async function addSupplier(_: ActionResult | null, fd: FormData): Promise
 }
 
 export async function createPurchaseOrder(supplierId: string, locationId: string, items: { variantId: string; qty: number; cost: number }[], note: string): Promise<ActionResult & { id?: string }> {
-  const { sb, profile } = await requireStaff(rolesFor("/admin/inventory"));
+  const { sb, profile } = await requireStaff("/admin/inventory");
   if (!items.length) return fail("أضيفي منتجاً واحداً على الأقل");
   const { data: po, error } = await sb.from("purchase_orders").insert({ supplier_id: supplierId, location_id: locationId, status: "sent", note: note || null, created_by: profile.id }).select("id,number").single();
   if (error || !po) return fail(errMsg(error));
@@ -253,7 +253,7 @@ export async function createPurchaseOrder(supplierId: string, locationId: string
 }
 
 export async function receivePurchaseOrder(id: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/inventory"));
+  const { sb } = await requireStaff("/admin/inventory");
   const { error } = await sb.rpc("receive_purchase_order", { po: id });
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/inventory/suppliers");
@@ -263,7 +263,7 @@ export async function receivePurchaseOrder(id: string): Promise<ActionResult> {
 
 // ───────── نقطة البيع ─────────
 export async function posSale(items: { variant_id: string; qty: number }[], payment: string, discount: number, phone: string, name = "", marketing = false): Promise<ActionResult & { number?: string; total?: number }> {
-  const { sb } = await requireStaff(rolesFor("/admin/pos"));
+  const { sb } = await requireStaff("/admin/pos");
   const digits = phone.replace(/\D/g, "");
   if (digits && digits.length < 9) return fail("رقم الهاتف غير مكتمل");
   const { data, error } = await sb.rpc("pos_sale_v2", { items, payment, discount_amount: discount, customer_phone_in: digits ? phone : null, customer_name_in: digits ? name : null, marketing_in: digits ? marketing : false });
@@ -275,7 +275,7 @@ export async function posSale(items: { variant_id: string; qty: number }[], paym
 
 // ───────── الأقسام والبانرات والكوبونات ─────────
 export async function saveCategory(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const name = str(fd, "name");
   if (!name) return fail("اسم القسم مطلوب");
   const slug = str(fd, "slug") || slugify(str(fd, "name_en") || name);
@@ -286,7 +286,7 @@ export async function saveCategory(_: ActionResult | null, fd: FormData): Promis
 }
 
 export async function toggleCategory(id: string, visible: boolean): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const { error } = await sb.from("categories").update({ is_visible: visible }).eq("id", id)
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/settings");
@@ -294,7 +294,7 @@ export async function toggleCategory(id: string, visible: boolean): Promise<Acti
 }
 
 export async function saveBanner(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const title = str(fd, "title");
   if (!title) return fail("عنوان البانر مطلوب");
   const { error } = await sb.from("banners").insert({ title, kicker: str(fd, "kicker") || null, link: str(fd, "link") || null, image_url: str(fd, "image_url") || null, sort_order: Number(str(fd, "sort_order") || 0) });
@@ -304,7 +304,7 @@ export async function saveBanner(_: ActionResult | null, fd: FormData): Promise<
 }
 
 export async function toggleBanner(id: string, active: boolean): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const { error } = await sb.from("banners").update({ is_active: active }).eq("id", id)
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/settings");
@@ -312,7 +312,7 @@ export async function toggleBanner(id: string, active: boolean): Promise<ActionR
 }
 
 export async function deleteBanner(id: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const { error } = await sb.from("banners").delete().eq("id", id)
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/settings");
@@ -320,7 +320,7 @@ export async function deleteBanner(id: string): Promise<ActionResult> {
 }
 
 export async function saveCoupon(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/coupons"));
+  const { sb } = await requireStaff("/admin/coupons");
   const code = str(fd, "code").toUpperCase().replace(/\s+/g, "");
   if (!code) return fail("الكود مطلوب");
   if (!/^[A-Z0-9_-]{2,30}$/.test(code)) return fail("الكود يجب أن يكون أحرفاً إنجليزية وأرقاماً فقط");
@@ -349,7 +349,7 @@ export async function saveCoupon(_: ActionResult | null, fd: FormData): Promise<
 }
 
 export async function toggleCoupon(code: string, active: boolean): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/coupons"));
+  const { sb } = await requireStaff("/admin/coupons");
   const { error } = await sb.from("coupons").update({ is_active: active }).eq("code", code)
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/coupons");
@@ -358,7 +358,7 @@ export async function toggleCoupon(code: string, active: boolean): Promise<Actio
 
 // ───────── آراء الزبونات ─────────
 export async function saveTestimonial(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const name = str(fd, "name"), body = str(fd, "body");
   if (!name) return fail("اسم الزبونة مطلوب");
   if (body.length < 5) return fail("اكتبي نص الرأي");
@@ -370,7 +370,7 @@ export async function saveTestimonial(_: ActionResult | null, fd: FormData): Pro
 }
 
 export async function toggleTestimonial(id: string, visible: boolean): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const { error } = await sb.from("testimonials").update({ is_visible: visible }).eq("id", id);
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/settings"); revalidatePath("/");
@@ -378,7 +378,7 @@ export async function toggleTestimonial(id: string, visible: boolean): Promise<A
 }
 
 export async function deleteTestimonial(id: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const { error } = await sb.from("testimonials").delete().eq("id", id);
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/settings"); revalidatePath("/");
@@ -387,7 +387,7 @@ export async function deleteTestimonial(id: string): Promise<ActionResult> {
 
 /** حذف كل الآراء التجريبية دفعة واحدة */
 export async function deleteSampleReviews(): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const { error } = await sb.from("testimonials").delete().eq("is_sample", true);
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/settings"); revalidatePath("/");
@@ -413,7 +413,7 @@ export async function setRole(_: ActionResult | null, fd: FormData): Promise<Act
 
 // ───────── المرتجعات والمواقع ─────────
 export async function setReturnStatus(id: string, status: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/returns"));
+  const { sb } = await requireStaff("/admin/returns");
   const { error } = await sb.from("return_requests").update({ status }).eq("id", id)
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/pos");
@@ -421,7 +421,7 @@ export async function setReturnStatus(id: string, status: string): Promise<Actio
 }
 
 export async function saveLocation(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/inventory"));
+  const { sb } = await requireStaff("/admin/inventory");
   const name = str(fd, "name");
   if (!name) return fail("اسم الموقع مطلوب");
   const { error } = await sb.from("locations").insert({ name, kind: str(fd, "kind") || "warehouse", address: str(fd, "address") || null, sells_online: fd.get("sells_online") === "on" });
@@ -431,7 +431,7 @@ export async function saveLocation(_: ActionResult | null, fd: FormData): Promis
 }
 
 export async function toggleLocationOnline(id: string, value: boolean): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/inventory"));
+  const { sb } = await requireStaff("/admin/inventory");
   const { error } = await sb.from("locations").update({ sells_online: value }).eq("id", id)
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/inventory/locations");
@@ -444,7 +444,9 @@ export async function createStaff(_: ActionResult | null, fd: FormData): Promise
   if (profile.role !== "owner") return fail("إنشاء الحسابات متاح للمدير العام فقط");
   const login = str(fd, "login").toLowerCase();
   if (!/^[a-z0-9._@-]{3,}$/.test(login)) return fail("اسم المستخدم بأحرف إنجليزية أو أرقام (3 أحرف على الأقل)");
-  const { error } = await sb.rpc("admin_create_staff", { p_login: login, p_password: str(fd, "password"), p_name: str(fd, "name"), p_role: str(fd, "role") });
+  const { data: newId, error } = await sb.rpc("admin_create_staff", { p_login: login, p_password: str(fd, "password"), p_name: str(fd, "name"), p_role: str(fd, "role") });
+  const extra = cleanAccess(fd.getAll("access").map(String), str(fd, "role"));
+  if (!error && newId && extra.length) await sb.from("profiles").update({ extra_access: extra }).eq("id", newId);
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/staff");
   return ok(`تم إنشاء الحساب — يدخل بـ ${login.includes("@") ? login : login + "@shaghalat-banat.com"} أو باسم المستخدم فقط`);
@@ -458,6 +460,21 @@ export async function updateStaffRole(id: string, role: string): Promise<ActionR
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/staff");
   return ok("تم تحديث الدور");
+}
+
+function cleanAccess(keys: string[], role: string) {
+  const base = ROLE_BASE[role] ?? [];
+  return [...new Set(keys)].filter((k) => SECTIONS.some((s) => s.key === k) && !base.includes(k as never));
+}
+
+/** صلاحيات إضافية اختيارية يمنحها المدير العام فوق صلاحيات الدور */
+export async function setStaffAccess(id: string, role: string, keys: string[]): Promise<ActionResult> {
+  const { sb, profile } = await requireStaff();
+  if (profile.role !== "owner") return fail("متاح للمدير العام فقط");
+  const { error } = await sb.from("profiles").update({ extra_access: cleanAccess(keys, role) }).eq("id", id);
+  if (error) return fail(errMsg(error));
+  revalidatePath("/admin", "layout");
+  return ok("تم حفظ الصلاحيات");
 }
 
 export async function setStaffActive(id: string, active: boolean): Promise<ActionResult> {
@@ -477,14 +494,14 @@ export async function setStaffPassword(id: string, password: string): Promise<Ac
 
 // ───────── صور الأقسام والبانرات ─────────
 export async function setCategoryImage(id: string, url: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const { error } = await sb.from("categories").update({ image_url: url }).eq("id", id)
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/settings"); revalidateTag("catalog"); revalidatePath("/", "layout");
   return ok("تم");
 }
 export async function setBannerImage(id: string, url: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const { error } = await sb.from("banners").update({ image_url: url }).eq("id", id)
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/settings"); revalidateTag("catalog"); revalidatePath("/", "layout");
@@ -537,7 +554,7 @@ async function applyVariantsBulk(sb: Awaited<ReturnType<typeof requireStaff>>["s
 
 /** إضافة قطع لكمية موجودة — تُقرأ الكمية الحالية من قاعدة البيانات لحظة الحفظ (لا تُمسح أي كمية) */
 export async function addStock(variantId: string, locationId: string, delta: number, paidFrom = "none"): Promise<ActionResult & { qty?: number }> {
-  const { sb } = await requireStaff(rolesFor("/admin/products"));
+  const { sb } = await requireStaff("/admin/products");
   if (!(delta > 0)) return fail("اكتب عدداً أكبر من صفر");
   const { data: pr, error } = await sb.rpc("stock_purchase", { p_items: [{ variant: variantId, loc: locationId, qty: Math.floor(delta) }], p_paid_from: ["1110", "1120", "3100"].includes(paidFrom) ? paidFrom : "none", p_note: null });
   if (error) return fail(errMsg(error));
@@ -553,7 +570,7 @@ export async function addStock(variantId: string, locationId: string, delta: num
 
 /** حذف منتج: يُؤرشف فيختفي من المتجر واللوحة والمخزون، وتبقى الطلبات والفواتير السابقة سليمة */
 export async function archiveProduct(id: string): Promise<ActionResult> {
-  const { sb, profile } = await requireStaff(rolesFor("/admin/products"));
+  const { sb, profile } = await requireStaff("/admin/products");
   if (profile.role !== "owner") return fail("حذف المنتجات متاح للمدير العام فقط");
   const { error } = await sb.from("products").update({ archived_at: new Date().toISOString(), is_online: false, is_in_store: false }).eq("id", id);
   if (error) return fail(errMsg(error));
@@ -564,7 +581,7 @@ export async function archiveProduct(id: string): Promise<ActionResult> {
 
 // ───────── روابط التواصل (صفحة /qr) ─────────
 export async function saveStoreProfile(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const url = (v: string) => (v && !/^https?:\/\//.test(v) ? `https://${v}` : v) || null;
   const { error } = await sb.from("store_profile").update({
     whatsapp: str(fd, "whatsapp").replace(/[^\d+]/g, "") || null,
@@ -582,7 +599,7 @@ export async function saveStoreProfile(_: ActionResult | null, fd: FormData): Pr
 
 /** مرتجع في المحل / تراجع عن الشراء: تعود القطع للمخزون ويُسجّل المبلغ المُعاد */
 export async function recordStoreReturn(input: { items: { variant: string; qty: number }[]; kind: "return" | "cancel"; refund: number; refundFrom: "1110" | "1120" | "none"; reason: string; phone: string }): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/returns"));
+  const { sb } = await requireStaff("/admin/returns");
   const items = input.items.filter((i) => i.qty > 0);
   if (!items.length) return fail("اختاري منتجاً واحداً على الأقل");
   const { data, error } = await sb.rpc("record_store_return", {
@@ -596,7 +613,7 @@ export async function recordStoreReturn(input: { items: { variant: string; qty: 
 
 /** البحث عن عميلة برقمها (لتعبئة الاسم تلقائياً في نقطة البيع) */
 export async function lookupCustomer(phone: string): Promise<{ name: string | null; marketing: boolean } | null> {
-  const { sb } = await requireStaff(rolesFor("/admin/pos"));
+  const { sb } = await requireStaff("/admin/pos");
   let d = phone.replace(/\D/g, "");
   if (d.startsWith("00")) d = d.slice(2);
   if (d.length === 10 && d.startsWith("09")) d = "963" + d.slice(1);
@@ -607,7 +624,7 @@ export async function lookupCustomer(phone: string): Promise<{ name: string | nu
 }
 
 export async function deleteCustomer(phone: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/customers"));
+  const { sb } = await requireStaff("/admin/customers");
   const { error } = await sb.from("customers").delete().eq("phone", phone);
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidatePath("/admin/customers");
@@ -636,7 +653,7 @@ export async function deleteSale(orderId: string): Promise<ActionResult> {
 
 /** تحويل عدة قطع دفعة واحدة من موقع لآخر */
 export async function transferMany(from: string, to: string, items: { variant: string; qty: number }[], note: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/inventory"));
+  const { sb } = await requireStaff("/admin/inventory");
   if (!from || !to) return fail("اختاري الموقعين");
   if (from === to) return fail("اختاري موقعين مختلفين");
   const list = items.filter((i) => i.qty > 0);
@@ -652,7 +669,7 @@ export async function transferMany(from: string, to: string, items: { variant: s
 }
 
 export async function updateCategory(id: string, data: { name: string; name_en: string; sort_order: number }): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   if (!data.name.trim()) return fail("اسم القسم مطلوب");
   const { error } = await sb.from("categories").update({ name: data.name.trim(), name_en: data.name_en.trim() || null, sort_order: Number(data.sort_order) || 99 }).eq("id", id);
   if (error) return fail(errMsg(error));
@@ -661,7 +678,7 @@ export async function updateCategory(id: string, data: { name: string; name_en: 
 }
 
 export async function removeCategory(id: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const { count } = await sb.from("product_categories").select("product_id,products!inner(archived_at)", { count: "exact", head: true }).eq("category_id", id).is("products.archived_at", null);
   if (count) return fail(`في هذا القسم ${count} منتج — انقليها لقسم آخر أولاً`);
   const { error } = await sb.from("categories").delete().eq("id", id);

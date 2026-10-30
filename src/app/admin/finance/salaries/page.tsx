@@ -1,11 +1,11 @@
-import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import { monthBounds, moneySnapshot } from "@/lib/money";
 import { SalariesView, type Salary } from "./SalariesView";
 
 export const metadata = { title: "الرواتب" };
 
 export default async function SalariesPage() {
-  const { sb } = await requireStaff(FINANCE_ROLES);
+  const { sb } = await requireStaff("/admin/finance");
   const mb = monthBounds();
   const [{ data: rows }, { data: pays }, snap, { data: fx }] = await Promise.all([
     sb.from("staff_salaries").select("id,name,amount,currency,pay_day,is_active").order("is_active", { ascending: false }).order("pay_day"),

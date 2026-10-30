@@ -1,5 +1,4 @@
 import { requireStaff } from "@/lib/admin";
-import { rolesFor } from "@/lib/access";
 import { FormCard } from "../FormCard";
 import { saveStoreProfile, saveTestimonial } from "../actions";
 import { date } from "@/lib/format";
@@ -21,7 +20,7 @@ const TABS = [
 export default async function StoreSettings({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const sp = await searchParams;
   const tab = TABS.some((t) => t.key === sp.tab) ? sp.tab! : "contact";
-  const { sb } = await requireStaff(rolesFor("/admin/settings"));
+  const { sb } = await requireStaff("/admin/settings");
   const [{ data: profileRow }, { data: reviews }] = await Promise.all([
     sb.from("store_profile").select("whatsapp,facebook_url,instagram_url,tagline,shamcash_qr_url,shamcash_name").eq("id", 1).maybeSingle(),
     sb.from("testimonials").select("*").order("is_sample").order("created_at", { ascending: false }),

@@ -41,8 +41,8 @@ export async function middleware(request: NextRequest) {
   }
   // صلاحيات أقسام لوحة الإدارة حسب الدور
   if (user && (path.startsWith("/admin/") )) {
-    const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-    if (prof?.role && prof.role !== "customer" && !canAccess(prof.role, path)) {
+    const { data: prof } = await supabase.from("profiles").select("role,extra_access").eq("id", user.id).maybeSingle();
+    if (prof?.role && prof.role !== "customer" && !canAccess(prof.role, path, prof.extra_access)) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin"; url.search = "?denied=1";
       return NextResponse.redirect(url);

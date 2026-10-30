@@ -1,9 +1,9 @@
-import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import { SectionTabs } from "../SectionTabs";
 import { FIN_TABS } from "@/lib/financeNav";
 
 export default async function FinanceLayout({ children }: { children: React.ReactNode }) {
-  const { sb } = await requireStaff(FINANCE_ROLES);
+  const { sb } = await requireStaff("/admin/finance");
   const { error } = await sb.from("finance_settings").select("id").limit(1);
   if (error) {
     return (

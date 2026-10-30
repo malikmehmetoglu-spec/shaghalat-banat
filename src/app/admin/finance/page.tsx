@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import { Icon } from "@/components/Icon";
 import { monthBounds, moneySnapshot, movements } from "@/lib/money";
 import { accountTotals } from "@/lib/finance";
@@ -12,7 +12,7 @@ const MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "ماي�
 const n = (v: number) => Math.round(v).toLocaleString("en-US");
 
 export default async function FinanceHome() {
-  const { sb, profile } = await requireStaff(FINANCE_ROLES);
+  const { sb, profile } = await requireStaff("/admin/finance");
   const owner = profile.role === "owner";
   const mb = monthBounds();
   const [snap, recent, { data: cats }, { data: fx }, { data: due }, { count: noCost }, history] = await Promise.all([

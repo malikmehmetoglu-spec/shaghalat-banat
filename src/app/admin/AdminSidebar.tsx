@@ -24,14 +24,14 @@ const ITEMS: Item[] = [
   { href: "/admin/staff", label: "الموظفون والأدوار", icon: "shield" },
 ];
 
-export function AdminSidebar({ name, role, roleKey }: { name: string; role: string; roleKey: string }) {
+export function AdminSidebar({ name, role, roleKey, extra = [] }: { name: string; role: string; roleKey: string; extra?: string[] }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   useEffect(() => { setOpen(false); }, [path]);                       // إغلاق القائمة بعد التنقل
   useEffect(() => { document.body.style.overflow = open ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [open]);
   const visible = ITEMS
-    .map((it) => (it.group === "inventory" ? { ...it, href: invTabsFor(roleKey)[0]?.href ?? it.href } : it))
-    .filter((it) => (it.group === "inventory" ? invTabsFor(roleKey).length > 0 : canAccess(roleKey, it.href)))
+    .map((it) => (it.group === "inventory" ? { ...it, href: invTabsFor(roleKey, extra)[0]?.href ?? it.href } : it))
+    .filter((it) => (it.group === "inventory" ? invTabsFor(roleKey, extra).length > 0 : canAccess(roleKey, it.href, extra)))
     .map((it) => (it.href === "/admin/staff" && roleKey !== "owner" ? { ...it, label: "تغيير كلمة المرور" } : it));
   const current = ITEMS.filter((it) => (it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/"))).sort((a, b) => b.href.length - a.href.length)[0];
   const invTab = isInvPath(path) ? INV_TABS.find((t) => invTabActive(path, t)) : undefined;

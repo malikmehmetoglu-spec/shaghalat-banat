@@ -1,5 +1,4 @@
 import { requireStaff } from "@/lib/admin";
-import { rolesFor } from "@/lib/access";
 import { intlPhone } from "@/lib/orderMessages";
 import { Board, type BoardOrder } from "./Board";
 import { SectionTabs } from "../SectionTabs";
@@ -9,7 +8,7 @@ export const metadata = { title: "طلبات المتجر" };
 export const dynamic = "force-dynamic";
 
 export default async function ShopOrders() {
-  const { sb, profile } = await requireStaff(rolesFor("/admin/shop-orders"));
+  const { sb, profile } = await requireStaff("/admin/shop-orders");
   const since = new Date(Date.now() - 14 * 864e5).toISOString();
   const cols = "id,number,status,payment_method,is_paid,total,subtotal,shipping,discount,created_at,customer_phone,address_snapshot,note,user:profiles!orders_user_id_fkey(full_name,phone),order_items(product_name,variant_label,qty,unit_price)";
   const [{ data: open }, { data: done }] = await Promise.all([

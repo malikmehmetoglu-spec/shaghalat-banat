@@ -1,27 +1,30 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export type StaffRole = "owner" | "sales" | "inventory" | "accountant" | "cashier";
+import { canAccess } from "./access";
+export type { StaffRole } from "./access";
 
 export const ROLE_LABEL: Record<string, string> = {
   customer: "عميلة",
   owner: "مدير عام",
-  sales: "مشرفة مبيعات",
-  inventory: "أمينة مخزون",
+  manager: "مديرة المتجر",
+  sales: "موظفة مبيعات",
+  marketing: "موظفة تسويق",
+  inventory: "موظفة المستودع",
   accountant: "محاسبة",
-  cashier: "بائعة / كاشير",
+  cashier: "موظفة مبيعات",
 };
 
 /** يتحقق أن المستخدمة من فريق العمل، ويعيد ملفها وعميل Supabase. */
-export const FINANCE_ROLES: StaffRole[] = ["owner", "accountant"];
 
-export async function requireStaff(roles?: StaffRole[]) {
+/** path: مسار القسم المطلوب؛ تُطبَّق صلاحيات الدور والصلاحيات الإضافية */
+export async function requireStaff(path?: string) {
   const sb = await createClient();
   const { data: u } = await sb.auth.getUser();
   if (!u.user) redirect("/admin-login");
-  const { data: profile } = await sb.from("profiles").select("id,full_name,role,phone,email").eq("id", u.user.id).maybeSingle();
+  const { data: profile } = await sb.from("profiles").select("id,full_name,role,phone,email,extra_access").eq("id", u.user.id).maybeSingle();
   if (!profile || profile.role === "customer") redirect("/admin-no-access");
-  if (roles && !roles.includes(profile.role as StaffRole)) redirect("/admin?denied=1");
+  if (path && !canAccess(profile.role, path, profile.extra_access)) redirect("/admin?denied=1");
   return { sb, profile, user: u.user };
 }
 
@@ -37,7 +40,7 @@ export function errMsg(e: { message?: string } | null | undefined, fallback = "�
   return /[؀-ۿ]/.test(e.message) ? e.message : fallback;
 }
 
-export { canAccess } from "./access";
+export { canAccess };
 
 /** سعر صرف الدولار الحالي (ليرة جديدة) */
 export async function getFx() {

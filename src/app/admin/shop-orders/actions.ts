@@ -1,6 +1,5 @@
 "use server";
 import { requireStaff } from "@/lib/admin";
-import { rolesFor } from "@/lib/access";
 import { intlPhone, smsText, type Stage } from "@/lib/orderMessages";
 
 type Result = { ok: boolean; message: string };
@@ -11,7 +10,7 @@ type Result = { ok: boolean; message: string };
  * (اختياري SMS_GATE_URL لخادم خاص، الافتراضي https://api.sms-gate.app/3rdparty/v1)
  */
 export async function sendOrderSms(orderId: string, stage: Stage): Promise<Result> {
-  const { sb } = await requireStaff(rolesFor("/admin/shop-orders"));
+  const { sb } = await requireStaff("/admin/shop-orders");
   const user = process.env.SMS_GATE_USER, pass = process.env.SMS_GATE_PASS;
   if (!user || !pass) return { ok: false, message: "خدمة SMS غير مربوطة بعد — أضف SMS_GATE_USER و SMS_GATE_PASS في إعدادات Vercel" };
 
