@@ -295,3 +295,12 @@ a.ob-addr { color: #1D5FA8; font-weight: 600; justify-content: flex-end; }
   .ob-list { max-height: none; overflow: visible; }
   .ob-card { cursor: default; }
 }
+
+/* تبويبات نقطة البيع: البيع / المرتجعات */
+.pos-tabs { display: inline-flex; gap: 6px; padding: 4px; border-radius: 18px; background: #fff; border: 1px solid var(--border-soft); }
+.pos-tab { height: 40px; padding: 0 18px; border-radius: 14px; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #5A4650; text-decoration: none; white-space: nowrap; transition: background .15s, color .15s; }
+.pos-tab:hover { background: var(--light-blush); color: var(--deep-berry); }
+.pos-tab.on { background: var(--magenta); color: #fff; box-shadow: 0 6px 14px rgba(214,3,127,.28); }
+.pos-head-r { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pos-gate-tabs { display: flex; justify-content: flex-start; margin-bottom: -8px; }
+@media (max-width: 767px) { .pos-tab { padding: 0 12px; } .pos-head-r { width: 100%; justify-content: space-between; } }

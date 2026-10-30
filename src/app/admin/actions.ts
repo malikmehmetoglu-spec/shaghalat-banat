@@ -406,7 +406,7 @@ export async function setReturnStatus(id: string, status: string): Promise<Actio
   const { sb } = await requireStaff(rolesFor("/admin/returns"));
   const { error } = await sb.from("return_requests").update({ status }).eq("id", id)
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/admin/returns");
+  revalidateTag("catalog"); revalidatePath("/admin/pos");
   return ok("تم");
 }
 
@@ -572,7 +572,7 @@ export async function recordStoreReturn(input: { items: { variant: string; qty: 
     p_refund_from: input.refundFrom, p_reason: input.reason, p_phone: input.phone || null,
   });
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/admin/returns"); revalidateTag("catalog"); revalidatePath("/admin/products"); revalidateTag("catalog"); revalidatePath("/admin/inventory"); revalidateTag("catalog"); revalidatePath("/admin/pos");
+  revalidateTag("catalog"); revalidatePath("/admin/pos"); revalidateTag("catalog"); revalidatePath("/admin/products"); revalidateTag("catalog"); revalidatePath("/admin/inventory"); revalidateTag("catalog"); revalidatePath("/admin/pos");
   return ok(`تم تسجيل المرتجع ${data} وأُعيدت القطع إلى المخزون`);
 }
 

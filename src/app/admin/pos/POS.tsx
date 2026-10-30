@@ -13,13 +13,13 @@ type Shop = { address: string; phone: string; footer: string; taxNumber: string 
 export type PosShift = { openedAt: string; by: string | null; opening: number; sales: number; expenses: number; draws: number; expected: number };
 
 /** نقطة البيع: لا تعمل إلا بعد فتح الصندوق بمبلغ الدرج، والفاتورة ظاهرة كاملة دائماً */
-export function POS({ items, storeName, cashier, shop, shift, lastCounted }: { items: Item[]; storeName: string; cashier: string; shop: Shop; shift: PosShift | null; lastCounted: number | null }) {
+export function POS({ items, storeName, cashier, shop, shift, lastCounted, tabs }: { items: Item[]; storeName: string; cashier: string; shop: Shop; shift: PosShift | null; lastCounted: number | null; tabs?: React.ReactNode }) {
   const router = useRouter();
   const [closing, setClosing] = useState(false);
-  if (!shift) return <OpenGate storeName={storeName} cashier={cashier} suggested={lastCounted} onOpened={() => router.refresh()} />;
+  if (!shift) return <>{tabs && <div className="pos-gate-tabs">{tabs}</div>}<OpenGate storeName={storeName} cashier={cashier} suggested={lastCounted} onOpened={() => router.refresh()} /></>;
   return (
     <>
-      <Register items={items} storeName={storeName} cashier={cashier} shop={shop} shift={shift} onClose={() => setClosing(true)} />
+      <Register items={items} storeName={storeName} cashier={cashier} shop={shop} shift={shift} onClose={() => setClosing(true)} tabs={tabs} />
       {closing && (
         <div className="pos-modal" role="dialog" aria-modal="true" aria-label="إغلاق الصندوق" onClick={(e) => e.target === e.currentTarget && setClosing(false)}>
           <div className="pos-modal-box">
@@ -62,7 +62,7 @@ function OpenGate({ storeName, cashier, suggested, onOpened }: { storeName: stri
   );
 }
 
-function Register({ items, storeName, cashier, shop, shift, onClose }: { items: Item[]; storeName: string; cashier: string; shop: Shop; shift: PosShift; onClose: () => void }) {
+function Register({ items, storeName, cashier, shop, shift, onClose, tabs }: { items: Item[]; storeName: string; cashier: string; shop: Shop; shift: PosShift; onClose: () => void; tabs?: React.ReactNode }) {
   const router = useRouter();
   const search = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
@@ -125,7 +125,7 @@ function Register({ items, storeName, cashier, shop, shift, onClose }: { items: 
           <h1 className="adm-h1">نقطة البيع</h1>
           <span className="adm-sub">{storeName}{cashier ? ` · ${cashier}` : ""} · الصندوق مفتوح منذ {timeHM(shift.openedAt)}</span>
         </div>
-        <button type="button" className="btn secondary pos-close-btn" onClick={onClose}>إغلاق الصندوق</button>
+        <div className="pos-head-r">{tabs}<button type="button" className="btn secondary pos-close-btn" onClick={onClose}>إغلاق الصندوق</button></div>
       </header>
 
       <section className="pos-products" aria-label="المنتجات">

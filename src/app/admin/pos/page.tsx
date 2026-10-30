@@ -1,11 +1,24 @@
 import { getLocations, requireStaff } from "@/lib/admin";
 import { cell, loadVariants, variantLabel } from "@/lib/inventory";
 import { POS } from "./POS";
+import { PosTabs } from "./PosTabs";
+import { ReturnsTab } from "./ReturnsTab";
+import { rolesFor } from "@/lib/access";
 
 export const metadata = { title: "نقطة البيع" };
 
-export default async function PosPage() {
-  const { sb, profile } = await requireStaff();
+export default async function PosPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
+  if (tab === "returns") {
+    await requireStaff(rolesFor("/admin/returns"));
+    return (
+      <>
+        <div className="adm-top"><div className="title-block"><h1 className="adm-h1">نقطة البيع</h1><span className="adm-sub">المرتجعات والاستبدال</span></div><PosTabs active="returns" /></div>
+        <ReturnsTab />
+      </>
+    );
+  }
+  const { sb, profile } = await requireStaff(rolesFor("/admin/pos"));
   const [locs, all, { data: settings }, { data: shiftRows }] = await Promise.all([
     getLocations(), loadVariants(sb),
     sb.from("finance_settings").select("store_address,store_phone,invoice_footer,tax_number").eq("id", 1).maybeSingle(),
@@ -26,6 +39,7 @@ export default async function PosPage() {
     <POS items={items} storeName={store?.name ?? "المحل"} cashier={profile.full_name || ""}
       shop={{ address: settings?.store_address ?? "", phone: settings?.store_phone ?? "", footer: settings?.invoice_footer ?? "شكراً لتسوّقك من شغلات بنات", taxNumber: settings?.tax_number ?? "" }}
       lastCounted={last?.counted != null ? Number(last.counted) : null}
+      tabs={<PosTabs active="sale" />}
       shift={sh?.shift_id ? { openedAt: sh.opened_at, by: sh.opened_by_name, opening: Number(sh.opening), sales: Number(sh.cash_sales), expenses: Number(sh.cash_expenses), draws: Number(sh.cash_draws ?? 0), expected: Number(sh.expected) } : null} />
   );
 }
