@@ -8,7 +8,7 @@ import { orderNo, smsText, waLink, whatsappText, type Stage } from "@/lib/orderM
 import { Icon } from "@/components/Icon";
 
 export type BoardOrder = {
-  id: string; number: string; status: Stage; payment: string; paid: boolean; total: number; shipping: number; discount: number;
+  id: string; token: string; number: string; status: Stage; payment: string; paid: boolean; total: number; shipping: number; discount: number;
   createdAt: string; note: string | null; name: string; city: string; street: string; phone: string | null;
   items: { name: string; label: string | null; qty: number; price: number }[];
 };

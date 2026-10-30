@@ -10,7 +10,7 @@ const TONES = [["magenta", "فوشيا", "#D6037F"], ["berry", "توتي غام�
 export async function HomeSection() {
   const { sb } = await requireStaff("/admin/settings");
   const [{ data: prof }, { data: cats }, { count: onSale }] = await Promise.all([
-    sb.from("store_profile").select("home").eq("id", 1).maybeSingle(),
+    sb.from("store_profile").select("home,welcome_percent").eq("id", 1).maybeSingle(),
     sb.from("categories").select("slug,name").order("sort_order"),
     sb.from("products").select("id", { count: "exact", head: true }).is("archived_at", null).not("compare_at_price", "is", null),
   ]);
@@ -33,6 +33,11 @@ export async function HomeSection() {
             </label>
             <label className="a-field">عدد المنتجات المعروضة<input name="deals_limit" type="number" min={4} max={20} className="a-in ltr" defaultValue={h.deals_limit} /></label>
           </div>
+        </div>
+
+        <div className="hs-block">
+          <div className="hs-head"><div><h3>🎁 هدية إنشاء الحساب</h3><span className="caption">كود خصم خاص بكل زبونة، يصلها مرة واحدة عند إنشاء حسابها، صالح لطلب واحد خلال 30 يوماً. ضعي 0 لإيقاف الهدية.</span></div></div>
+          <label className="a-field" style={{ maxWidth: 260 }}>نسبة الخصم %<input name="welcome_percent" type="number" min={0} max={50} className="a-in ltr" defaultValue={prof?.welcome_percent ?? 10} /></label>
         </div>
 
         <div className="hs-block">

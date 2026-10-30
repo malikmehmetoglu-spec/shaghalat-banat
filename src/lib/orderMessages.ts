@@ -33,7 +33,13 @@ const intro = (agent?: string | null) => {
   return first ? `معك ${first} من خدمة العملاء في متجر ${STORE}.` : `معك خدمة العملاء في متجر ${STORE}.`;
 };
 
-export function whatsappText(stage: Stage, o: MsgOrder, agent?: string | null): string {
+export const trackUrl = (token: string) => `https://www.shaghalat-banat.com/t/${token}`;
+
+export function whatsappText(stage: Stage, o: MsgOrder & { token?: string }, agent?: string | null): string {
+  const body = whatsappBody(stage, o, agent);
+  return o.token && stage !== "delivered" ? `${body}\n\nتابعي طلبك من هنا:\n${trackUrl(o.token)}` : body;
+}
+function whatsappBody(stage: Stage, o: MsgOrder, agent?: string | null): string {
   const n = orderNo(o.number);
   const head = `${hello(o.name)} 🌸\n${intro(agent)}\n`;
   switch (stage) {

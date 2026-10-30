@@ -6,7 +6,7 @@ import { Icon } from "@/components/Icon";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { useT } from "@/components/LangProvider";
 
-/** الدخول برقم الهاتف فقط + رمز تحقق (OTP) يصل عبر واتساب. لا بريد ولا كلمات مرور. */
+/** الدخول برقم الهاتف فقط + رمز تحقق (OTP) يصل برسالة SMS أو واتساب. لا بريد ولا كلمات مرور. */
 export function LoginFlow({ next, initialError }: { next: string; initialError: string }) {
   const t = useT();
   const router = useRouter();
@@ -40,7 +40,7 @@ export function LoginFlow({ next, initialError }: { next: string; initialError: 
   }
 
   const title = step === "verify" ? t("رمز التحقق") : t("أهلاً بكِ");
-  const sub = step === "verify" ? t("أرسلنا رمز التحقق عبر واتساب إلى {x}", { x: fullPhone() }) : t("سجّلي دخولك برقم هاتفك لمتابعة طلباتك ومفضلتك");
+  const sub = step === "verify" ? t("أرسلنا رمز التحقق إلى {x}", { x: fullPhone() }) : t("سجّلي دخولك برقم هاتفك لمتابعة طلباتك ومفضلتك");
 
   return (
     <main className="login-d" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
@@ -67,7 +67,7 @@ export function LoginFlow({ next, initialError }: { next: string; initialError: 
                     <input type="tel" inputMode="numeric" autoComplete="tel-national" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="9XX XXX XXX" style={{ flex: 1, minWidth: 0, height: 46, border: "none", outline: "none", fontSize: 17, letterSpacing: 1, background: "transparent", padding: "0 8px", fontWeight: 400 }} />
                   </span>
                 </label>
-                <span className="caption" style={{ lineHeight: 1.7 }}>{t("سيصلك رمز التحقق برسالة واتساب على هذا الرقم.")}</span>
+                <span className="caption" style={{ lineHeight: 1.7 }}>{t("سيصلك رمز التحقق برسالة على هذا الرقم.")}</span>
               {err && <div className="alert tone-danger" role="alert">{err}</div>}
               <button type="submit" className="btn cta block" disabled={busy}>{busy ? t("جارٍ الإرسال…") : t("إرسال رمز التحقق")}</button>
             </form>

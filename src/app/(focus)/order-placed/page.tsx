@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AccountSignup } from "@/components/AccountSignup";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { price } from "@/lib/format";
@@ -7,7 +8,7 @@ import { intlPhone, orderNo, waLink } from "@/lib/orderMessages";
 export const metadata = { title: "إتمام الدفع" };
 
 /** بعد تأكيد الطلب: شام كاش (رمز QR + إرسال إشعار التحويل على واتساب) أو الدفع عبر خدمة العملاء */
-export default async function OrderPlaced({ searchParams }: { searchParams: Promise<{ n?: string; t?: string; id?: string; pay?: string }> }) {
+export default async function OrderPlaced({ searchParams }: { searchParams: Promise<{ n?: string; t?: string; id?: string; pay?: string; k?: string }> }) {
   const sp = await searchParams;
   const t = await getT();
   const sb = await createClient();
@@ -16,7 +17,13 @@ export default async function OrderPlaced({ searchParams }: { searchParams: Prom
     const { data: o } = await sb.from("orders").select("number,total,payment_method").eq("id", sp.id).maybeSingle();
     if (o) { number = o.number; total = Number(o.total); pay = o.payment_method === "support" ? "support" : "shamcash"; }
   }
-  const { data: prof } = await sb.from("store_profile").select("whatsapp,shamcash_qr_url,shamcash_name").eq("id", 1).maybeSingle();
+  const [{ data: prof }, { data: auth }] = await Promise.all([
+    sb.from("store_profile").select("whatsapp,shamcash_qr_url,shamcash_name,welcome_percent").eq("id", 1).maybeSingle(),
+    sb.auth.getUser(),
+  ]);
+  const guest = !auth.user;
+  const token = sp.k && /^[a-f0-9]{24}$/.test(sp.k) ? sp.k : null;
+  const trackHref = sp.id ? `/orders/${sp.id}` : token ? `/t/${token}` : null;
   const wa = intlPhone(prof?.whatsapp);
   const n = orderNo(number);
   const notice = `مرحباً، حوّلت مبلغ ${Math.round(total).toLocaleString("en-US")} ل.س عبر شام كاش لطلبي رقم ${n}. هذا إشعار التحويل:`;
@@ -60,6 +67,8 @@ export default async function OrderPlaced({ searchParams }: { searchParams: Prom
         </section>
       )}
 
+      {guest && <AccountSignup percent={prof?.welcome_percent ?? 0} />}
+      {trackHref && <Link href={trackHref} className="btn secondary block op-track">{t("تتبّعي طلبك")}</Link>}
       <Link href="/" className="btn secondary block">{t("متابعة التسوّق")}</Link>
     </main>
   );

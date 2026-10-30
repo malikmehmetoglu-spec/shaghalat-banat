@@ -59,9 +59,9 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
       });
       if (error || !data) { setBusy(false); setErr(error?.message?.replace(/^.*?:\s*/, "") || t("تعذّر إتمام الطلب، حاولي مجدداً")); return; }
       try { localStorage.setItem(GKEY, JSON.stringify(g)); sessionStorage.removeItem("sb-coupon"); } catch {}
-      const d = data as { number: string; total: number };
+      const d = data as { number: string; total: number; token?: string };
       clear();
-      router.replace(`/order-placed?n=${encodeURIComponent(d.number)}&t=${d.total}&pay=${pay}`);
+      router.replace(`/order-placed?n=${encodeURIComponent(d.number)}&t=${d.total}&pay=${pay}${d.token ? `&k=${d.token}` : ""}`);
       return;
     }
     const { data, error } = await getBrowserClient().rpc("place_order", {

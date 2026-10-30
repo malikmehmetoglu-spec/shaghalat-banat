@@ -1,4 +1,6 @@
-// Supabase Auth "Send SMS Hook": يستقبل رمز التحقق من Supabase ويرسله للعميلة عبر واتساب.
+// Supabase Auth "Send SMS Hook": يستقبل رمز التحقق من Supabase ويرسله للعميلة.
+// الأولوية: رسالة SMS من خط المركز عبر sms-gate.app (SMS_GATE_USER / SMS_GATE_PASS / SMS_GATE_URL اختياري)،
+// وإلا عبر واتساب.
 // المزوّد الحالي: WhatsApp Cloud API (Meta). يمكن استبداله بأي مزوّد واتساب محلي لاحقاً.
 // المتغيرات (Edge Function Secrets):
 //   SEND_SMS_HOOK_SECRET   سر التوقيع من إعدادات الـ Hook (بصيغة v1,whsec_...)
@@ -11,7 +13,7 @@ import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
 Deno.serve(async (req) => {
   const raw = await req.text();
   // عند تفعيل واتساب يصبح التوقيع إلزامياً حتى لا يُستخدم الرابط لإرسال رسائل من خارج Supabase
-  if (Deno.env.get("WHATSAPP_TOKEN") && !Deno.env.get("SEND_SMS_HOOK_SECRET")) {
+  if ((Deno.env.get("WHATSAPP_TOKEN") || Deno.env.get("SMS_GATE_USER")) && !Deno.env.get("SEND_SMS_HOOK_SECRET")) {
     return json({ error: { http_code: 500, message: "SEND_SMS_HOOK_SECRET غير مضبوط" } }, 500);
   }
   const secret = (Deno.env.get("SEND_SMS_HOOK_SECRET") ?? "").replace("v1,whsec_", "");
@@ -26,6 +28,21 @@ Deno.serve(async (req) => {
 
   const phone = payload.user.phone.replace(/\D/g, "");
   const otp = payload.sms.otp;
+  // 1) SMS من خط المركز عبر sms-gate.app
+  const gUser = Deno.env.get("SMS_GATE_USER"), gPass = Deno.env.get("SMS_GATE_PASS");
+  if (gUser && gPass) {
+    const base = (Deno.env.get("SMS_GATE_URL") || "https://api.sms-gate.app/3rdparty/v1").replace(/\/+$/, "");
+    const r = await fetch(`${base}/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Basic " + btoa(`${gUser}:${gPass}`) },
+      body: JSON.stringify({ textMessage: { text: `رمز التحقق لمتجر شغلات بنات: ${otp}\nلا تشاركيه مع أحد.` }, phoneNumbers: [`+${phone}`], ttl: 600 }),
+    });
+    if (r.ok) return json({});
+    console.error("sms-gate send failed", r.status, await r.text());
+    if (!Deno.env.get("WHATSAPP_TOKEN")) return json({ error: { http_code: 502, message: "تعذّر إرسال رمز التحقق" } }, 502);
+  }
+
+  // 2) واتساب
   const token = Deno.env.get("WHATSAPP_TOKEN");
   const phoneId = Deno.env.get("WHATSAPP_PHONE_ID");
 

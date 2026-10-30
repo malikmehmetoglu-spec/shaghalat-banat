@@ -803,3 +803,42 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 .collect-blush .hero-kicker, .collect-blush .collect-sub { color: var(--deep-berry); opacity: .8; }
 .collect-blush .collect-mark { filter: none; opacity: .08; }
 .collect-blush .btn.collect-cta { background: var(--magenta); color: #fff; }
+
+/* إنشاء الحساب بعد الطلب */
+.su-card { display: flex; flex-direction: column; gap: 14px; padding: 22px 20px; border-radius: 28px; color: var(--dark-plum); background: radial-gradient(120% 90% at 100% 0%, #FFE3F0 0%, transparent 60%), linear-gradient(160deg, #FFF7FB, #FDEAF3); border: 1px solid #F6C9DD; box-shadow: 0 16px 40px rgba(214,3,127,.1); }
+.su-top { display: flex; gap: 12px; align-items: flex-start; }
+.su-top h2, .su-done h2 { margin: 0; font-size: 17px; font-weight: 800; line-height: 1.5; color: var(--deep-berry); }
+.su-top p, .su-done p { margin: 2px 0 0; font-size: 13.5px; line-height: 1.7; color: #6B5560; }
+.su-ic { width: 46px; height: 46px; flex-shrink: 0; border-radius: 50% 50% 16px 16px / 44% 44% 16px 16px; display: grid; place-items: center; font-size: 22px; background: #fff; box-shadow: 0 8px 18px rgba(214,3,127,.15); }
+.su-perks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.6; }
+.su-perks li { display: flex; gap: 8px; align-items: center; }
+.su-perks li::before { content: "✓"; width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: var(--magenta); color: #fff; font-size: 12px; font-weight: 800; }
+.su-perks b { color: var(--magenta); }
+.su-form { display: flex; flex-direction: column; gap: 10px; }
+.su-phone { display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 6px; border-radius: 20px; background: #fff; border: 1.5px solid var(--rosy-gray); }
+.su-phone span { height: 44px; padding: 0 12px; border-radius: 14px; display: grid; place-items: center; background: var(--light-blush); color: var(--deep-berry); font-weight: 700; }
+.su-phone input { flex: 1; min-width: 0; height: 44px; border: 0; outline: 0; background: none; font: inherit; font-size: 17px; letter-spacing: 1px; }
+.su-code { height: 60px; border-radius: 20px; border: 1.5px solid var(--rosy-gray); background: #fff; text-align: center; font: inherit; font-size: 26px; font-weight: 800; letter-spacing: 10px; outline: 0; }
+.su-code:focus, .su-phone:focus-within { border-color: var(--magenta); }
+.su-link { align-self: center; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--magenta); cursor: pointer; }
+.su-done { align-items: center; text-align: center; }
+.su-gift { width: 100%; display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 20px; background: #fff; border: 1.5px dashed var(--magenta); font-size: 13.5px; }
+.su-gift b { font-size: 24px; letter-spacing: 3px; color: var(--magenta); }
+.op-track { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.tr-flow { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0; }
+.tr-flow li { position: relative; display: flex; gap: 14px; align-items: flex-start; padding-bottom: 18px; color: #A08A95; }
+.tr-flow li:last-child { padding-bottom: 0; }
+.tr-flow li:not(:last-child)::after { content: ""; position: absolute; inset-inline-start: 15px; top: 34px; bottom: 2px; width: 2px; background: var(--light-blush); }
+.tr-flow li.done::after { background: var(--magenta); }
+.tr-dot { width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: var(--light-blush); font-size: 13px; font-weight: 800; }
+.tr-flow li.done .tr-dot { background: var(--magenta); color: #fff; }
+.tr-flow li.now { color: var(--dark-plum); }
+.tr-flow li.now .tr-dot { background: #fff; color: var(--magenta); box-shadow: 0 0 0 2px var(--magenta), 0 8px 18px rgba(214,3,127,.25); }
+.tr-flow li.done { color: var(--dark-plum); }
+.tr-t { display: flex; flex-direction: column; padding-top: 4px; line-height: 1.5; }
+.tr-t b { font-size: 14.5px; }
+.tr-t span { font-size: 12px; color: #8A7480; }
+.tr-item { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; line-height: 1.6; }
+.tr-item b.ltr { color: var(--magenta); }
+.tr-total { padding-top: 10px; border-top: 1px dashed var(--rosy-gray); font-weight: 700; }
+.tr-total b { color: var(--magenta); font-size: 17px; }

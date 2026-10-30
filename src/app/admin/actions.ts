@@ -600,7 +600,8 @@ export async function saveHomeSettings(_: ActionResult | null, fd: FormData): Pr
     collect_image: str(fd, "collect_image").split("\n")[0].trim(),
     collect_tone: ["magenta", "berry", "plum", "blush"].includes(tone) ? tone : "magenta",
   };
-  const { error } = await sb.from("store_profile").update({ home, updated_at: new Date().toISOString() }).eq("id", 1);
+  const wp = Math.min(50, Math.max(0, Math.round(Number(str(fd, "welcome_percent")) || 0)));
+  const { error } = await sb.from("store_profile").update({ home, welcome_percent: wp, updated_at: new Date().toISOString() }).eq("id", 1);
   if (error) return fail(errMsg(error));
   revalidateTag("catalog"); revalidateTag("store_profile"); revalidatePath("/"); revalidatePath("/admin/settings");
   return ok("تم الحفظ — تظهر التغييرات على الصفحة الرئيسية خلال لحظات");
