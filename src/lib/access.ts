@@ -33,6 +33,7 @@ const PATHS: [string, SectionKey[] | "*"][] = [
   ["/admin/customers", ["marketing"]],
   ["/admin/coupons", ["marketing"]],
   ["/admin/push", ["marketing"]],
+  ["/admin/sms", ["marketing"]],
   ["/admin/settings", ["settings"]],
   ["/admin/products", ["products"]],
   ["/admin/barcodes", ["products", "inventory"]],
