@@ -1,4 +1,5 @@
 "use client";
+import { SyriaAddress } from "@/components/SyriaAddress";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,7 +36,8 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [g, setG] = useState<Guest>({ name: "", phone: "", city: "", street: "" });
-  useEffect(() => { if (guest) { try { const x = JSON.parse(localStorage.getItem(GKEY) || "null"); if (x) setG(x); } catch {} } }, [guest]);
+  const [gVer, setGVer] = useState(0);
+  useEffect(() => { if (guest) { try { const x = JSON.parse(localStorage.getItem(GKEY) || "null"); if (x) { setG(x); setGVer((v) => v + 1); } } catch {} } }, [guest]);
   const gDigits = g.phone.replace(/\D/g, "");
   const guestValid = g.name.trim().length > 1 && gDigits.length >= 9 && g.city.trim() && g.street.trim();
 
@@ -119,8 +121,8 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
           <div className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
             <label className="field">{t("الاسم")}<input className="input" value={g.name} onChange={(e) => setG({ ...g, name: e.target.value })} autoComplete="name" /></label>
             <label className="field">{t("رقم الهاتف (واتساب)")}<input className="input ltr" inputMode="tel" autoComplete="tel" placeholder="09xxxxxxxx" value={g.phone} onChange={(e) => setG({ ...g, phone: e.target.value })} style={{ textAlign: "left" }} /></label>
-            <label className="field">{t("المدينة")}<input className="input" value={g.city} onChange={(e) => setG({ ...g, city: e.target.value })} /></label>
-            <label className="field">{t("العنوان بالتفصيل")}<input className="input" placeholder={t("الحي، الشارع، البناء، الطابق")} value={g.street} onChange={(e) => setG({ ...g, street: e.target.value })} /></label>
+            <SyriaAddress key={gVer} city={g.city} onChange={(city) => setG((x) => (x.city === city ? x : { ...x, city }))} />
+            <label className="field">{t("العنوان بالتفصيل")}<textarea className="input" rows={3} placeholder={t("الشارع، أقرب معلم، البناء، الطابق")} value={g.street} onChange={(e) => setG({ ...g, street: e.target.value })} /></label>
           </div>
           <span className="caption" style={{ lineHeight: 1.7 }}>{t("سنتواصل معك على هذا الرقم لتأكيد الطلب.")}</span>
         </section>

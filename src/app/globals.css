@@ -842,3 +842,11 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
 .tr-item b.ltr { color: var(--magenta); }
 .tr-total { padding-top: 10px; border-top: 1px dashed var(--rosy-gray); font-weight: 700; }
 .tr-total b { color: var(--magenta); font-size: 17px; }
+
+/* اختيار المحافظة والمنطقة */
+.sa { display: flex; flex-direction: column; gap: 14px; }
+.sa-sel { position: relative; display: block; }
+.sa-sel select { appearance: none; -webkit-appearance: none; padding-inline-end: 44px; cursor: pointer; color: var(--dark-plum); }
+.sa-sel::after { content: ""; position: absolute; inset-inline-end: 18px; top: 50%; width: 9px; height: 9px; border-right: 2px solid var(--magenta); border-bottom: 2px solid var(--magenta); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+.sa-sel select:invalid, .sa-sel select option[value=""] { color: #A08A95; }
+.sa-center { font-weight: 800; color: var(--magenta); background: #FFF0F6; }

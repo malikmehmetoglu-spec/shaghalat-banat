@@ -1,4 +1,5 @@
 "use client";
+import { SyriaAddress } from "./SyriaAddress";
 import { useState } from "react";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { useT } from "@/components/LangProvider";
@@ -17,7 +18,7 @@ export function AddressForm({ onSaved, onCancel, makeDefault = false }: { onSave
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!city.trim() || !street.trim()) { setErr(t("المدينة والشارع مطلوبان")); return; }
+    if (!city.trim() || !street.trim()) { setErr(t("اختاري المحافظة والمنطقة واكتبي العنوان بالتفصيل")); return; }
     setBusy(true);
     const sb = getBrowserClient();
     const { data: u } = await sb.auth.getUser();
@@ -36,8 +37,8 @@ export function AddressForm({ onSaved, onCancel, makeDefault = false }: { onSave
           <button key={l} type="button" className={`chip${label === l ? " on" : ""}`} style={{ flex: 1, justifyContent: "center", height: 44 }} onClick={() => setLabel(l)}>{l}</button>
         ))}
       </div>
-      <label className="field">{t("المدينة والمنطقة")}<input className="input" value={city} onChange={(e) => setCity(e.target.value)} placeholder={t("مثال: دمشق، المزة")} /></label>
-      <label className="field">{t("الشارع ورقم البناء")}<input className="input" value={street} onChange={(e) => setStreet(e.target.value)} placeholder={t("مثال: شارع الجلاء، بناء 12")} /></label>
+      <SyriaAddress city={city} onChange={setCity} />
+      <label className="field">{t("العنوان بالتفصيل")}<textarea className="input" rows={3} value={street} onChange={(e) => setStreet(e.target.value)} placeholder={t("الشارع، أقرب معلم، البناء، الطابق")} /></label>
       <label className="field">{t("رقم هاتف المستلمة")}<input className="input ltr" style={{ textAlign: "right" }} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+963 9XX XXX XXX" /></label>
       {err && <span className="alert tone-danger">{err}</span>}
       <div style={{ display: "flex", gap: 10 }}>
