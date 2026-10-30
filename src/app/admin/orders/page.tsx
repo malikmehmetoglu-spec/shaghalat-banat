@@ -3,8 +3,10 @@ import { requireStaff } from "@/lib/admin";
 import { date, ORDER_STATUS, PAYMENT_LABEL, price } from "@/lib/format";
 import { StatusButtons } from "./StatusButtons";
 import { DeleteSale } from "./DeleteSale";
+import { SectionTabs } from "../SectionTabs";
+import { ORD_TABS } from "@/lib/ordersNav";
 
-export const metadata = { title: "الطلبات" };
+export const metadata = { title: "سجل كل الطلبات" };
 const TABS = ["all", "new", "confirmed", "preparing", "shipped", "delivered", "cancelled"];
 
 export default async function AdminOrders({ searchParams }: { searchParams: Promise<{ status?: string; id?: string; q?: string }> }) {
@@ -26,9 +28,10 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
 
   return (
     <>
+      <SectionTabs tabs={ORD_TABS} label="طلبات المتجر" />
       <div className="adm-top">
         <div className="title-block">
-          <h1 className="adm-h1">الطلبات</h1>
+          <h1 className="adm-h1">سجل كل الطلبات</h1>
           <span className="adm-sub">طلبات المتجر الإلكتروني والمحل في مكان واحد</span>
         </div>
         <form action="/admin/orders" style={{ display: "flex", gap: 8 }}>

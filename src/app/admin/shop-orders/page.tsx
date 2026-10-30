@@ -2,6 +2,8 @@ import { requireStaff } from "@/lib/admin";
 import { rolesFor } from "@/lib/access";
 import { intlPhone } from "@/lib/orderMessages";
 import { Board, type BoardOrder } from "./Board";
+import { SectionTabs } from "../SectionTabs";
+import { ORD_TABS } from "@/lib/ordersNav";
 
 export const metadata = { title: "طلبات المتجر" };
 export const dynamic = "force-dynamic";
@@ -24,5 +26,5 @@ export default async function ShopOrders() {
       items: (o.order_items ?? []).map((i: any) => ({ name: i.product_name, label: i.variant_label, qty: i.qty, price: Number(i.unit_price) })),
     };
   });
-  return <Board orders={orders} agent={profile.full_name ?? ""} />;
+  return <><SectionTabs tabs={ORD_TABS} label="طلبات المتجر" /><Board orders={orders} agent={profile.full_name ?? ""} /></>;
 }
