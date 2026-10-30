@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { price, date } from "@/lib/format";
 import { deleteCustomer } from "../actions";
+import { sendCustomerSms } from "../shop-orders/actions";
+import { Sheet } from "../finance/_ui/Sheet";
 
 export type Row = {
   phone: string; name: string | null; marketing_opt_in: boolean; opt_in_at: string | null; first_source: string; created_at: string;
@@ -14,6 +16,7 @@ export type Row = {
 const WA = <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.2Z"/></svg>;
 const CALL = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>;
 const CONTACT = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>;
+const SMS = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg>;
 const TRASH = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>;
 
 /** يفتح شاشة «إضافة جهة اتصال» على الهاتف مع الاسم والرقم جاهزين */
@@ -33,6 +36,7 @@ const tierOf = (n: number) => (n >= 5 ? ["مميّزة", "tone-brand"] : n >= 2 
 
 export function CustomersView({ rows, empty }: { rows: Row[]; empty: string }) {
   const router = useRouter();
+  const [smsTo, setSmsTo] = useState<Row | null>(null);
   const [selPhone, setSelPhone] = useState<string | null>(rows[0]?.phone ?? null);
   const [confirm, setConfirm] = useState<string | null>(null);
   const [removed, setRemoved] = useState<Set<string>>(new Set());
@@ -48,6 +52,7 @@ export function CustomersView({ rows, empty }: { rows: Row[]; empty: string }) {
   const actions = (r: Row) => (
     <span style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
       <a className="icon-act wa" href={`https://wa.me/${r.phone}`} target="_blank" rel="noreferrer" title="واتساب" aria-label="واتساب">{WA}</a>
+      <button type="button" className="icon-act sms" onClick={() => setSmsTo(r)} title="رسالة SMS" aria-label="رسالة SMS">{SMS}</button>
       <a className="icon-act call" href={`tel:+${r.phone}`} title="اتصال" aria-label="اتصال">{CALL}</a>
       <button type="button" className="icon-act contact" onClick={() => saveContact(r)} title="إضافة لجهات الاتصال" aria-label="إضافة لجهات الاتصال">{CONTACT}</button>
       <button type="button" className="icon-act del" onClick={() => setConfirm(r.phone)} title="حذف" aria-label="حذف">{TRASH}</button>
@@ -106,6 +111,7 @@ export function CustomersView({ rows, empty }: { rows: Row[]; empty: string }) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 8 }}>
             <a className="btn" href={`https://wa.me/${sel.phone}`} target="_blank" rel="noreferrer" style={{ background: "#25D366", gap: 6, padding: "0 8px" }}>{WA} واتساب</a>
+            <button type="button" className="btn secondary" onClick={() => setSmsTo(sel)} style={{ gap: 6, padding: "0 8px" }}>{SMS} SMS</button>
             <a className="btn secondary" href={`tel:+${sel.phone}`} style={{ gap: 6, padding: "0 8px" }}>{CALL} اتصال</a>
             <button type="button" className="btn secondary" onClick={() => saveContact(sel)} style={{ gap: 6, padding: "0 8px" }}>{CONTACT} حفظ</button>
           </div>
@@ -130,6 +136,39 @@ export function CustomersView({ rows, empty }: { rows: Row[]; empty: string }) {
           </div>
         </div>
       )}
-    </div>
+    {smsTo && <SmsSheet r={smsTo} onClose={() => setSmsTo(null)} />}
+      </div>
+  );
+}
+
+/** نافذة كتابة رسالة SMS وإرسالها عبر خط المركز */
+function SmsSheet({ r, onClose }: { r: Row; onClose: () => void }) {
+  const [text, setText] = useState("");
+  const [res, setRes] = useState<{ ok: boolean; message: string } | null>(null);
+  const [pending, start] = useTransition();
+  const uni = /[^\u0000-\u007f]/.test(text);
+  const per = uni ? (text.length > 70 ? 67 : 70) : (text.length > 160 ? 153 : 160);
+  const parts = Math.max(1, Math.ceil(text.length / per));
+  const name = r.name || "عميلة";
+  return (
+    <Sheet title="رسالة SMS" sub={`إلى ${name} · \u2066+${r.phone}\u2069`} onClose={onClose}>
+      <div className="sms-box">
+        <textarea className="a-in sms-ta" dir="auto" autoFocus rows={6} maxLength={600} value={text}
+          placeholder={`مرحباً ${name} 🌸\nمعك شغلات بنات…`} onChange={(e) => { setText(e.target.value); setRes(null); }} />
+        <div className="sms-meta">
+          <span className="ltr">{text.length} / {parts * per}</span>
+          <span>{parts === 1 ? "رسالة واحدة" : `${parts} رسائل`}{uni ? " · عربي 70 حرفاً للرسالة" : ""}</span>
+        </div>
+        {res && <span className={`a-flash ${res.ok ? "tone-success" : "tone-danger"}`}>{res.message}</span>}
+        <div className="sms-acts">
+          <button type="button" className="btn" disabled={pending || !text.trim() || res?.ok}
+            onClick={() => start(async () => { const x = await sendCustomerSms(r.phone, text); setRes(x); if (x.ok) setTimeout(onClose, 1400); })}>
+            {pending ? "يُرسل…" : res?.ok ? "أُرسلت ✓" : "إرسال"}
+          </button>
+          <button type="button" className="btn soft" onClick={onClose}>إلغاء</button>
+        </div>
+        <span className="caption">تُرسل من خط المركز عبر sms-gate.app. تجنّب الروابط والكلمات الدعائية الكثيرة كي لا تحجبها فلاتر MTN وسيرياتيل.</span>
+      </div>
+    </Sheet>
   );
 }
