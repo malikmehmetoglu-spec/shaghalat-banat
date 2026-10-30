@@ -5,11 +5,22 @@ import { saveStoreProfile, saveTestimonial } from "../actions";
 import { date } from "@/lib/format";
 import { ReviewControls } from "./ReviewControls";
 import { ClearSamples } from "./ClearSamples";
+import { CatalogSection } from "./CatalogSection";
+import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import { ImageUpload } from "../ImageUpload";
 
 export const metadata = { title: "إعدادات المتجر" };
 
-export default async function StoreSettings() {
+const TABS = [
+  { key: "contact", label: "التواصل والدفع", icon: "card" },
+  { key: "catalog", label: "الأقسام والبانرات", icon: "star" },
+  { key: "reviews", label: "آراء الزبونات", icon: "chat" },
+] as const;
+
+export default async function StoreSettings({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const sp = await searchParams;
+  const tab = TABS.some((t) => t.key === sp.tab) ? sp.tab! : "contact";
   const { sb } = await requireStaff(rolesFor("/admin/settings"));
   const [{ data: profileRow }, { data: reviews }] = await Promise.all([
     sb.from("store_profile").select("whatsapp,facebook_url,instagram_url,tagline,shamcash_qr_url,shamcash_name").eq("id", 1).maybeSingle(),
@@ -18,8 +29,16 @@ export default async function StoreSettings() {
   const samples = (reviews ?? []).filter((r) => r.is_sample).length;
   return (
     <>
-      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">إعدادات المتجر</h1><span className="adm-sub">التواصل والدفع عبر شام كاش، وآراء الزبونات</span></div></div>
-      <div style={{ maxWidth: 900 }}>
+      <div className="adm-top"><div className="title-block"><h1 className="adm-h1">إعدادات المتجر</h1><span className="adm-sub">التواصل والدفع، والأقسام والبانرات، وآراء الزبونات</span></div></div>
+      <nav className="inv-tabs" aria-label="إعدادات المتجر">
+        {TABS.map((t) => (
+          <Link key={t.key} href={t.key === "contact" ? "/admin/settings" : `/admin/settings?tab=${t.key}`} className={`inv-tab${tab === t.key ? " on" : ""}`} aria-current={tab === t.key ? "page" : undefined}>
+            <Icon name={t.icon} size={17} stroke={2} /> {t.label}
+          </Link>
+        ))}
+      </nav>
+      {tab === "catalog" && <CatalogSection />}
+      {tab === "contact" && <div style={{ maxWidth: 900 }}>
     <FormCard title="التواصل والدفع" action={saveStoreProfile} submitLabel="حفظ" resetOnSuccess={false}>
       <span className="caption">تظهر في صفحة <a href="/qr" target="_blank" className="ltr">shaghalat-banat.com/qr</a> التي يفتحها رمز QR المطبوع على الأكياس والكروت.</span>
       <div className="a-grid">
@@ -33,9 +52,9 @@ export default async function StoreSettings() {
       <label className="a-field">اسم الحساب في شام كاش (اختياري)<input name="shamcash_name" className="a-in" defaultValue={profileRow?.shamcash_name ?? ""} placeholder="شغلات بنات" /></label>
       <ImageUpload name="shamcash_qr_url" folder="payment" label="رمز QR الخاص بحساب شام كاش" ratio="1 / 1" initial={profileRow?.shamcash_qr_url ? [profileRow.shamcash_qr_url] : []} />
     </FormCard>
-      </div>
+      </div>}
 
-      <section id="reviews" style={{ display: "flex", flexDirection: "column", gap: 14, scrollMarginTop: 24 }}>
+      {tab === "reviews" && <section id="reviews" style={{ display: "flex", flexDirection: "column", gap: 14, scrollMarginTop: 24 }}>
         <div className="row-between" style={{ flexWrap: "wrap" }}>
           <div className="title-block"><h2 className="adm-h2">آراء الزبونات</h2><span className="adm-sub">تظهر في قسم «قالوا عنّا» على الصفحة الرئيسية، ويختفي القسم إن لم يوجد رأي ظاهر</span></div>
           <ClearSamples count={samples} />
@@ -65,7 +84,7 @@ export default async function StoreSettings() {
             </FormCard>
           </div>
         </div>
-      </section>
+      </section>}
     </>
   );
 }

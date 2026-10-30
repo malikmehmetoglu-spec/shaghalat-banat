@@ -9,7 +9,6 @@ const ACCESS: [string, StaffRole[]][] = [
   ["/admin/shop-orders", ["owner", "sales"]],
   ["/admin/customers", ["owner", "sales"]],
   ["/admin/returns", ["owner", "sales", "cashier"]],
-  ["/admin/catalog", ["owner", "sales"]],
   ["/admin/settings", ["owner", "sales"]],
   ["/admin/coupons", ["owner", "sales"]],
   ["/admin/push", ["owner", "sales"]],

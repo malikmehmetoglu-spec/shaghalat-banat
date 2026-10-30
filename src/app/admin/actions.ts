@@ -274,47 +274,47 @@ export async function posSale(items: { variant_id: string; qty: number }[], paym
 
 // ───────── الأقسام والبانرات والكوبونات ─────────
 export async function saveCategory(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/catalog"));
+  const { sb } = await requireStaff(rolesFor("/admin/settings"));
   const name = str(fd, "name");
   if (!name) return fail("اسم القسم مطلوب");
   const slug = str(fd, "slug") || slugify(str(fd, "name_en") || name);
   const { error } = await sb.from("categories").insert({ name, name_en: str(fd, "name_en") || null, slug, image_url: str(fd, "image_url") || null, sort_order: Number(str(fd, "sort_order") || 99) });
   if (error) return fail(error.code === "23505" ? "الرابط المختصر مستخدم مسبقاً" : errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/admin/catalog");
+  revalidateTag("catalog"); revalidatePath("/admin/settings");
   return ok("تمت إضافة القسم");
 }
 
 export async function toggleCategory(id: string, visible: boolean): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/catalog"));
+  const { sb } = await requireStaff(rolesFor("/admin/settings"));
   const { error } = await sb.from("categories").update({ is_visible: visible }).eq("id", id)
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/admin/catalog");
+  revalidateTag("catalog"); revalidatePath("/admin/settings");
   return ok("تم");
 }
 
 export async function saveBanner(_: ActionResult | null, fd: FormData): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/catalog"));
+  const { sb } = await requireStaff(rolesFor("/admin/settings"));
   const title = str(fd, "title");
   if (!title) return fail("عنوان البانر مطلوب");
   const { error } = await sb.from("banners").insert({ title, kicker: str(fd, "kicker") || null, link: str(fd, "link") || null, image_url: str(fd, "image_url") || null, sort_order: Number(str(fd, "sort_order") || 0) });
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/admin/catalog");
+  revalidateTag("catalog"); revalidatePath("/admin/settings");
   return ok("تمت إضافة البانر");
 }
 
 export async function toggleBanner(id: string, active: boolean): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/catalog"));
+  const { sb } = await requireStaff(rolesFor("/admin/settings"));
   const { error } = await sb.from("banners").update({ is_active: active }).eq("id", id)
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/admin/catalog");
+  revalidateTag("catalog"); revalidatePath("/admin/settings");
   return ok("تم");
 }
 
 export async function deleteBanner(id: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/catalog"));
+  const { sb } = await requireStaff(rolesFor("/admin/settings"));
   const { error } = await sb.from("banners").delete().eq("id", id)
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/admin/catalog");
+  revalidateTag("catalog"); revalidatePath("/admin/settings");
   return ok("تم");
 }
 
@@ -476,17 +476,17 @@ export async function setStaffPassword(id: string, password: string): Promise<Ac
 
 // ───────── صور الأقسام والبانرات ─────────
 export async function setCategoryImage(id: string, url: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/catalog"));
+  const { sb } = await requireStaff(rolesFor("/admin/settings"));
   const { error } = await sb.from("categories").update({ image_url: url }).eq("id", id)
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/admin/catalog"); revalidateTag("catalog"); revalidatePath("/", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/settings"); revalidateTag("catalog"); revalidatePath("/", "layout");
   return ok("تم");
 }
 export async function setBannerImage(id: string, url: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/catalog"));
+  const { sb } = await requireStaff(rolesFor("/admin/settings"));
   const { error } = await sb.from("banners").update({ image_url: url }).eq("id", id)
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/admin/catalog"); revalidateTag("catalog"); revalidatePath("/", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/settings"); revalidateTag("catalog"); revalidatePath("/", "layout");
   return ok("تم");
 }
 
@@ -643,21 +643,21 @@ export async function transferMany(from: string, to: string, items: { variant: s
 }
 
 export async function updateCategory(id: string, data: { name: string; name_en: string; sort_order: number }): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/catalog"));
+  const { sb } = await requireStaff(rolesFor("/admin/settings"));
   if (!data.name.trim()) return fail("اسم القسم مطلوب");
   const { error } = await sb.from("categories").update({ name: data.name.trim(), name_en: data.name_en.trim() || null, sort_order: Number(data.sort_order) || 99 }).eq("id", id);
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/admin/catalog"); revalidateTag("catalog"); revalidatePath("/", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/settings"); revalidateTag("catalog"); revalidatePath("/", "layout");
   return ok("تم حفظ القسم");
 }
 
 export async function removeCategory(id: string): Promise<ActionResult> {
-  const { sb } = await requireStaff(rolesFor("/admin/catalog"));
+  const { sb } = await requireStaff(rolesFor("/admin/settings"));
   const { count } = await sb.from("product_categories").select("product_id,products!inner(archived_at)", { count: "exact", head: true }).eq("category_id", id).is("products.archived_at", null);
   if (count) return fail(`في هذا القسم ${count} منتج — انقليها لقسم آخر أولاً`);
   const { error } = await sb.from("categories").delete().eq("id", id);
   if (error) return fail(errMsg(error));
-  revalidateTag("catalog"); revalidatePath("/admin/catalog"); revalidateTag("catalog"); revalidatePath("/", "layout");
+  revalidateTag("catalog"); revalidatePath("/admin/settings"); revalidateTag("catalog"); revalidatePath("/", "layout");
   return ok("تم حذف القسم");
 }
 
