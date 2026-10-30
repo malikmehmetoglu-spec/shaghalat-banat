@@ -1,6 +1,6 @@
 // Service Worker بسيط: يجعل التطبيق قابلاً للتثبيت ويخزّن الأصول الثابتة.
 // + استقبال الإشعارات (Web Push) وفتح الرابط عند الضغط.
-const CACHE = "sb-static-v2";
+const CACHE = "sb-static-v3";
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["/icons/logo-mark.svg", "/icons/icon-192.png"])));
@@ -31,8 +31,7 @@ self.addEventListener("push", (e) => {
   try { d = e.data ? e.data.json() : {}; } catch { d = { body: e.data && e.data.text() }; }
   e.waitUntil(self.registration.showNotification(d.title || "شغلات بنات", {
     body: d.body || "",
-    icon: "/icons/icon-192.png",
-    badge: "/icons/icon-192.png",
+    badge: "/icons/badge-96.png", // أيقونة شريط الحالة: شعار أبيض شفاف
     dir: "auto",
     data: { link: d.link || "/" },
   }));
