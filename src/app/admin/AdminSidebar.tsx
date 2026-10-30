@@ -5,8 +5,9 @@ import { usePathname } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { AdminLogout } from "./AdminLogout";
 import { canAccess } from "@/lib/access";
+import { INV_TABS, invTabActive, invTabsFor, isInvPath } from "@/lib/inventoryNav";
 
-type Item = { href: string; label: string; icon: Parameters<typeof Icon>[0]["name"]; exact?: boolean };
+type Item = { href: string; label: string; icon: Parameters<typeof Icon>[0]["name"]; exact?: boolean; group?: "inventory" };
 const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean }[] = [
   { title: "عام", items: [{ href: "/admin", label: "لوحة المؤشرات", icon: "grid", exact: true }] },
   { title: "المبيعات", items: [
@@ -22,13 +23,7 @@ const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean
     { href: "/admin/push", label: "إرسال الإشعارات", icon: "bell" },
   ] },
   { title: "المخزون", items: [
-    { href: "/admin/inventory", label: "نظرة عامة", icon: "grid", exact: true },
-    { href: "/admin/inventory/locations", label: "المواقع والمستودعات", icon: "pin" },
-    { href: "/admin/inventory/moves", label: "الحركات والتحويل", icon: "return" },
-    { href: "/admin/inventory/count", label: "الجرد والتسويات", icon: "check" },
-    { href: "/admin/inventory/alerts", label: "تنبيهات النقص", icon: "info" },
-    { href: "/admin/inventory/suppliers", label: "الموردون والمشتريات", icon: "truck" },
-    { href: "/admin/barcodes", label: "الباركود والملصقات", icon: "filter" },
+    { href: "/admin/inventory", label: "إدارة المخزون", icon: "boxes", group: "inventory" },
   ] },
   { title: "المالية", finance: true, items: [
     { href: "/admin/finance", label: "نظرة عامة", icon: "grid", exact: true },
@@ -51,13 +46,15 @@ export function AdminSidebar({ name, role, roleKey }: { name: string; role: stri
   useEffect(() => { setOpen(false); }, [path]);                       // إغلاق القائمة بعد التنقل
   useEffect(() => { document.body.style.overflow = open ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [open]);
   const current = GROUPS.flatMap((g) => g.items).filter((it) => (it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/"))).sort((a, b) => b.href.length - a.href.length)[0];
+  const invTab = isInvPath(path) ? INV_TABS.find((t) => invTabActive(path, t)) : undefined;
+  const invTitle = isInvPath(path) ? `إدارة المخزون${invTab ? ` · ${invTab.label}` : ""}` : undefined;
   return (
     <>
     <header className="adm-mbar no-print">
       <button type="button" className="adm-burger" onClick={() => setOpen(true)} aria-label="فتح القائمة" aria-expanded={open}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M4 7h16M4 12h16M4 17h10" /></svg>
       </button>
-      <span className="adm-mbar-title">{current?.label ?? "لوحة الإدارة"}</span>
+      <span className="adm-mbar-title">{invTitle ?? current?.label ?? "لوحة الإدارة"}</span>
       <Link href="/admin" aria-label="لوحة المؤشرات"><img src="/icons/logo-mark.svg" alt="" className="adm-mbar-logo" /></Link>
     </header>
     {open && <div className="adm-scrim no-print" onClick={() => setOpen(false)} aria-hidden />}
@@ -68,11 +65,11 @@ export function AdminSidebar({ name, role, roleKey }: { name: string; role: stri
         <img src="/icons/logo-stacked.svg" alt="شغلات بنات" className="adm-brand-logo" />
         <span className="adm-brand-tag">لوحة الإدارة</span>
       </div>
-      {GROUPS.map((g) => ({ ...g, items: g.items.filter((it) => canAccess(roleKey, it.href)).map((it) => (it.href === "/admin/staff" && roleKey !== "owner" ? { ...it, label: "تغيير كلمة المرور" } : it)) })).filter((g) => g.items.length).map((g) => (
+      {GROUPS.map((g) => ({ ...g, items: g.items.map((it) => (it.group === "inventory" ? { ...it, href: invTabsFor(roleKey)[0]?.href ?? it.href } : it)).filter((it) => (it.group === "inventory" ? invTabsFor(roleKey).length > 0 : canAccess(roleKey, it.href))).map((it) => (it.href === "/admin/staff" && roleKey !== "owner" ? { ...it, label: "تغيير كلمة المرور" } : it)) })).filter((g) => g.items.length).map((g) => (
         <div key={g.title} style={{ display: "contents" }}>
           <span className="adm-ng">{g.title}</span>
           {g.items.map((it) => {
-            const on = it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/");
+            const on = it.group === "inventory" ? isInvPath(path) : it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/");
             return (
               <Link key={it.href} href={it.href} className={`adm-ni${on ? " on" : ""}`} aria-current={on ? "page" : undefined}>
                 <Icon name={it.icon} /> {it.label}
