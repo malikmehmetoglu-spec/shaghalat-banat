@@ -145,3 +145,14 @@ export async function getStoreProfile(): Promise<{ instagram_url: string | null;
     return data ?? { instagram_url: null, whatsapp: null };
   });
 }
+
+/** الآراء التجريبية لمعاينة فريق العمل فقط — قاعدة البيانات نفسها تمنعها عن غير الموظفين */
+export async function getSampleReviewsForStaff(): Promise<{ id: string; name: string; city: string | null; body: string; rating: number; sample: true }[]> {
+  const sb = await createClient();
+  const { data: u } = await sb.auth.getUser();
+  if (!u.user) return [];
+  const { data: me } = await sb.from("profiles").select("role").eq("id", u.user.id).maybeSingle();
+  if (!me || me.role === "customer") return [];
+  const { data } = await sb.from("testimonials").select("id,name,city,body,rating").eq("is_sample", true).eq("is_visible", true).order("created_at", { ascending: false });
+  return (data ?? []).map((r) => ({ ...r, sample: true as const }));
+}

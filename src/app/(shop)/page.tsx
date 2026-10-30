@@ -8,13 +8,13 @@ import { DealCountdown } from "@/components/home/DealCountdown";
 import { NewArrivals } from "@/components/home/NewArrivals";
 import { RecentlyViewed } from "@/components/home/RecentlyViewed";
 import { ScrollRow } from "@/components/home/ScrollRow";
-import { getBanners, getCategories, getFavoriteIds, getProducts, getStoreProfile, getTestimonials, getUnreadCount } from "@/lib/data";
+import { getBanners, getCategories, getFavoriteIds, getProducts, getSampleReviewsForStaff, getStoreProfile, getTestimonials, getUnreadCount } from "@/lib/data";
 import { placeholder } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 
 export default async function Home() {
   const t = await getT();
-  const [cats, latest, favs, unread, banners, deals, best, reviews, store] = await Promise.all([
+  const [cats, latest, favs, unread, banners, deals, best, realReviews, store, sampleReviews] = await Promise.all([
     getCategories(),
     getProducts({ sort: "new", limit: 24 }),
     getFavoriteIds(),
@@ -24,7 +24,9 @@ export default async function Home() {
     getProducts({ sort: "best", limit: 10 }),
     getTestimonials(),
     getStoreProfile(),
+    getSampleReviewsForStaff(),
   ]);
+  const reviews: { id: string; name: string; city: string | null; body: string; rating: number; sample?: boolean }[] = [...realReviews, ...sampleReviews];
 
   // الأكثر مبيعاً يظهر بهذا الاسم فقط حين توجد مبيعات فعلية، وإلا «مختارات لكِ» بحسب التقييم
   const hasSales = best.some((p) => p.sold_count > 0);
@@ -141,7 +143,8 @@ export default async function Home() {
           </div>
           <div className="rev-row scr">
             {reviews.map((r) => (
-              <figure key={r.id} className="rev">
+              <figure key={r.id} className={`rev${r.sample ? " rev-sample" : ""}`}>
+                {r.sample && <span className="rev-tag">{t("تجريبي · يراه فريق العمل فقط")}</span>}
                 <span className="rev-stars" aria-label={t("{n} من 5", { n: r.rating })}>{"★".repeat(r.rating)}<span>{"★".repeat(5 - r.rating)}</span></span>
                 <blockquote>{r.body}</blockquote>
                 <figcaption><b>{r.name}</b>{r.city && <span> · {r.city}</span>}</figcaption>

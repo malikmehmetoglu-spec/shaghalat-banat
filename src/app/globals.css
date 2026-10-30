@@ -792,3 +792,6 @@ textarea.input { height: 100px; padding: 14px 16px; line-height: 1.7; resize: no
   .pv-buy .pv-add svg { display: inline-block !important; }
   .pv-buy .btn { font-size: 14px !important; padding: 0 12px !important; }
 }
+/* رأي تجريبي: يظهر لفريق العمل فقط */
+.rev-sample { position: relative; border-style: dashed; }
+.rev-tag { align-self: flex-start; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 10px; background: #E8F3FF; color: #1D5FA8; }
