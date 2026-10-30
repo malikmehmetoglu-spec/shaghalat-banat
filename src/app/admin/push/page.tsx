@@ -1,6 +1,8 @@
 import { requireStaff } from "@/lib/admin";
 import { date } from "@/lib/format";
 import { pushReady, runDueCampaigns } from "@/lib/push";
+import { SectionTabs } from "../SectionTabs";
+import { MKT_TABS } from "@/lib/marketingNav";
 import { PushComposer } from "./PushComposer";
 
 export const metadata = { title: "إرسال الإشعارات" };
@@ -22,6 +24,7 @@ export default async function PushPage() {
 
   return (
     <>
+      <SectionTabs tabs={MKT_TABS} label="إدارة التسويق" />
       <div className="adm-top"><div className="title-block"><h1 className="adm-h1">إرسال الإشعارات</h1><span className="adm-sub">{total ?? 0} جهازاً مشتركاً · متصفح/PWA {web} · تطبيق الجوال {(total ?? 0) - web}</span></div></div>
       {(!ready.web || !ready.fcm) && (
         <div className="a-flash tone-warning" style={{ lineHeight: 1.8 }}>

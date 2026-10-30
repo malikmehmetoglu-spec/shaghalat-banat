@@ -8,19 +8,20 @@ import { canAccess } from "@/lib/access";
 import { INV_TABS, invTabActive, invTabsFor, isInvPath } from "@/lib/inventoryNav";
 import { FIN_TABS, finTabActive, isFinPath } from "@/lib/financeNav";
 import { ORD_TABS, isOrdPath } from "@/lib/ordersNav";
+import { MKT_TABS, isMktPath } from "@/lib/marketingNav";
 
-type Item = { href: string; label: string; icon: Parameters<typeof Icon>[0]["name"]; exact?: boolean; group?: "inventory" | "finance" | "orders" };
+type Item = { href: string; label: string; icon: Parameters<typeof Icon>[0]["name"]; exact?: boolean; group?: "inventory" | "finance" | "orders" | "marketing" };
 const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean }[] = [
   { title: "عام", items: [{ href: "/admin", label: "لوحة المؤشرات", icon: "grid", exact: true }] },
   { title: "المبيعات", items: [
     { href: "/admin/shop-orders", label: "طلبات المتجر", icon: "truck", group: "orders" },
-    { href: "/admin/customers", label: "العملاء", icon: "user" },
     { href: "/admin/pos", label: "نقطة البيع (المحل)", icon: "card" },
+  ] },
+  { title: "التسويق", items: [
+    { href: "/admin/customers", label: "إدارة التسويق", icon: "bell", group: "marketing" },
   ] },
   { title: "الكتالوج", items: [
     { href: "/admin/products", label: "المنتجات", icon: "tag" },
-    { href: "/admin/coupons", label: "الكوبونات", icon: "tag" },
-    { href: "/admin/push", label: "إرسال الإشعارات", icon: "bell" },
   ] },
   { title: "المخزون", items: [
     { href: "/admin/inventory", label: "إدارة المخزون", icon: "boxes", group: "inventory" },
@@ -42,7 +43,7 @@ export function AdminSidebar({ name, role, roleKey }: { name: string; role: stri
   const current = GROUPS.flatMap((g) => g.items).filter((it) => (it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/"))).sort((a, b) => b.href.length - a.href.length)[0];
   const invTab = isInvPath(path) ? INV_TABS.find((t) => invTabActive(path, t)) : undefined;
   const finTab = isFinPath(path) ? FIN_TABS.find((t) => finTabActive(path, t)) : undefined;
-  const invTitle = isInvPath(path) ? `إدارة المخزون${invTab ? ` · ${invTab.label}` : ""}` : isFinPath(path) ? `الإدارة المالية${finTab ? ` · ${finTab.label}` : ""}` : isOrdPath(path) ? `طلبات المتجر · ${ORD_TABS.find((t) => path === t.href || path.startsWith(t.href + "/"))?.label ?? ""}` : undefined;
+  const invTitle = isInvPath(path) ? `إدارة المخزون${invTab ? ` · ${invTab.label}` : ""}` : isFinPath(path) ? `الإدارة المالية${finTab ? ` · ${finTab.label}` : ""}` : isOrdPath(path) ? `طلبات المتجر · ${ORD_TABS.find((t) => path === t.href || path.startsWith(t.href + "/"))?.label ?? ""}` : isMktPath(path) ? `إدارة التسويق · ${MKT_TABS.find((t) => path === t.href || path.startsWith(t.href + "/"))?.label ?? ""}` : undefined;
   return (
     <>
     <header className="adm-mbar no-print">
@@ -64,7 +65,7 @@ export function AdminSidebar({ name, role, roleKey }: { name: string; role: stri
         <div key={g.title} style={{ display: "contents" }}>
           <span className="adm-ng">{g.title}</span>
           {g.items.map((it) => {
-            const on = it.group === "inventory" ? isInvPath(path) : it.group === "finance" ? isFinPath(path) : it.group === "orders" ? isOrdPath(path) : it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/");
+            const on = it.group === "inventory" ? isInvPath(path) : it.group === "finance" ? isFinPath(path) : it.group === "orders" ? isOrdPath(path) : it.group === "marketing" ? isMktPath(path) : it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/");
             return (
               <Link key={it.href} href={it.href} className={`adm-ni${on ? " on" : ""}`} aria-current={on ? "page" : undefined}>
                 <Icon name={it.icon} /> {it.label}

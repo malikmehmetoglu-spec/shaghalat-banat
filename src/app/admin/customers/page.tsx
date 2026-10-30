@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { requireStaff } from "@/lib/admin";
+import { SectionTabs } from "../SectionTabs";
+import { MKT_TABS } from "@/lib/marketingNav";
 import { CustomersView, type Row } from "./CustomersView";
 
 export const metadata = { title: "العملاء" };
@@ -36,6 +38,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
 
   return (
     <>
+      <SectionTabs tabs={MKT_TABS} label="إدارة التسويق" />
       <div className="adm-top">
         <div className="title-block"><h1 className="adm-h1">العملاء</h1><span className="adm-sub">{rows.length} عميلة · من المحل والمتجر معاً، والرقم هو المرجع</span></div>
       </div>

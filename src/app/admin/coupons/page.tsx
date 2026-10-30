@@ -2,6 +2,8 @@ import { requireStaff } from "@/lib/admin";
 import { date, price } from "@/lib/format";
 import { FormCard } from "../FormCard";
 import { saveCoupon } from "../actions";
+import { SectionTabs } from "../SectionTabs";
+import { MKT_TABS } from "@/lib/marketingNav";
 import { CouponToggle } from "./CouponToggle";
 
 export const metadata = { title: "الكوبونات" };
@@ -15,6 +17,7 @@ export default async function CouponsPage() {
 
   return (
     <>
+      <SectionTabs tabs={MKT_TABS} label="إدارة التسويق" />
       <div className="adm-top"><div className="title-block"><h1 className="adm-h1">الكوبونات والعروض</h1><span className="adm-sub">أكواد خصم للتطبيق ونقطة البيع</span></div></div>
       <div className="split">
         <div className="wide" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 16 }}>
