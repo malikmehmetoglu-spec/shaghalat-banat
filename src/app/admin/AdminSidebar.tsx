@@ -27,6 +27,10 @@ const ITEMS: Item[] = [
 export function AdminSidebar({ name, role, roleKey, extra = [] }: { name: string; role: string; roleKey: string; extra?: string[] }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const [fold, setFold] = useState(false);
+  useEffect(() => { try { setFold(localStorage.getItem("adm-fold") === "1"); } catch {} }, []);
+  useEffect(() => { document.documentElement.classList.toggle("adm-folded", fold); }, [fold]);
+  const toggleFold = () => setFold((f) => { try { localStorage.setItem("adm-fold", f ? "0" : "1"); } catch {} return !f; });
   useEffect(() => { setOpen(false); }, [path]);                       // إغلاق القائمة بعد التنقل
   useEffect(() => { document.body.style.overflow = open ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [open]);
   const visible = ITEMS
@@ -49,6 +53,9 @@ export function AdminSidebar({ name, role, roleKey, extra = [] }: { name: string
     {open && <div className="adm-scrim no-print" onClick={() => setOpen(false)} aria-hidden />}
     <aside className={`adm-side no-print${open ? " open" : ""}`}>
       <button type="button" className="adm-close" onClick={() => setOpen(false)} aria-label="إغلاق القائمة">✕</button>
+      <button type="button" className="adm-fold" onClick={toggleFold} aria-label={fold ? "توسيع القائمة" : "طي القائمة"} title={fold ? "توسيع القائمة" : "طي القائمة"}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="4" width="18" height="16" rx="4" /><path d="M15 4v16" />{fold ? <path d="m9 10-2 2 2 2" /> : <path d="m7 10 2 2-2 2" />}</svg>
+      </button>
       <Link href="/admin" className="adm-brand" aria-label="لوحة الإدارة">
         <span className="adm-brand-tile"><img src="/icons/logo-mark.svg" alt="" aria-hidden="true" /></span>
         <span className="adm-brand-t"><b>شغلات بنات</b><span>لوحة الإدارة</span></span>
@@ -57,7 +64,7 @@ export function AdminSidebar({ name, role, roleKey, extra = [] }: { name: string
         {visible.map((it) => {
           const on = it.group === "inventory" ? isInvPath(path) : it.group === "finance" ? isFinPath(path) : it.group === "orders" ? isOrdPath(path) : it.group === "marketing" ? isMktPath(path) : it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/");
           return (
-            <Link key={it.href} href={it.href} className={`adm-ni${on ? " on" : ""}`} aria-current={on ? "page" : undefined}>
+            <Link key={it.href} href={it.href} className={`adm-ni${on ? " on" : ""}`} title={fold ? it.label : undefined} aria-current={on ? "page" : undefined}>
               <span className="adm-ni-ic"><Icon name={it.icon} size={19} stroke={2} /></span>
               <span className="adm-ni-t">{it.label}</span>
             </Link>

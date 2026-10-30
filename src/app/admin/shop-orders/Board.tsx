@@ -53,7 +53,26 @@ export function Board({ orders: initial, agent }: { orders: BoardOrder[]; agent:
     initial.forEach((o) => known.current.add(o.id));
     if (added.length) setFresh((f) => new Set([...f, ...added]));
   }, [initial]);
+  const [refreshing, startRefresh] = useTransition();
+  const [lastAt, setLastAt] = useState(() => Date.now());
+  const [, tick] = useState(0);
+  const [full, setFull] = useState(false);
+  const refresh = () => startRefresh(() => { router.refresh(); });
+  useEffect(() => { setLastAt(Date.now()); }, [initial]);
   useEffect(() => { const id = setInterval(() => router.refresh(), 45000); return () => clearInterval(id); }, [router]);
+  useEffect(() => { const id = setInterval(() => tick((n) => n + 1), 20000); return () => clearInterval(id); }, []);
+  // ملء الشاشة: وضع داخل الصفحة + ملء شاشة المتصفح حين يتاح
+  useEffect(() => {
+    document.documentElement.classList.toggle("ob-fullscreen", full);
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setFull(false); };
+    const onFs = () => { if (!document.fullscreenElement) setFull(false); };
+    window.addEventListener("keydown", onKey); document.addEventListener("fullscreenchange", onFs);
+    return () => { window.removeEventListener("keydown", onKey); document.removeEventListener("fullscreenchange", onFs); document.documentElement.classList.remove("ob-fullscreen"); };
+  }, [full]);
+  function toggleFull() {
+    if (!full) { setFull(true); document.documentElement.requestFullscreen?.().catch(() => {}); }
+    else { setFull(false); if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); }
+  }
   useEffect(() => { if (!toast) return; const id = setTimeout(() => setToast(null), 3500); return () => clearTimeout(id); }, [toast]);
 
   const shown = useMemo(() => {
@@ -104,11 +123,24 @@ export function Board({ orders: initial, agent }: { orders: BoardOrder[]; agent:
           <h1 className="adm-h1">طلبات المتجر</h1>
           <span className="adm-sub">اسحب البطاقة إلى العمود التالي، أو اضغط زر الخطوة التالية · تتحدّث تلقائياً</span>
         </div>
+        <div className="ob-tools">
         <label className="ob-search">
           <Icon name="search" size={18} />
           <span className="sr">بحث</span>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="رقم الطلب أو الاسم أو الهاتف" />
         </label>
+        <button type="button" className={`ob-refresh${refreshing ? " spin" : ""}`} onClick={refresh} disabled={refreshing} title="تحديث الطلبات الآن">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>
+          <span>{refreshing ? "جارٍ التحديث…" : "تحديث"}</span>
+          <small>{Math.round((Date.now() - lastAt) / 60000) < 1 ? "الآن" : `قبل ${Math.round((Date.now() - lastAt) / 60000)} د`}</small>
+        </button>
+        <button type="button" className="ob-fs" onClick={toggleFull} aria-label={full ? "الخروج من ملء الشاشة" : "ملء الشاشة"} title={full ? "الخروج من ملء الشاشة (Esc)" : "ملء الشاشة"}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            {full ? <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /> : <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />}
+          </svg>
+          <span>{full ? "خروج" : "ملء الشاشة"}</span>
+        </button>
+        </div>
       </header>
 
       <nav className="ob-tabs" aria-label="الأعمدة">
@@ -133,7 +165,7 @@ export function Board({ orders: initial, agent }: { orders: BoardOrder[]; agent:
                 <h2>{c.title}</h2>
                 <span className="ob-n">{list.length}</span>
               </div>
-              <span className="ob-hint">{c.hint}</span>
+              <div className="ob-col-meta"><span>{c.hint}</span>{list.length > 0 && <b>{price(list.reduce((t, o) => t + o.total, 0))}</b>}</div>
               <div className="ob-list">
                 {list.map((o) => {
                   const isOpen = open === o.id;
@@ -148,7 +180,8 @@ export function Board({ orders: initial, agent }: { orders: BoardOrder[]; agent:
                           <span className={`ob-pay ob-pay-${o.payment}`}>{PAYMENT_LABEL[o.payment] ?? o.payment}</span>
                           <span className="ob-time">{ago(o.createdAt)}</span>
                         </div>
-                        <div className="ob-row">
+                        <div className="ob-row ob-who">
+                          <span className="ob-av" aria-hidden="true">{o.name.trim()[0] ?? "؟"}</span>
                           <span className="ob-name">{o.name}</span>
                           <b className="ob-total">{price(o.total)}</b>
                         </div>
