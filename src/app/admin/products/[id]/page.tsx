@@ -17,6 +17,7 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
     sb.from("categories").select("id,name").order("sort_order"),
     getLocations(), getFx(),
   ]);
+  const { data: consignors } = await sb.from("consignors").select("id,name,mode,commission_pct").eq("is_active", true).order("name");
   if (!p) notFound();
 
   return (
@@ -40,7 +41,7 @@ export default async function EditProduct({ params, searchParams }: { params: Pr
         </div>
       )}
       <VariantsEditor productId={p.id} slug={p.slug} variants={p.product_variants} locations={locations.filter((l) => l.kind !== "transit")} />
-      <ProductForm p={{ ...p, category_ids: (p.product_categories ?? []).map((r: any) => r.category_id) }} categories={cats ?? []} locations={locations} rate={fx.rate} />
+      <ProductForm p={{ ...p, category_ids: (p.product_categories ?? []).map((r: any) => r.category_id) }} categories={cats ?? []} locations={locations} rate={fx.rate} consignors={(consignors ?? []) as any} />
     </>
   );
 }

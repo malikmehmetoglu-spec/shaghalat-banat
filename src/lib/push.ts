@@ -99,3 +99,25 @@ export async function runDueCampaigns(sb: SupabaseClient) {
   }
   return data?.length ?? 0;
 }
+
+/** تذكير الرواتب: قبل موعد كل راتب بثلاثة أيام (أو إن تأخّر) — مرة واحدة لكل شهر، لأصحاب المتجر */
+export async function runSalaryReminders(sb: SupabaseClient): Promise<number> {
+  const { data: due, error } = await sb.rpc("salaries_due", { p_days: 3 });
+  if (error || !due?.length) return 0;
+  const pending = (due as { id: string; name: string; amount: number; currency: string; period: string; days_left: number; reminded: boolean }[]).filter((d) => !d.reminded);
+  if (!pending.length) return 0;
+  const { data: owners } = await sb.from("profiles").select("id").eq("role", "owner");
+  const ids = (owners ?? []).map((o) => o.id);
+  for (const d of pending) {
+    const when = d.days_left < 0 ? "متأخر" : d.days_left === 0 ? "مستحق اليوم" : `مستحق بعد ${d.days_left} ${d.days_left === 1 ? "يوم" : "أيام"}`;
+    const amt = d.currency === "USD" ? `${Math.round(d.amount)}$` : `${Math.round(d.amount).toLocaleString("en-US")} ل.س`;
+    const msg = { title: `راتب ${d.name} ${when}`, body: `${amt} · اضغط لدفعه من الإدارة المالية`, link: "/admin/finance/salaries" };
+    if (ids.length) {
+      await sb.from("notifications").insert(ids.map((u) => ({ user_id: u, kind: "admin", title: msg.title, body: msg.body })));
+      const { data: subs } = await sb.from("push_subscriptions").select("id,kind,endpoint,keys").in("user_id", ids);
+      if (subs?.length) await sendToSubs(sb, subs as any, msg).catch(() => {});
+    }
+    await sb.from("staff_salaries").update({ reminded_period: d.period }).eq("id", d.id);
+  }
+  return pending.length;
+}

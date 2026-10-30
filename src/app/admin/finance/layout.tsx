@@ -1,4 +1,6 @@
 import { FINANCE_ROLES, requireStaff } from "@/lib/admin";
+import { SectionTabs } from "../SectionTabs";
+import { FIN_TABS } from "@/lib/financeNav";
 
 export default async function FinanceLayout({ children }: { children: React.ReactNode }) {
   const { sb } = await requireStaff(FINANCE_ROLES);
@@ -18,5 +20,5 @@ export default async function FinanceLayout({ children }: { children: React.Reac
       </div>
     );
   }
-  return <>{children}</>;
+  return <><SectionTabs tabs={FIN_TABS} label="الإدارة المالية" />{children}</>;
 }

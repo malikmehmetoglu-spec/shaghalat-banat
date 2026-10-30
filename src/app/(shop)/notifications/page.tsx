@@ -26,7 +26,7 @@ export default async function NotificationsPage() {
       {list.map((n) => (
         <div key={n.id} style={{ padding: 14, borderRadius: 20, display: "flex", alignItems: "flex-start", gap: 12, border: "1px solid var(--light-blush)", background: n.is_read ? "#fff" : "var(--surface-selected)" }}>
           <span className="icon-tile" style={n.kind === "offer" ? { background: "var(--magenta)", color: "#fff" } : undefined}>
-            <Icon name={n.kind === "offer" ? "tag" : n.kind === "new" ? "star" : "truck"} />
+            <Icon name={n.kind === "offer" ? "tag" : n.kind === "new" ? "star" : n.kind === "admin" ? "clock" : "truck"} />
           </span>
           <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
             <span className="row-between" style={{ gap: 8 }}>

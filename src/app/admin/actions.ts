@@ -104,6 +104,7 @@ export async function saveProduct(_: ActionResult | null, fd: FormData): Promise
     ...(currency === "USD"
       ? { price_usd: priceV, compare_usd: numOrNull(str(fd, "compare_usd")), cost_usd: numOrNull(str(fd, "cost_usd")) }
       : { price: priceV, compare_at_price: numOrNull(str(fd, "compare_at_price")), cost: numOrNull(str(fd, "cost")), price_usd: null, compare_usd: null, cost_usd: null }),
+    consignor_id: str(fd, "consignor_id") || null,
     tag: str(fd, "tag") || null,
     category_id: fd.getAll("category_ids").map(String).filter(Boolean)[0] ?? null,
     images,
@@ -113,7 +114,7 @@ export async function saveProduct(_: ActionResult | null, fd: FormData): Promise
   if (id) {
     const { error } = await sb.from("products").update(row).eq("id", id);
     if (error) return fail(errMsg(error));
-    const vr = await applyVariantsBulk(sb, id, str(fd, "variants_json"), str(fd, "stock_location"));
+    const vr = await applyVariantsBulk(sb, id, str(fd, "variants_json"), str(fd, "stock_location"), str(fd, "paid_from"));
     const ce = await syncCategories(sb, id, fd.getAll("category_ids").map(String).filter(Boolean));
     revalidatePath(`/admin/products/${id}`);
     revalidateTag("catalog"); revalidatePath("/admin/products");
@@ -123,7 +124,7 @@ export async function saveProduct(_: ActionResult | null, fd: FormData): Promise
   }
   const { data, error } = await sb.from("products").insert({ ...row, slug: shortCode() }).select("id").single();
   if (error || !data) return fail(errMsg(error));
-  const vr = await applyVariantsBulk(sb, data.id, str(fd, "variants_json"), str(fd, "stock_location"));
+  const vr = await applyVariantsBulk(sb, data.id, str(fd, "variants_json"), str(fd, "stock_location"), str(fd, "paid_from"));
   const ce = await syncCategories(sb, data.id, fd.getAll("category_ids").map(String).filter(Boolean));
   const problems = [...vr.errors, ...(ce ? [ce] : [])];
   revalidateTag("catalog"); revalidatePath("/admin/products");
@@ -492,7 +493,8 @@ export async function setBannerImage(id: string, url: string): Promise<ActionRes
 
 // ───────── إضافة ألوان ومقاسات وكميات دفعة واحدة ─────────
 type BulkColor = { color: string; hex: string; sizes: { size: string; qty: number }[] };
-async function applyVariantsBulk(sb: Awaited<ReturnType<typeof requireStaff>>["sb"], productId: string, raw: string, locId: string): Promise<{ made: number; errors: string[] }> {
+async function applyVariantsBulk(sb: Awaited<ReturnType<typeof requireStaff>>["sb"], productId: string, raw: string, locId: string, paidFrom = "none"): Promise<{ made: number; errors: string[] }> {
+  const purchase: { variant: string; loc: string; qty: number }[] = [];
   let list: BulkColor[] = [];
   const errors: string[] = [];
   try { list = JSON.parse(raw || "[]"); } catch { return { made: 0, errors: ["بيانات الألوان والمقاسات غير صالحة"] }; }
@@ -522,24 +524,31 @@ async function applyVariantsBulk(sb: Awaited<ReturnType<typeof requireStaff>>["s
         await sb.from("product_variants").update({ color_hex: c.hex }).eq("id", v.id);
       }
       const q = Math.floor(Number(s.qty) || 0);
-      if (q > 0 && locId) {
-        const { error } = await sb.rpc("stock_add", { variant: v.id, loc: locId, delta: q, note: "إدخال بضاعة" });
-        if (error) errors.push(`تعذّر إضافة كمية «${label}»: ${errMsg(error)}`);
-      }
+      if (q > 0 && locId) purchase.push({ variant: v.id, loc: locId, qty: q });
     }
+  }
+  // إدخال الكميات + خروج ثمنها من الصندوق المختار في حركة واحدة
+  if (purchase.length) {
+    const { error } = await sb.rpc("stock_purchase", { p_items: purchase, p_paid_from: ["1110", "1120", "3100"].includes(paidFrom) ? paidFrom : "none", p_note: null });
+    if (error) errors.push(`تعذّر إضافة الكميات: ${errMsg(error)}`);
   }
   return { made, errors };
 }
 
 /** إضافة قطع لكمية موجودة — تُقرأ الكمية الحالية من قاعدة البيانات لحظة الحفظ (لا تُمسح أي كمية) */
-export async function addStock(variantId: string, locationId: string, delta: number): Promise<ActionResult & { qty?: number }> {
+export async function addStock(variantId: string, locationId: string, delta: number, paidFrom = "none"): Promise<ActionResult & { qty?: number }> {
   const { sb } = await requireStaff(rolesFor("/admin/products"));
   if (!(delta > 0)) return fail("اكتب عدداً أكبر من صفر");
-  const { data: next, error } = await sb.rpc("stock_add", { variant: variantId, loc: locationId, delta: Math.floor(delta), note: "إضافة بضاعة" });
+  const { data: pr, error } = await sb.rpc("stock_purchase", { p_items: [{ variant: variantId, loc: locationId, qty: Math.floor(delta) }], p_paid_from: ["1110", "1120", "3100"].includes(paidFrom) ? paidFrom : "none", p_note: null });
   if (error) return fail(errMsg(error));
+  revalidatePath("/admin/finance", "layout");
+  const { data: lvl } = await sb.from("stock_levels").select("on_hand").eq("variant_id", variantId).eq("location_id", locationId).maybeSingle();
+  const next = lvl?.on_hand ?? 0;
+  const paid = Number((pr as any)?.total ?? 0), unpriced = Number((pr as any)?.unpriced ?? 0);
   revalidateTag("catalog"); revalidatePath("/admin/inventory");
   revalidateTag("catalog"); revalidatePath("/admin/products", "layout");
-  return { ...ok(`تمت إضافة ${Math.floor(delta)} قطعة — المجموع الآن ${next}`), qty: next };
+  const extra = unpriced ? " · لم يُسجَّل ثمنها لأن المنتج بلا سعر تكلفة" : paid ? ` · خرج ${Math.round(paid).toLocaleString("en-US")} ل.س ثمنها` : "";
+  return { ...ok(`تمت إضافة ${Math.floor(delta)} قطعة — المجموع الآن ${next}${extra}`), qty: next };
 }
 
 /** حذف منتج: يُؤرشف فيختفي من المتجر واللوحة والمخزون، وتبقى الطلبات والفواتير السابقة سليمة */

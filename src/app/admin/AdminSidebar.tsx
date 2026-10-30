@@ -6,8 +6,9 @@ import { Icon } from "@/components/Icon";
 import { AdminLogout } from "./AdminLogout";
 import { canAccess } from "@/lib/access";
 import { INV_TABS, invTabActive, invTabsFor, isInvPath } from "@/lib/inventoryNav";
+import { FIN_TABS, finTabActive, isFinPath } from "@/lib/financeNav";
 
-type Item = { href: string; label: string; icon: Parameters<typeof Icon>[0]["name"]; exact?: boolean; group?: "inventory" };
+type Item = { href: string; label: string; icon: Parameters<typeof Icon>[0]["name"]; exact?: boolean; group?: "inventory" | "finance" };
 const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean }[] = [
   { title: "عام", items: [{ href: "/admin", label: "لوحة المؤشرات", icon: "grid", exact: true }] },
   { title: "المبيعات", items: [
@@ -25,13 +26,7 @@ const GROUPS: { title: string; items: Item[]; finance?: boolean; owner?: boolean
     { href: "/admin/inventory", label: "إدارة المخزون", icon: "boxes", group: "inventory" },
   ] },
   { title: "المالية", finance: true, items: [
-    { href: "/admin/finance", label: "نظرة عامة", icon: "grid", exact: true },
-    { href: "/admin/finance/expenses", label: "المصاريف", icon: "minus" },
-    { href: "/admin/finance/cash", label: "الصندوق والبنك", icon: "card" },
-    { href: "/admin/finance/invoices", label: "الفواتير", icon: "bag" },
-    { href: "/admin/finance/receivables", label: "لنا وعلينا", icon: "clock" },
-    { href: "/admin/finance/reports", label: "تقرير الأرباح", icon: "star" },
-    { href: "/admin/finance/settings", label: "الإعدادات", icon: "shield" },
+    { href: "/admin/finance", label: "الإدارة المالية", icon: "card", group: "finance" },
   ] },
   { title: "النظام", items: [
     { href: "/admin/settings", label: "إعدادات المتجر", icon: "edit" },
@@ -46,7 +41,8 @@ export function AdminSidebar({ name, role, roleKey }: { name: string; role: stri
   useEffect(() => { document.body.style.overflow = open ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [open]);
   const current = GROUPS.flatMap((g) => g.items).filter((it) => (it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/"))).sort((a, b) => b.href.length - a.href.length)[0];
   const invTab = isInvPath(path) ? INV_TABS.find((t) => invTabActive(path, t)) : undefined;
-  const invTitle = isInvPath(path) ? `إدارة المخزون${invTab ? ` · ${invTab.label}` : ""}` : undefined;
+  const finTab = isFinPath(path) ? FIN_TABS.find((t) => finTabActive(path, t)) : undefined;
+  const invTitle = isInvPath(path) ? `إدارة المخزون${invTab ? ` · ${invTab.label}` : ""}` : isFinPath(path) ? `الإدارة المالية${finTab ? ` · ${finTab.label}` : ""}` : undefined;
   return (
     <>
     <header className="adm-mbar no-print">
@@ -68,7 +64,7 @@ export function AdminSidebar({ name, role, roleKey }: { name: string; role: stri
         <div key={g.title} style={{ display: "contents" }}>
           <span className="adm-ng">{g.title}</span>
           {g.items.map((it) => {
-            const on = it.group === "inventory" ? isInvPath(path) : it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/");
+            const on = it.group === "inventory" ? isInvPath(path) : it.group === "finance" ? isFinPath(path) : it.exact ? path === it.href : path === it.href || path.startsWith(it.href + "/");
             return (
               <Link key={it.href} href={it.href} className={`adm-ni${on ? " on" : ""}`} aria-current={on ? "page" : undefined}>
                 <Icon name={it.icon} /> {it.label}

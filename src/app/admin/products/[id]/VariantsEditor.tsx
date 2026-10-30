@@ -15,7 +15,7 @@ export function VariantsEditor({ productId, variants, locations }: { productId: 
   const [busy, start] = useTransition();
   const [open, setOpen] = useState<string | null>(null);
   const [fix, setFix] = useState(false);
-  const [add, setAdd] = useState({ qty: "", loc: locations[0]?.id ?? "" });
+  const [add, setAdd] = useState<{ qty: string; loc: string; paid?: string }>({ qty: "", loc: locations[0]?.id ?? "", paid: "none" });
   const [local, setLocal] = useState<Record<string, number>>({}); // آخر قيمة أكّدها الخادم
   const qtyAt = (v: V, loc: string) => local[`${v.id}:${loc}`] ?? v.stock_levels.find((s) => s.location_id === loc)?.on_hand ?? 0;
   const total = variants.reduce((t, v) => t + locations.reduce((a, l) => a + qtyAt(v, l.id), 0), 0);
@@ -59,8 +59,11 @@ export function VariantsEditor({ productId, variants, locations }: { productId: 
                     <span style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                       <input className="a-in" type="number" min="1" autoFocus placeholder="العدد" value={add.qty} onChange={(e) => setAdd((a) => ({ ...a, qty: e.target.value }))} style={{ width: 80, height: 38, textAlign: "center" }} aria-label="عدد القطع الواردة" />
                       {locations.length > 1 && <select className="a-in" value={add.loc} onChange={(e) => setAdd((a) => ({ ...a, loc: e.target.value }))} style={{ height: 38, width: "auto" }}>{locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}</select>}
+                      <select className="a-in" value={add.paid ?? "none"} onChange={(e) => setAdd((a) => ({ ...a, paid: e.target.value }))} style={{ height: 38, width: "auto" }} aria-label="ثمنها دُفع من">
+                        <option value="none">لم يُدفع الآن</option><option value="1110">دُفع من صندوق المحل</option><option value="1120">دُفع من شام كاش</option><option value="3100">دُفع من المال الخاص</option>
+                      </select>
                       <button type="button" className="btn" style={{ minHeight: 38, padding: "0 14px" }} disabled={busy || !(Number(add.qty) > 0)}
-                        onClick={() => start(async () => { const r = await addStock(v.id, add.loc, Number(add.qty)); if (r.ok && r.qty !== undefined) setLocal((m) => ({ ...m, [`${v.id}:${add.loc}`]: r.qty! })); setMsg(r); if (r.ok) { setOpen(null); setAdd((a) => ({ ...a, qty: "" })); } })}>حفظ</button>
+                        onClick={() => start(async () => { const r = await addStock(v.id, add.loc, Number(add.qty), add.paid ?? "none"); if (r.ok && r.qty !== undefined) setLocal((m) => ({ ...m, [`${v.id}:${add.loc}`]: r.qty! })); setMsg(r); if (r.ok) { setOpen(null); setAdd((a) => ({ ...a, qty: "" })); } })}>حفظ</button>
                       <button type="button" className="link-btn" onClick={() => setOpen(null)}>إلغاء</button>
                     </span>
                   ) : (

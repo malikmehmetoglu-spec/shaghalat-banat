@@ -9,8 +9,8 @@ import { DeleteProduct } from "./DeleteProduct";
 
 export const metadata = { title: "المنتجات" };
 
-export default async function AdminProducts({ searchParams }: { searchParams: Promise<{ cat?: string; q?: string; saved?: string }> }) {
-  const { cat = "", q = "", saved } = await searchParams;
+export default async function AdminProducts({ searchParams }: { searchParams: Promise<{ cat?: string; q?: string; saved?: string; nocost?: string }> }) {
+  const { cat = "", q = "", saved, nocost } = await searchParams;
   const { sb, profile } = await requireStaff();
   const isOwner = profile.role === "owner";
   const [locations, { data: cats }] = await Promise.all([getLocations(), sb.from("categories").select("id,name").order("sort_order")]);
@@ -20,6 +20,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
     .order("created_at", { ascending: false });
   if (cat) { const { data: ids } = await sb.from("product_categories").select("product_id").eq("category_id", cat); query = query.in("id", (ids ?? []).map((r) => r.product_id).concat("00000000-0000-0000-0000-000000000000")); }
   if (q) query = query.ilike("name", `%${q.replace(/[%,]/g, "")}%`);
+  if (nocost) query = query.is("consignor_id", null).or("cost.is.null,cost.eq.0");
   const { data: products } = await query;
   const wh = locations.find((l) => l.kind === "warehouse")?.id;
   const st = locations.find((l) => l.kind === "store")?.id;
@@ -33,7 +34,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
       <div className="adm-top">
         <div className="title-block">
           <h1 className="adm-h1">المنتجات</h1>
-          <span className="adm-sub">{products?.length ?? 0} منتجاً · المخزون موزّع بين المستودع والمحل</span>
+          <span className="adm-sub">{nocost ? <>{products?.length ?? 0} منتجاً بلا سعر تكلفة · افتحي كل منتج وأدخلي التكلفة ليصبح الربح دقيقاً · <Link href="/admin/products" style={{ color: "var(--magenta)" }}>عرض الكل</Link></> : <>{products?.length ?? 0} منتجاً · المخزون موزّع بين المستودع والمحل</>}</span>
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <form action="/admin/products" style={{ display: "flex", gap: 8 }}>

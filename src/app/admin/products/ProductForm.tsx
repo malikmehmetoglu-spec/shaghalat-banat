@@ -10,10 +10,10 @@ type P = {
   price?: number; compare_at_price?: number | null; cost?: number | null; tag?: string | null; category_id?: string | null; category_ids?: string[];
   images?: string[]; is_online?: boolean; is_in_store?: boolean;
   product_variants?: { size: string | null; color_name: string | null }[];
-  currency?: string; price_usd?: number | null; compare_usd?: number | null; cost_usd?: number | null;
+  currency?: string; price_usd?: number | null; compare_usd?: number | null; cost_usd?: number | null; consignor_id?: string | null;
 };
 
-export function ProductForm({ p = {}, categories, locations = [], rate }: { p?: P; categories: { id: string; name: string }[]; locations?: { id: string; name: string; kind: string }[]; rate: number }) {
+export function ProductForm({ p = {}, categories, locations = [], rate, consignors = [] }: { p?: P; categories: { id: string; name: string }[]; locations?: { id: string; name: string; kind: string }[]; rate: number; consignors?: { id: string; name: string; mode: string; commission_pct: number }[] }) {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(saveProduct, null);
   return (
     <form action={action} className="acard" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -37,12 +37,28 @@ export function ProductForm({ p = {}, categories, locations = [], rate }: { p?: 
         </div>
       </div>
       <label className="a-field">الوصف<textarea name="description" className="a-in" defaultValue={p.description ?? ""} /></label>
+      <label className="a-field">مالك البضاعة
+        <select name="consignor_id" className="a-in" defaultValue={p.consignor_id ?? ""}>
+          <option value="">المتجر (بضاعتنا)</option>
+          {consignors.map((c) => <option key={c.id} value={c.id}>أمانة · {c.name} — {c.mode === "percent" ? `للمتجر ${c.commission_pct}%` : "سعر صافٍ للتاجر = سعر التكلفة"}</option>)}
+        </select>
+        <span className="caption">بضاعة الأمانة لا تُدفع عند إدخالها، وحصة التاجر تُحسب تلقائياً عند كل بيعة.</span>
+      </label>
       <PriceFields rate={rate} p={p} />
       <div className="a-grid">
         <label className="a-field">شارة<input name="tag" className="a-in" defaultValue={p.tag ?? ""} placeholder="جديد، الأكثر مبيعاً…" /></label>
       </div>
       <ImageUpload name="images" folder="products" multiple label="صور المنتج" initial={p.images ?? []} />
       <ColorsBuilder key={state?.message ?? "c"} locations={locations} existing={p.product_variants ?? []} title={p.id ? "إضافة ألوان أو كميات جديدة" : "الألوان والمقاسات والكميات"} />
+      <label className="a-field">ثمن الكميات الجديدة أعلاه دُفع من
+        <select name="paid_from" className="a-in" defaultValue="none">
+          <option value="none">لم يُدفع شيء الآن (بضاعة موجودة سابقاً، أو أمانة، أو لا كميات جديدة)</option>
+          <option value="1110">صندوق المحل</option>
+          <option value="1120">شام كاش</option>
+          <option value="3100">المال الخاص (من جيب المالك)</option>
+        </select>
+        <span className="caption">يُخصم ثمنها (الكمية × سعر التكلفة) من المكان المختار في الإدارة المالية.</span>
+      </label>
       <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}><input type="checkbox" name="is_online" defaultChecked={p.is_online ?? true} style={{ width: 18, height: 18, accentColor: "var(--magenta)" }} /> ظاهر في المتجر الإلكتروني</label>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}><input type="checkbox" name="is_in_store" defaultChecked={p.is_in_store ?? true} style={{ width: 18, height: 18, accentColor: "var(--magenta)" }} /> متوفر في المحل</label>
