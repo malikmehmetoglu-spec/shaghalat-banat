@@ -616,6 +616,7 @@ export async function saveStoreProfile(_: ActionResult | null, fd: FormData): Pr
     instagram_url: url(str(fd, "instagram_url")),
     tagline: str(fd, "tagline") || null,
     shamcash_name: str(fd, "shamcash_name") || null,
+    shamcash_code: str(fd, "shamcash_code").replace(/\s+/g, "") || null,
     shamcash_qr_url: str(fd, "shamcash_qr_url").split("\n")[0].trim() || null,
     updated_at: new Date().toISOString(),
   }).eq("id", 1);

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ShamCashTools } from "@/components/ShamCashTools";
 import { AccountSignup } from "@/components/AccountSignup";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
@@ -18,7 +19,7 @@ export default async function OrderPlaced({ searchParams }: { searchParams: Prom
     if (o) { number = o.number; total = Number(o.total); pay = o.payment_method === "support" ? "support" : "shamcash"; }
   }
   const [{ data: prof }, { data: auth }] = await Promise.all([
-    sb.from("store_profile").select("whatsapp,shamcash_qr_url,shamcash_name,welcome_percent").eq("id", 1).maybeSingle(),
+    sb.from("store_profile").select("whatsapp,shamcash_qr_url,shamcash_name,shamcash_code,welcome_percent").eq("id", 1).maybeSingle(),
     sb.auth.getUser(),
   ]);
   const guest = !auth.user;
@@ -46,12 +47,13 @@ export default async function OrderPlaced({ searchParams }: { searchParams: Prom
               <img src={prof.shamcash_qr_url} alt={t("رمز الدفع عبر شام كاش")} />
               {prof.shamcash_name && <span className="op-qr-name">{prof.shamcash_name}</span>}
             </div>
-          ) : (
+          ) : prof?.shamcash_code ? null : (
             <div className="alert tone-warning">{t("رمز الدفع غير متاح الآن، تواصلي معنا على واتساب وسنرسله لك.")}</div>
           )}
+          <ShamCashTools qr={prof?.shamcash_qr_url ?? null} code={prof?.shamcash_code ?? null} />
           {wa && <a className="op-wa ltr" href={waLink(wa, notice)} target="_blank" rel="noreferrer">+{wa}</a>}
           <ol className="op-steps">
-            <li>{t("افتحي تطبيق شام كاش وامسحي الرمز")}</li>
+            <li>{t("افتحي تطبيق شام كاش وامسحي الرمز، أو ارفعي صورته، أو حوّلي على كود الحساب")}</li>
             <li>{t("حوّلي المبلغ المطلوب كاملاً")}</li>
             <li>{t("أرسلي صورة إشعار التحويل على واتساب")}</li>
           </ol>

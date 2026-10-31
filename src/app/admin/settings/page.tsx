@@ -24,7 +24,7 @@ export default async function StoreSettings({ searchParams }: { searchParams: Pr
   const tab = TABS.some((t) => t.key === sp.tab) ? sp.tab! : "contact";
   const { sb } = await requireStaff("/admin/settings");
   const [{ data: profileRow }, { data: reviews }] = await Promise.all([
-    sb.from("store_profile").select("whatsapp,facebook_url,instagram_url,tagline,shamcash_qr_url,shamcash_name").eq("id", 1).maybeSingle(),
+    sb.from("store_profile").select("whatsapp,facebook_url,instagram_url,tagline,shamcash_qr_url,shamcash_name,shamcash_code").eq("id", 1).maybeSingle(),
     sb.from("testimonials").select("*").order("is_sample").order("created_at", { ascending: false }),
   ]);
   const samples = (reviews ?? []).filter((r) => r.is_sample).length;
@@ -52,6 +52,7 @@ export default async function StoreSettings({ searchParams }: { searchParams: Pr
       <span className="adm-h2" style={{ fontSize: 15, marginTop: 6 }}>الدفع عبر شام كاش</span>
       <span className="caption" style={{ lineHeight: 1.7 }}>يظهر الرمز للعميلة بعد تأكيد طلبها، ورقم الواتساب أعلاه تحته لإرسال إشعار التحويل.</span>
       <label className="a-field">اسم الحساب في شام كاش (اختياري)<input name="shamcash_name" className="a-in" defaultValue={profileRow?.shamcash_name ?? ""} placeholder="شغلات بنات" /></label>
+      <label className="a-field">كود حساب شام كاش (تنسخه العميلة للتحويل)<input name="shamcash_code" className="a-in ltr" defaultValue={profileRow?.shamcash_code ?? ""} placeholder="761b59fc21bf74f2..." autoComplete="off" spellCheck={false} /></label>
       <ImageUpload name="shamcash_qr_url" folder="payment" label="رمز QR الخاص بحساب شام كاش" ratio="1 / 1" initial={profileRow?.shamcash_qr_url ? [profileRow.shamcash_qr_url] : []} />
     </FormCard>
       </div>}
