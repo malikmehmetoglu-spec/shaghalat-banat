@@ -49,7 +49,7 @@ export async function getProducts(opts: { categorySlug?: string; sort?: SortKey;
     if (!c) return [];
     catId = c.id;
   }
-  let query = sb.from("products").select(catId ? `${LIST_COLS},product_categories!inner(category_id)` : LIST_COLS).is("archived_at", null);
+  let query = sb.from("products").select(catId ? `${LIST_COLS},product_categories!inner(category_id)` : LIST_COLS).is("archived_at", null).gt("price", 0); // غير المسعَّرة لا تظهر
   if (catId) query = query.eq("product_categories.category_id", catId);
   if (opts.q) {
     const term = opts.q.replace(/[%,()"'\\*:.]/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
@@ -93,6 +93,7 @@ export async function getProduct(slug: string): Promise<ProductWithVariants | nu
     .select(`${PRODUCT_COLS},product_variants(id,sku,size,color_name,color_hex,price_override)`)
     .eq("slug", slug)
     .is("archived_at", null)
+    .gt("price", 0)
     .maybeSingle();
   if (!data) return null;
   const ids = (data as any).product_variants.map((v: any) => v.id);

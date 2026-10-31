@@ -26,7 +26,7 @@ export default async function PosPage({ searchParams }: { searchParams: Promise<
   const { data: last } = await sb.from("cash_shifts").select("counted").not("closed_at", "is", null).order("closed_at", { ascending: false }).limit(1).maybeSingle();
   const sh = (shiftRows as any[] | null)?.[0];
   const store = locs.find((l) => l.kind === "store");
-  const items = all.map((v) => ({ id: v.id, name: v.product, label: variantLabel(v), sku: v.sku, barcode: v.barcode, price: v.price, image: v.image, slug: v.slug, stock: store ? cell(v, store.id).on_hand : 0 }));
+  const items = all.filter((v) => Number(v.price) > 0).map((v) => ({ id: v.id, name: v.product, label: variantLabel(v), sku: v.sku, barcode: v.barcode, price: v.price, image: v.image, slug: v.slug, stock: store ? cell(v, store.id).on_hand : 0 }));
   if (!store) return (
     <div className="acard" style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
       <h1 className="adm-h1">نقطة البيع</h1>
