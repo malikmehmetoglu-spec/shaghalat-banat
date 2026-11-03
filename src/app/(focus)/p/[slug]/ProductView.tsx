@@ -1,4 +1,5 @@
 "use client";
+import { saveImage } from "@/lib/saveImage";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { pushRecent } from "@/components/home/RecentlyViewed";
@@ -54,7 +55,18 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
   };
   const unit = Number(current?.price_override ?? p.price);
   const stock = current?.available ?? 0;
-  const img = p.images?.[0];
+  const imgs = p.images ?? [];
+  const [shot, setShot] = useState(0);
+  const img = imgs[0];
+  const shown = imgs[shot] ?? img;
+  const [saving, setSaving] = useState<"" | "busy" | "ok">("");
+  async function download() {
+    if (!shown || saving === "busy") return;
+    setSaving("busy");
+    const r = await saveImage(shown, `${p.name}${imgs.length > 1 ? ` ${shot + 1}` : ""}`);
+    setSaving(r === "ok" ? "ok" : "");
+    if (r === "ok") setTimeout(() => setSaving(""), 2200);
+  }
 
   function addToCart(buyNow = false) {
     if (!current || stock <= 0) return;
@@ -82,7 +94,19 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
 
   return (
     <main className="page tight wide pv" style={{ paddingBottom: 210 }}>
-      <div className="pv-media" style={{ position: "relative", height: 420, borderRadius: 32, overflow: "hidden", background: img ? `url(${img}) center/cover` : placeholder(p.slug), boxShadow: "0 16px 36px rgba(142,2,84,0.22)" }}>
+      <div className="pv-media" style={{ position: "relative", height: 420, borderRadius: 32, overflow: "hidden", background: placeholder(p.slug), boxShadow: "0 16px 36px rgba(142,2,84,0.22)" }}>
+        {shown && <img src={shown} alt={p.name} className="pv-img" />}
+        {shown && (
+          <button type="button" className={`pv-dl${saving === "ok" ? " ok" : ""}`} onClick={download} disabled={saving === "busy"} aria-label={t("تحميل الصورة")}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></svg>
+            <span>{saving === "busy" ? t("جارٍ التحميل…") : saving === "ok" ? t("تم ✓") : t("تحميل الصورة")}</span>
+          </button>
+        )}
+        {imgs.length > 1 && (
+          <div className="pv-thumbs">
+            {imgs.map((u, i) => <button key={u} type="button" className={`pv-thumb${i === shot ? " on" : ""}`} onClick={() => setShot(i)} aria-label={t("صورة {n}", { n: i + 1 })}><img src={u} alt="" /></button>)}
+          </div>
+        )}
         {!img && <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "rgba(255,255,255,.75)" }}>{t("[صورة المنتج]")}</div>}
         <div className="pv-actions" style={{ position: "absolute", top: 16, right: 16, left: 16, display: "flex", justifyContent: "space-between" }}>
           <button className="icon-btn" aria-label={t("رجوع")} onClick={() => router.back()} style={{ width: 44, height: 44, background: "rgba(255,255,255,.92)" }}><Icon name="back" stroke={2} /></button>
