@@ -1,4 +1,5 @@
 "use client";
+import { saveImage } from "@/lib/saveImage";
 import { useRef, useState } from "react";
 import { getBrowserClient } from "@/lib/supabase/client";
 
@@ -64,7 +65,10 @@ export function ImageUpload({ name, folder, initial = [], multiple = false, labe
           <div key={u} style={{ position: "relative", width: 96, aspectRatio: ratio, borderRadius: 14, overflow: "hidden", background: `url(${u}) center/cover`, border: i === 0 && multiple ? "2px solid var(--magenta)" : "1px solid var(--border-soft)", flexShrink: 0 }}>
             <div style={{ position: "absolute", insetInline: 4, bottom: 4, display: "flex", gap: 4, justifyContent: "space-between" }}>
               {multiple && i > 0 && <button type="button" title="اجعليها الرئيسية" onClick={() => update([u, ...urls.filter((x) => x !== u)])} style={btn}>★</button>}
-              <button type="button" title="حذف الصورة" onClick={() => update(urls.filter((x) => x !== u))} style={{ ...btn, marginInlineStart: "auto" }}>×</button>
+              <button type="button" title="تحميل الصورة" aria-label="تحميل الصورة" onClick={() => saveImage(u, `${folder}-${i + 1}`)} style={{ ...btn, marginInlineStart: "auto", display: "grid", placeItems: "center" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></svg>
+              </button>
+              <button type="button" title="حذف الصورة" onClick={() => update(urls.filter((x) => x !== u))} style={btn}>×</button>
             </div>
           </div>
         ))}

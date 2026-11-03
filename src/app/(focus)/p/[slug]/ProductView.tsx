@@ -1,5 +1,4 @@
 "use client";
-import { saveImage } from "@/lib/saveImage";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { pushRecent } from "@/components/home/RecentlyViewed";
@@ -59,14 +58,6 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
   const [shot, setShot] = useState(0);
   const img = imgs[0];
   const shown = imgs[shot] ?? img;
-  const [saving, setSaving] = useState<"" | "busy" | "ok">("");
-  async function download() {
-    if (!shown || saving === "busy") return;
-    setSaving("busy");
-    const r = await saveImage(shown, `${p.name}${imgs.length > 1 ? ` ${shot + 1}` : ""}`);
-    setSaving(r === "ok" ? "ok" : "");
-    if (r === "ok") setTimeout(() => setSaving(""), 2200);
-  }
 
   function addToCart(buyNow = false) {
     if (!current || stock <= 0) return;
@@ -96,12 +87,6 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
     <main className="page tight wide pv" style={{ paddingBottom: 210 }}>
       <div className="pv-media" style={{ position: "relative", height: 420, borderRadius: 32, overflow: "hidden", background: placeholder(p.slug), boxShadow: "0 16px 36px rgba(142,2,84,0.22)" }}>
         {shown && <img src={shown} alt={p.name} className="pv-img" />}
-        {shown && (
-          <button type="button" className={`pv-dl${saving === "ok" ? " ok" : ""}`} onClick={download} disabled={saving === "busy"} aria-label={t("تحميل الصورة")}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></svg>
-            <span>{saving === "busy" ? t("جارٍ التحميل…") : saving === "ok" ? t("تم ✓") : t("تحميل الصورة")}</span>
-          </button>
-        )}
         {imgs.length > 1 && (
           <div className="pv-thumbs">
             {imgs.map((u, i) => <button key={u} type="button" className={`pv-thumb${i === shot ? " on" : ""}`} onClick={() => setShot(i)} aria-label={t("صورة {n}", { n: i + 1 })}><img src={u} alt="" /></button>)}
