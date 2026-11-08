@@ -81,7 +81,8 @@ function Register({ items, storeName, cashier, shop, shift, onClose, tabs }: { i
 
   const results = useMemo(() => {
     const s = q.trim().toLowerCase();
-    return (s ? items.filter((i) => (i.name + " " + i.label + " " + i.sku + " " + (i.barcode ?? "")).toLowerCase().includes(s)) : items).slice(0, 60);
+    const d = s.replace(/[٠-٩]/g, (x) => String(x.charCodeAt(0) - 0x660)).replace(/\s+/g, "");
+    return (s ? items.filter((i) => { const t = (i.name + " " + i.label + " " + i.sku + " " + (i.barcode ?? "")).toLowerCase(); return t.includes(s) || (d.length >= 4 && t.includes(d)); }) : items).slice(0, 60);
   }, [q, items]);
   const count = cart.reduce((s, l) => s + l.qty, 0);
   const sub = cart.reduce((s, l) => s + l.qty * l.price, 0);
@@ -98,13 +99,33 @@ function Register({ items, storeName, cashier, shop, shift, onClose, tabs }: { i
       return ex ? c.map((l) => (l.id === it.id ? { ...l, qty: want } : l)) : [...c, { ...it, qty: 1 }];
     });
   }
+  /** تطبيع ما يقرؤه الماسح: أرقام عربية/فارسية ← إنجليزية، وحذف المسافات والرموز الزائدة التي يضيفها بعض القرّاء */
+  const norm = (x: string) => x.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x660)).replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x6f0)).replace(/[^0-9A-Za-z-]/g, "").toUpperCase();
+  function findCode(raw: string): Item | undefined {
+    const c = norm(raw);
+    if (c.length < 4) return undefined;
+    return items.find((i) => i.barcode && norm(i.barcode) === c)
+      ?? items.find((i) => norm(i.sku) === c)
+      // بعض القرّاء تضيف رقماً أو بادئة/لاحقة، أو تُسقط الصفر الأول
+      ?? (c.length >= 8 ? items.find((i) => i.barcode && (c.includes(norm(i.barcode)) || norm(i.barcode).endsWith(c))) : undefined);
+  }
   function onScan(e: React.FormEvent) {
     e.preventDefault();
     const code = q.trim();
-    const code2 = code.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x660));
-    const exact = items.find((i) => i.barcode === code2 || i.barcode === code || i.sku.toLowerCase() === code.toLowerCase());
-    if (exact) { add(exact); setQ(""); } else if (results.length === 1) { add(results[0]); setQ(""); }
+    if (!code) return;
+    const exact = findCode(code);
+    if (exact) { add(exact); setQ(""); return; }
+    if (results.length === 1) { add(results[0]); setQ(""); return; }
+    setMsg({ ok: false, message: `لم يُعثر على منتج بالباركود «${norm(code) || code}». تأكدي أن المنتج مسعّر وغير مؤرشف.` });
   }
+  // بعض الماسحات لا ترسل Enter: إن طابق المكتوب باركوداً كاملاً نضيفه تلقائياً
+  useEffect(() => {
+    const c = norm(q);
+    if (c.length < 8) return;
+    const t = setTimeout(() => { const it = items.find((i) => i.barcode && norm(i.barcode) === c); if (it) { add(it); setQ(""); } }, 250);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
   const setQty = (id: string, qty: number) => setCart((c) => c.flatMap((l) => (l.id !== id ? [l] : qty <= 0 ? [] : [{ ...l, qty: Math.min(qty, l.stock) }])));
   const reset = () => { setCart([]); setDiscount(0); setPhone(""); setCname(""); setMarketing(false); setKnown(false); setAnon(false); setPayment("cash"); setMsg(null); };
 
