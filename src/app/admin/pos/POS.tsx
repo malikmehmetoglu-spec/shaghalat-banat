@@ -114,7 +114,7 @@ function Register({ items, unpriced, storeName, cashier, shop, shift, onClose, t
     const code = q.trim();
     if (!code) return;
     const exact = findCode(code);
-    if (exact) { add(exact); setQ(""); return; }
+    if (exact) { add(exact); setQ(""); refocus(); return; }
     if (results.length === 1) { add(results[0]); setQ(""); return; }
     const up = unpriced.find((u) => norm(u.code) === norm(code));
     if (up) { setMsg({ ok: false, message: `«${up.name}» غير مسعّر بعد — أضيفي سعر التكلفة والبيع من صفحة المنتجات ثم امسحيه مجدداً.` }); setQ(""); return; }
@@ -129,7 +129,21 @@ function Register({ items, unpriced, storeName, cashier, shop, shift, onClose, t
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
   const setQty = (id: string, qty: number) => setCart((c) => c.flatMap((l) => (l.id !== id ? [l] : qty <= 0 ? [] : [{ ...l, qty: Math.min(qty, l.stock) }])));
-  const reset = () => { setCart([]); setDiscount(0); setPhone(""); setCname(""); setMarketing(false); setKnown(false); setAnon(false); setPayment("cash"); setMsg(null); };
+  // الماسح يكتب كلوحة مفاتيح: إن لم يكن التركيز على خانة كتابة، نوجّه ما يُكتب إلى خانة البحث تلقائياً
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || receipt) return;
+      const el = document.activeElement as HTMLElement | null;
+      const typing = el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable);
+      if (typing || !search.current) return;
+      if (e.key.length === 1) { e.preventDefault(); search.current.focus(); setQ((x) => x + e.key); }
+      else if (e.key === "Enter" && search.current.value) { e.preventDefault(); search.current.form?.requestSubmit(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [receipt]);
+  const refocus = () => setTimeout(() => search.current?.focus(), 0);
+  const reset = () => { refocus(); setCart([]); setDiscount(0); setPhone(""); setCname(""); setMarketing(false); setKnown(false); setAnon(false); setPayment("cash"); setMsg(null); };
 
   function checkout() {
     if (discount > sub) { setMsg({ ok: false, message: "الخصم أكبر من المجموع" }); return; }
@@ -262,7 +276,7 @@ function Register({ items, unpriced, storeName, cashier, shop, shift, onClose, t
             <Receipt r={receipt} shop={shop} cashier={cashier} storeName={storeName} />
             <div className="no-print" style={{ display: "flex", gap: 8, width: "100%", maxWidth: 340 }}>
               <button className="btn" style={{ flex: 1 }} onClick={() => window.print()}>طباعة الفاتورة</button>
-              <button className="btn soft" style={{ flex: 1, height: 48 }} onClick={() => setReceipt(null)}>بيع جديد</button>
+              <button className="btn soft" style={{ flex: 1, height: 48 }} onClick={() => { setReceipt(null); refocus(); }}>بيع جديد</button>
             </div>
           </div>
         </div>
