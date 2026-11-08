@@ -142,8 +142,8 @@ function Register({ items, unpriced, storeName, cashier, shop, shift, onClose, t
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [receipt]);
-  const refocus = () => setTimeout(() => search.current?.focus(), 0);
-  const reset = () => { refocus(); setCart([]); setDiscount(0); setPhone(""); setCname(""); setMarketing(false); setKnown(false); setAnon(false); setPayment("cash"); setMsg(null); };
+  const refocusSoon = () => setTimeout(refocus, 0);
+  const reset = () => { refocusSoon(); setCart([]); setDiscount(0); setPhone(""); setCname(""); setMarketing(false); setKnown(false); setAnon(false); setPayment("cash"); setMsg(null); };
 
   function checkout() {
     if (discount > sub) { setMsg({ ok: false, message: "الخصم أكبر من المجموع" }); return; }
@@ -276,7 +276,7 @@ function Register({ items, unpriced, storeName, cashier, shop, shift, onClose, t
             <Receipt r={receipt} shop={shop} cashier={cashier} storeName={storeName} />
             <div className="no-print" style={{ display: "flex", gap: 8, width: "100%", maxWidth: 340 }}>
               <button className="btn" style={{ flex: 1 }} onClick={() => window.print()}>طباعة الفاتورة</button>
-              <button className="btn soft" style={{ flex: 1, height: 48 }} onClick={() => { setReceipt(null); refocus(); }}>بيع جديد</button>
+              <button className="btn soft" style={{ flex: 1, height: 48 }} onClick={() => { setReceipt(null); refocusSoon(); }}>بيع جديد</button>
             </div>
           </div>
         </div>
