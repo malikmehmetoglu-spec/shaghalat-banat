@@ -5,6 +5,7 @@ import { lookupCustomer, posSale } from "../actions";
 import { openShift } from "../finance/actions";
 import { ShiftCard } from "../finance/cash/ShiftCard";
 import { placeholder, price, timeHM } from "@/lib/format";
+import { toEnglishKeys } from "@/lib/kbd";
 import { code128 } from "../barcodes/code128";
 
 type Item = { id: string; name: string; label: string; sku: string; barcode: string | null; price: number; image: string | null; slug: string; stock: number };
@@ -100,7 +101,7 @@ function Register({ items, unpriced, storeName, cashier, shop, shift, onClose, t
     });
   }
   /** تطبيع ما يقرؤه الماسح: أرقام عربية/فارسية ← إنجليزية، وحذف المسافات والرموز الزائدة التي يضيفها بعض القرّاء */
-  const norm = (x: string) => x.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x660)).replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x6f0)).replace(/[^0-9A-Za-z-]/g, "").toUpperCase();
+  const norm = (x: string) => toEnglishKeys(x).replace(/[^0-9A-Za-z-]/g, "").toUpperCase();
   function findCode(raw: string): Item | undefined {
     const c = norm(raw);
     if (c.length < 4) return undefined;
@@ -291,7 +292,7 @@ const PAY: Record<string, string> = { cash: "نقداً", card: "بطاقة" };
 function Receipt({ r, shop, cashier, storeName }: { r: { number: string; total: number; lines: Line[]; discount: number; payment: string; at: string }; shop: Shop; cashier: string; storeName: string }) {
   const sub = r.lines.reduce((s, l) => s + l.qty * l.price, 0);
   const d = new Date(r.at);
-  const { bars, width } = code128(r.number);
+  const { bars, width } = code128(r.number.replace(/\D/g, ""));
   const row: React.CSSProperties = { display: "flex", justifyContent: "space-between", gap: "2mm", fontSize: "11pt", lineHeight: 1.45 };
   const rule = <div style={{ borderTop: "1px dashed #000", margin: "2mm 0" }} />;
   return (

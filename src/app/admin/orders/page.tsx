@@ -1,3 +1,4 @@
+import { toEnglishKeys } from "@/lib/kbd";
 import Link from "next/link";
 import { requireStaff } from "@/lib/admin";
 import { date, ORDER_STATUS, PAYMENT_LABEL, price } from "@/lib/format";
@@ -15,7 +16,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
 
   let query = sb.from("orders").select("id,number,status,channel,payment_method,total,created_at,customer_phone,user:profiles!orders_user_id_fkey(full_name,phone,email)").order("created_at", { ascending: false }).limit(100);
   if (status !== "all") query = query.eq("status", status);
-  if (q) query = query.ilike("number", `%${q.replace(/[%#]/g, "")}%`);
+  if (q) query = query.ilike("number", `%${toEnglishKeys(q).replace(/[%#\s]/g, "").replace(/^SB-?/i, "")}%`);
   const [{ data: orders }, { data: counts }] = await Promise.all([query, sb.from("orders").select("status")]);
   const countBy = (s: string) => (counts ?? []).filter((c) => s === "all" || c.status === s).length;
 
