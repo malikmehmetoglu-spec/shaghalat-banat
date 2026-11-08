@@ -13,13 +13,13 @@ type Shop = { address: string; phone: string; footer: string; taxNumber: string 
 export type PosShift = { openedAt: string; by: string | null; opening: number; sales: number; expenses: number; draws: number; expected: number };
 
 /** نقطة البيع: لا تعمل إلا بعد فتح الصندوق بمبلغ الدرج، والفاتورة ظاهرة كاملة دائماً */
-export function POS({ items, storeName, cashier, shop, shift, lastCounted, tabs }: { items: Item[]; storeName: string; cashier: string; shop: Shop; shift: PosShift | null; lastCounted: number | null; tabs?: React.ReactNode }) {
+export function POS({ items, unpriced = [], storeName, cashier, shop, shift, lastCounted, tabs }: { items: Item[]; unpriced?: { code: string; name: string }[]; storeName: string; cashier: string; shop: Shop; shift: PosShift | null; lastCounted: number | null; tabs?: React.ReactNode }) {
   const router = useRouter();
   const [closing, setClosing] = useState(false);
   if (!shift) return <>{tabs && <div className="pos-gate-tabs">{tabs}</div>}<OpenGate storeName={storeName} cashier={cashier} suggested={lastCounted} onOpened={() => router.refresh()} /></>;
   return (
     <>
-      <Register items={items} storeName={storeName} cashier={cashier} shop={shop} shift={shift} onClose={() => setClosing(true)} tabs={tabs} />
+      <Register items={items} unpriced={unpriced} storeName={storeName} cashier={cashier} shop={shop} shift={shift} onClose={() => setClosing(true)} tabs={tabs} />
       {closing && (
         <div className="pos-modal" role="dialog" aria-modal="true" aria-label="إغلاق الصندوق" onClick={(e) => e.target === e.currentTarget && setClosing(false)}>
           <div className="pos-modal-box">
@@ -62,7 +62,7 @@ function OpenGate({ storeName, cashier, suggested, onOpened }: { storeName: stri
   );
 }
 
-function Register({ items, storeName, cashier, shop, shift, onClose, tabs }: { items: Item[]; storeName: string; cashier: string; shop: Shop; shift: PosShift; onClose: () => void; tabs?: React.ReactNode }) {
+function Register({ items, unpriced, storeName, cashier, shop, shift, onClose, tabs }: { items: Item[]; unpriced: { code: string; name: string }[]; storeName: string; cashier: string; shop: Shop; shift: PosShift; onClose: () => void; tabs?: React.ReactNode }) {
   const router = useRouter();
   const search = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
@@ -116,6 +116,8 @@ function Register({ items, storeName, cashier, shop, shift, onClose, tabs }: { i
     const exact = findCode(code);
     if (exact) { add(exact); setQ(""); return; }
     if (results.length === 1) { add(results[0]); setQ(""); return; }
+    const up = unpriced.find((u) => norm(u.code) === norm(code));
+    if (up) { setMsg({ ok: false, message: `«${up.name}» غير مسعّر بعد — أضيفي سعر التكلفة والبيع من صفحة المنتجات ثم امسحيه مجدداً.` }); setQ(""); return; }
     setMsg({ ok: false, message: `لم يُعثر على منتج بالباركود «${norm(code) || code}». تأكدي أن المنتج مسعّر وغير مؤرشف.` });
   }
   // بعض الماسحات لا ترسل Enter: إن طابق المكتوب باركوداً كاملاً نضيفه تلقائياً
