@@ -59,12 +59,15 @@ textarea.a-in { height: 100px; padding: 12px 14px; line-height: 1.7; resize: ver
   .label-sheet { display: flex; flex-wrap: wrap; gap: 3mm; }
   .label-sheet ~ * , .split.no-print { display: none !important; }
   .label-card { border-color: #ccc; }
-  /* الفاتورة: نُخفي كل شيء بالرؤية (لا display) حتى تبقى الفاتورة ظاهرة أينما كانت داخل الصفحة */
+  /* الفاتورة: نطبع الفاتورة وحدها — كل ما ليس الفاتورة أو أحد حاوياتها يُحذف من التخطيط، والحاويات تنكمش لطولها
+     (وإلا يبقى طول الصفحة الأصلي فتخرج صفحات فارغة بعد الفاتورة) */
   html:has(.receipt-paper) { zoom: 1 !important; }
-  body:has(.receipt-paper) * { visibility: hidden !important; }
-  body:has(.receipt-paper) .receipt-paper, body:has(.receipt-paper) .receipt-paper * { visibility: visible !important; }
-  body:has(.receipt-paper) .receipt-paper { position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; }
-  body:has(.receipt-paper) .pos, body:has(.receipt-paper) .adm-main, body:has(.receipt-paper) .adm { height: auto !important; overflow: visible !important; }
+  body:has(.receipt-paper) *:not(:has(.receipt-paper)):not(.receipt-paper):not(.receipt-paper *) { display: none !important; }
+  body:has(.receipt-paper), body:has(.receipt-paper) :has(.receipt-paper) {
+    display: block !important; position: static !important; inset: auto !important; height: auto !important; min-height: 0 !important; max-height: none !important;
+    margin: 0 !important; padding: 0 !important; overflow: visible !important; background: #fff !important; box-shadow: none !important; border: 0 !important; transform: none !important;
+  }
+  html:has(.receipt-paper) { height: auto !important; background: #fff !important; }
   [role=dialog] { position: static !important; background: none !important; }
   [role=dialog] .no-print { display: none !important; }
   .no-print { display: none !important; }
