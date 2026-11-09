@@ -1,12 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase/env";
 import { NextResponse, type NextRequest } from "next/server";
-import { canAccess } from "@/lib/access";
 
 /** يحدّث جلسة Supabase مع كل طلب، ويحمي الصفحات التي تحتاج تسجيل دخول. */
 const PROTECTED = ["/admin", "/orders", "/account", "/favorites", "/notifications"];
 
 export async function middleware(request: NextRequest) {
+  if (request.headers.has("x-admin-path")) request.headers.delete("x-admin-path"); // لا يُقبل من المتصفح
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -28,10 +28,8 @@ export async function middleware(request: NextRequest) {
   const needsAuth = PROTECTED.some((p) => path === p || path.startsWith(p + "/"));
   let user = null;
   try {
-    // الصفحات المحمية: تحقق كامل من الخادم. الصفحات العامة: قراءة محلية سريعة (تُجدَّد الجلسة فقط عند انتهائها)
-    user = needsAuth
-      ? (await supabase.auth.getUser()).data.user
-      : (await supabase.auth.getSession()).data.session?.user ?? null;
+    // قراءة محلية سريعة للجلسة (تُجدَّد فقط عند انتهائها) — التحقق الكامل والصلاحيات تتم في الخادم داخل الصفحة نفسها
+    user = (await supabase.auth.getSession()).data.session?.user ?? null;
   } catch { /* لا نُسقط الموقع إن تعذّر الاتصال */ }
   if (!user && needsAuth) {
     const url = request.nextUrl.clone();
@@ -39,14 +37,13 @@ export async function middleware(request: NextRequest) {
     url.searchParams.set("next", path + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
-  // صلاحيات أقسام لوحة الإدارة حسب الدور
-  if (user && (path.startsWith("/admin/") )) {
-    const { data: prof } = await supabase.from("profiles").select("role,extra_access").eq("id", user.id).maybeSingle();
-    if (prof?.role && prof.role !== "customer" && !canAccess(prof.role, path, prof.extra_access)) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin"; url.search = "?denied=1";
-      return NextResponse.redirect(url);
-    }
+  // مسار صفحة الإدارة يُمرَّر للخادم ليتحقق من صلاحية القسم (requireStaff) دون رحلة إضافية هنا
+  if (path.startsWith("/admin")) {
+    const h = new Headers(request.headers);
+    h.set("x-admin-path", path);
+    const next = NextResponse.next({ request: { headers: h } });
+    response.cookies.getAll().forEach((c) => next.cookies.set(c));
+    return next;
   }
   return response;
 }

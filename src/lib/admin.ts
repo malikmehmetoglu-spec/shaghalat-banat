@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,14 +20,23 @@ export const ROLE_LABEL: Record<string, string> = {
 /** يتحقق أن المستخدمة من فريق العمل، ويعيد ملفها وعميل Supabase. */
 
 /** path: مسار القسم المطلوب؛ تُطبَّق صلاحيات الدور والصلاحيات الإضافية */
-export async function requireStaff(path?: string) {
+/** هوية الموظف تُجلب مرة واحدة لكل طلب (يتشاركها التخطيط والصفحة وكل الدوال) */
+const staffSession = cache(async () => {
   const sb = await createClient();
   const { data: u } = await sb.auth.getUser();
-  if (!u.user) redirect("/admin-login");
+  if (!u.user) return { sb, user: null, profile: null };
   const { data: profile } = await sb.from("profiles").select("id,full_name,role,phone,email,extra_access").eq("id", u.user.id).maybeSingle();
+  return { sb, user: u.user, profile };
+});
+
+export async function requireStaff(path?: string) {
+  const { sb, user, profile } = await staffSession();
+  if (!user) redirect("/admin-login");
   if (!profile || profile.role === "customer") redirect("/admin-no-access");
-  if (path && !canAccess(profile.role, path, profile.extra_access)) redirect("/admin?denied=1");
-  return { sb, profile, user: u.user };
+  // صلاحية القسم: المسار المطلوب صراحة، وإلا مسار الصفحة الحالية (يضعه الـ middleware)
+  const where = path ?? (await headers()).get("x-admin-path") ?? undefined;
+  if (where && where !== "/admin" && !canAccess(profile.role, where, profile.extra_access)) redirect("/admin?denied=1");
+  return { sb, profile, user };
 }
 
 export async function getLocations() {
