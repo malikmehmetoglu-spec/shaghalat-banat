@@ -737,7 +737,7 @@ a.ob-addr { color: #1D5FA8; font-weight: 600; justify-content: flex-end; }
 .ve-sw { position: relative; width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15); cursor: pointer; overflow: hidden; }
 .ve-sw input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .ve-in { height: 38px; min-width: 0; width: 100%; max-width: 170px; padding: 0 10px; font-size: 14px; }
-.ve-size { max-width: 96px; text-align: center; }
+.ve-size { max-width: 110px; text-align: center; }
 .ve-bc { display: block; margin-top: 4px; text-align: right; }
 .ve-step { display: inline-flex; align-items: center; margin: 0 auto; border-radius: 14px; background: #FFF5F9; border: 1px solid var(--border-soft); overflow: hidden; }
 .ve-tbl td:has(.ve-step) { text-align: center; }
@@ -758,3 +758,4 @@ a.ob-addr { color: #1D5FA8; font-weight: 600; justify-content: flex-end; }
 .ve-swatches button { width: 18px; height: 18px; padding: 0; border-radius: 50%; border: 1px solid rgba(0,0,0,.15); cursor: pointer; }
 .ve-newq { display: flex; gap: 6px; justify-content: center; }
 .ve-newq .a-in { height: 38px; width: auto; max-width: 140px; }
+.ve-ren:hover { border-color: var(--magenta); color: var(--magenta); background: #FFF0F6; }

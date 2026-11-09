@@ -1,12 +1,12 @@
 "use client";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { addStock, deleteVariant, deleteVariantGroup, quickAddVariant, setStock, updateVariant, type ActionResult } from "../../actions";
+import { addStock, deleteVariant, deleteVariantGroup, renameVariantGroup, quickAddVariant, setStock, updateVariant, type ActionResult } from "../../actions";
 import { Icon } from "@/components/Icon";
 
 type V = { id: string; sku: string; barcode: string | null; size: string | null; color_name: string | null; color_hex: string | null; stock_levels: { location_id: string; on_hand: number; reserved: number }[] };
 type L = { id: string; name: string };
-const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "Free Size", "36", "38", "40", "42", "44", "46", "48", "50", "52", "54"];
+const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "Free Size", "34", "36", "38", "40", "42", "44", "46", "48", "50", "52", "54", "56", "58", "60", "1", "2", "3", "4", "5", "6"];
 const SWATCHES = ["#000000", "#FFFFFF", "#F5E6D3", "#C8A27A", "#8B5A2B", "#E85FA8", "#D6037F", "#8E0254", "#C1121F", "#F4A3B4", "#7B2CBF", "#1D4ED8", "#87CEEB", "#2D6A4F", "#9CA3AF", "#D4AF37"];
 
 /**
@@ -48,6 +48,13 @@ export function VariantsEditor({ productId, variants, locations }: { productId: 
         <span className="pill tone-brand">المجموع: {total} قطعة</span>
       </div>
 
+      {sizes.length > 0 && (
+        <div className="ve-groups">
+          <div className="ve-gl"><span>تغيير مقاس في كل الألوان (حروف أو أرقام، مثلاً L ← 42):</span>{sizes.map((s) => (
+            <button key={s} type="button" className="ve-chip ve-ren ltr" disabled={busy} onClick={() => { const to = prompt(`المقاس الجديد بدلاً من «${s}» (مثلاً 42 أو XL):`, s); if (to && to.trim() !== s) run(() => renameVariantGroup(productId, "size", s, to)); }}>{s} ✎</button>
+          ))}</div>
+        </div>
+      )}
       {(colors.filter(Boolean).length > 1 || sizes.length > 1) && (
         <div className="ve-groups">
           {colors.filter(Boolean).length > 0 && <div className="ve-gl"><span>حذف لون كامل:</span>{colors.filter(Boolean).map((c) => (
@@ -73,7 +80,7 @@ export function VariantsEditor({ productId, variants, locations }: { productId: 
                 </span>
                 <span className="caption ltr ve-bc">{v.barcode ?? v.sku}</span>
               </td>
-              <td><input className="a-in ve-in ve-size ltr" list="ve-sizes" defaultValue={v.size ?? ""} placeholder="—" onBlur={(e) => e.target.value.trim() !== (v.size ?? "") && run(() => updateVariant(v.id, productId, { size: e.target.value }))} /></td>
+              <td><input className="a-in ve-in ve-size ltr" list="ve-sizes" defaultValue={v.size ?? ""} placeholder="مقاس" title="اكتب أي مقاس: حروف (S, M, L) أو أرقام (38, 40, 42)" onBlur={(e) => e.target.value.trim() !== (v.size ?? "") && run(() => updateVariant(v.id, productId, { size: e.target.value }))} /></td>
               {locations.map((l) => (
                 <td key={l.id}>
                   <span className="ve-step">
@@ -126,7 +133,7 @@ export function VariantsEditor({ productId, variants, locations }: { productId: 
       </table></div>
       <datalist id="ve-sizes">{SIZES.map((s) => <option key={s} value={s} />)}</datalist>
       <datalist id="ve-colors">{colors.filter(Boolean).map((c) => <option key={c} value={c} />)}</datalist>
-      <span className="caption">لإضافة مقاس لنفس اللون: اكتب اسم اللون نفسه في السطر الأخير مع المقاس الجديد. «استلام بضاعة» يسجّل القطع كمشتريات في المالية، أما − و + فهي تصحيح للعدد فقط.</span>
+      <span className="caption">المقاس خانة حرّة: اكتب أي مقاس بالحروف (S, M, L) أو بالأرقام (38, 40, 42). لإضافة مقاس لنفس اللون: اكتب اسم اللون نفسه في السطر الأخير مع المقاس الجديد. «استلام بضاعة» يسجّل القطع كمشتريات في المالية، أما − و + فهي تصحيح للعدد فقط.</span>
       {msg && <span className={`a-flash ${msg.ok ? "tone-success" : "tone-danger"}`}>{msg.message}</span>}
     </div>
   );

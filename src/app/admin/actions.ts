@@ -199,6 +199,18 @@ export async function deleteVariantGroup(productId: string, by: "color" | "size"
   return ok(by === "color" ? "تم حذف اللون بكل مقاساته" : "تم حذف المقاس من كل الألوان");
 }
 
+/** إعادة تسمية مقاس في كل الألوان (مثلاً L ← 42) أو لون في كل المقاسات */
+export async function renameVariantGroup(productId: string, by: "color" | "size", from: string, to: string): Promise<ActionResult> {
+  const { sb } = await requireStaff("/admin/products");
+  const col = by === "color" ? "color_name" : "size";
+  const next = to.trim();
+  if (!next) return fail("اكتب الاسم الجديد");
+  const { error } = await sb.from("product_variants").update({ [col]: next }).eq("product_id", productId).eq(col, from).is("archived_at", null);
+  if (error) return fail(error.code === "23505" ? "يوجد مسبقاً لون/مقاس بهذا الاسم" : errMsg(error));
+  revalidatePath(`/admin/products/${productId}`); revalidateTag("catalog");
+  return ok(by === "size" ? `تم تغيير المقاس ${from} إلى ${next} في كل الألوان` : `تم تغيير اسم اللون إلى ${next}`);
+}
+
 /** تعديل اسم اللون أو المقاس أو لون العرض */
 export async function updateVariant(variantId: string, productId: string, patch: { size?: string | null; color_name?: string | null; color_hex?: string | null }): Promise<ActionResult> {
   const { sb } = await requireStaff("/admin/products");
