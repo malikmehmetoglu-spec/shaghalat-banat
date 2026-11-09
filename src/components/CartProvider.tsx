@@ -76,7 +76,7 @@ async function refresh(lines: CartLine[]): Promise<CartLine[] | null> {
     const sb = getBrowserClient();
     const ids = lines.map((l) => l.variantId);
     const [{ data: vs, error }, { data: av }] = await Promise.all([
-      sb.from("product_variants").select("id,price_override,product:products!inner(price,is_online,archived_at)").in("id", ids),
+      sb.from("product_variants").select("id,price_override,archived_at,product:products!inner(price,is_online,archived_at)").in("id", ids),
       sb.from("variant_availability").select("variant_id,online_available").in("variant_id", ids),
     ]);
     if (error || !vs) return null;
@@ -84,7 +84,7 @@ async function refresh(lines: CartLine[]): Promise<CartLine[] | null> {
     const byId = new Map(vs.map((v: any) => [v.id, v]));
     return lines.flatMap((l) => {
       const v: any = byId.get(l.variantId);
-      if (!v || !v.product?.is_online || v.product?.archived_at) return [];
+      if (!v || v.archived_at || !v.product?.is_online || v.product?.archived_at) return [];
       const max = avail.get(l.variantId) ?? 0;
       if (max <= 0) return [];
       return [{ ...l, unitPrice: Number(v.price_override ?? v.product.price), max, qty: Math.min(l.qty, max) }];

@@ -90,12 +90,13 @@ export async function getProduct(slug: string): Promise<ProductWithVariants | nu
   const sb = publicClient();
   const { data } = await sb
     .from("products")
-    .select(`${PRODUCT_COLS},product_variants(id,sku,size,color_name,color_hex,price_override)`)
+    .select(`${PRODUCT_COLS},product_variants(id,sku,size,color_name,color_hex,price_override,archived_at)`)
     .eq("slug", slug)
     .is("archived_at", null)
     .gt("price", 0)
     .maybeSingle();
   if (!data) return null;
+  (data as any).product_variants = (data as any).product_variants.filter((v: any) => !v.archived_at);
   const ids = (data as any).product_variants.map((v: any) => v.id);
   const { data: avail } = await sb.from("variant_availability").select("variant_id,online_available").in("variant_id", ids);
   const map = new Map((avail ?? []).map((a: any) => [a.variant_id, a.online_available]));

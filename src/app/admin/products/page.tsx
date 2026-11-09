@@ -15,13 +15,15 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
   const isOwner = profile.role === "owner";
   const [locations, { data: cats }] = await Promise.all([getLocations(), sb.from("categories").select("id,name").order("sort_order")]);
   let query = sb.from("products")
-    .select("id,slug,name,price,images,is_online,product_categories(categories(name)),product_variants(id,sku,barcode,size,color_name,color_hex,stock_levels(location_id,on_hand,reserved))")
+    .select("id,slug,name,price,images,is_online,product_categories(categories(name)),product_variants(id,sku,barcode,size,color_name,color_hex,archived_at,stock_levels(location_id,on_hand,reserved))")
     .is("archived_at", null)
     .order("created_at", { ascending: false });
   if (cat) { const { data: ids } = await sb.from("product_categories").select("product_id").eq("category_id", cat); query = query.in("id", (ids ?? []).map((r) => r.product_id).concat("00000000-0000-0000-0000-000000000000")); }
   if (q) query = query.ilike("name", `%${q.replace(/[%,]/g, "")}%`);
+  // الألوان/المقاسات المحذوفة (المؤرشفة) لا تُحسب
   if (nocost) query = query.is("consignor_id", null).or("cost.is.null,cost.eq.0");
-  const { data: products } = await query;
+  const { data: rawProducts } = await query;
+  const products = (rawProducts ?? []).map((p: any) => ({ ...p, product_variants: (p.product_variants ?? []).filter((v: any) => !v.archived_at) }));
   const wh = locations.find((l) => l.kind === "warehouse")?.id;
   const st = locations.find((l) => l.kind === "store")?.id;
 

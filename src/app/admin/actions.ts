@@ -175,15 +175,61 @@ export async function addVariant(_: ActionResult | null, fd: FormData): Promise<
   return ok("تمت إضافة المتغير");
 }
 
+/** حذف لون/مقاس: يُحذف فعلياً إن لم تكن له حركات، وإلا يُخفى من كل مكان (البيع، المتجر، الملصقات) مع تصفير كميته */
 export async function deleteVariant(variantId: string, productId: string): Promise<ActionResult> {
   const { sb } = await requireStaff("/admin/products");
   const { error } = await sb.from("product_variants").delete().eq("id", variantId);
-  if (error) return fail("لا يمكن حذف متغير له طلبات أو حركات مخزون؛ يمكنك تصفير كميته بدلاً من ذلك");
-  revalidatePath(`/admin/products/${productId}`);
-  return ok("تم حذف المتغير");
+  if (error) {
+    const { data: lv } = await sb.from("stock_levels").select("location_id,on_hand").eq("variant_id", variantId).gt("on_hand", 0);
+    for (const l of lv ?? []) await sb.rpc("stock_set", { variant: variantId, loc: l.location_id, new_qty: 0, reason: "adjust", note: "حذف اللون/المقاس" });
+    const { error: e2 } = await sb.from("product_variants").update({ archived_at: new Date().toISOString() }).eq("id", variantId);
+    if (e2) return fail(errMsg(e2));
+  }
+  revalidatePath(`/admin/products/${productId}`); revalidatePath("/admin/products"); revalidateTag("catalog");
+  return ok("تم الحذف");
 }
 
-/** تحديث كمية متغير في موقع (إدخال أو تسوية) */
+/** حذف لون كامل (كل مقاساته) أو مقاس كامل (من كل الألوان) */
+export async function deleteVariantGroup(productId: string, by: "color" | "size", value: string): Promise<ActionResult> {
+  const { sb } = await requireStaff("/admin/products");
+  let q = sb.from("product_variants").select("id").eq("product_id", productId).is("archived_at", null);
+  q = value ? q.eq(by === "color" ? "color_name" : "size", value) : q.is(by === "color" ? "color_name" : "size", null);
+  const { data } = await q;
+  for (const v of data ?? []) { const r = await deleteVariant(v.id, productId); if (!r.ok) return r; }
+  return ok(by === "color" ? "تم حذف اللون بكل مقاساته" : "تم حذف المقاس من كل الألوان");
+}
+
+/** تعديل اسم اللون أو المقاس أو لون العرض */
+export async function updateVariant(variantId: string, productId: string, patch: { size?: string | null; color_name?: string | null; color_hex?: string | null }): Promise<ActionResult> {
+  const { sb } = await requireStaff("/admin/products");
+  const clean = Object.fromEntries(Object.entries(patch).map(([k, v]) => [k, typeof v === "string" ? v.trim() || null : v]));
+  const { error } = await sb.from("product_variants").update(clean).eq("id", variantId);
+  if (error) return fail(errMsg(error));
+  revalidatePath(`/admin/products/${productId}`); revalidateTag("catalog");
+  return ok("تم الحفظ");
+}
+
+/** إضافة لون/مقاس جديد بسرعة (الباركود والرمز يتولّدان تلقائياً) مع كمية اختيارية */
+export async function quickAddVariant(productId: string, v: { color_name: string; color_hex: string; size: string; qty: number; loc: string }): Promise<ActionResult> {
+  const { sb } = await requireStaff("/admin/products");
+  const color = v.color_name.trim(), size = v.size.trim();
+  if (!color && !size) return fail("اكتب اللون أو المقاس");
+  const { data: dup } = await sb.from("product_variants").select("id,archived_at").eq("product_id", productId)
+    .filter("color_name", color ? "eq" : "is", color || null).filter("size", size ? "eq" : "is", size || null).maybeSingle();
+  let id = dup?.id as string | undefined;
+  if (dup && !dup.archived_at) return fail("هذا اللون والمقاس موجود مسبقاً");
+  if (dup) await sb.from("product_variants").update({ archived_at: null, color_hex: v.color_hex || null }).eq("id", dup.id);
+  else {
+    const sku = `V${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
+    const { data, error } = await sb.from("product_variants").insert({ product_id: productId, sku, size: size || null, color_name: color || null, color_hex: v.color_hex || null }).select("id").single();
+    if (error) return fail(errMsg(error));
+    id = data.id;
+  }
+  if (id && v.qty > 0 && v.loc) await sb.rpc("stock_set", { variant: id, loc: v.loc, new_qty: Math.floor(v.qty), reason: "in", note: "إضافة لون/مقاس" });
+  revalidatePath(`/admin/products/${productId}`); revalidateTag("catalog");
+  return ok("تمت الإضافة");
+}
+
 export async function setStock(variantId: string, locationId: string, qty: number, reason: "in" | "adjust" = "adjust", note?: string): Promise<ActionResult> {
   const { sb } = await requireStaff("/admin/products");
   const { error } = await sb.rpc("stock_set", { variant: variantId, loc: locationId, new_qty: qty, reason, note: note || null });
