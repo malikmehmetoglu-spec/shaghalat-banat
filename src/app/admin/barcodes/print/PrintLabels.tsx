@@ -25,10 +25,10 @@ function Barcode({ value, h }: { value: string; h: number }) {
   );
 }
 
-export function PrintLabels({ items }: { items: It[] }) {
+export function PrintLabels({ items, initialMode = "one" }: { items: It[]; initialMode?: "one" | "stock" | "custom" }) {
   const [size, setSize] = useState("40x30");
   const [showPrice, setShowPrice] = useState(true);
-  const [mode, setMode] = useState<"one" | "stock" | "custom">("one");
+  const [mode, setMode] = useState<"one" | "stock" | "custom">(initialMode);
   const [qty, setQty] = useState<Record<string, number>>(Object.fromEntries(items.map((i) => [i.id, i.qty])));
 
   useEffect(() => {

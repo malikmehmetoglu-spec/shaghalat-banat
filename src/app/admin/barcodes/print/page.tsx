@@ -19,7 +19,7 @@ export default async function PrintPage({ searchParams }: { searchParams: Promis
         return { id: v.id, name: v.product, label: variantLabel(v), code: v.barcode || v.sku, price: v.price, stock, qty: stock };
       })
       .filter((v) => v.stock > 0);
-    return <PrintLabels items={list} />;
+    return <PrintLabels items={list} initialMode="stock" />;
   }
   const wanted = new Map((items ?? "").split(",").filter(Boolean).map((p) => { const [id, q] = p.split(":"); return [id, Math.max(1, Number(q) || 1)] as const; }));
   const list = all
