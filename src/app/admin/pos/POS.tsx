@@ -306,7 +306,7 @@ function Receipt({ r, shop, cashier, storeName }: { r: { number: string; total: 
       {rule}
       <div style={{ ...row, fontSize: "10pt" }}><span>فاتورة رقم</span><b className="ltr">{r.number}</b></div>
       <div style={{ ...row, fontSize: "10pt" }}><span>التاريخ</span><span className="ltr">{d.toLocaleDateString("en-GB")} {d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span></div>
-      <div style={{ ...row, fontSize: "10pt" }}><span>{storeName}</span><span>{cashier}</span></div>
+      <div style={{ ...row, fontSize: "10pt", justifyContent: "center" }}><span>{storeName}</span></div>
       {rule}
       {r.lines.map((l) => (
         <div key={l.id} style={{ marginBottom: "1.5mm" }}>
@@ -324,7 +324,7 @@ function Receipt({ r, shop, cashier, storeName }: { r: { number: string; total: 
         {bars.map((b, i) => <rect key={i} x={b.x} y={0} width={b.w} height={30} fill="#000" />)}
       </svg>
       <div style={{ textAlign: "center", fontSize: "10.5pt", lineHeight: 1.5, marginTop: "2mm" }}>{shop.footer}</div>
-      <div style={{ textAlign: "center", fontSize: "8.5pt", lineHeight: 1.5 }}>الاستبدال خلال 7 أيام مع الفاتورة</div>
+      <div style={{ textAlign: "center", fontSize: "8.5pt", lineHeight: 1.5 }}>الاستبدال خلال 24 ساعة فقط مع الفاتورة</div>
     </div>
   );
 }
