@@ -63,6 +63,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <Link href="/admin/products" className={`a-chip${!cat ? " on" : ""}`}>الكل</Link>
         {(cats ?? []).map((c) => <Link key={c.id} href={`/admin/products?cat=${c.id}`} className={`a-chip${cat === c.id ? " on" : ""}`}>{c.name}</Link>)}
+        {cat && <Link href={`/admin/barcodes/print?cat=${cat}`} className="btn" style={{ gap: 6, marginInlineStart: "auto" }} title="ملصق لكل قطعة موجودة في المخزون من هذا القسم"><Icon name="barcode" size={15} stroke={2} />طباعة ملصقات «{(cats ?? []).find((c) => c.id === cat)?.name}» حسب الكميات</Link>}
       </div>
 
       <div className="acard flush">
