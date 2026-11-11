@@ -83,7 +83,7 @@ function Register({ items, unpriced, storeName, cashier, shop, shift, onClose, t
   const results = useMemo(() => {
     const s = q.trim().toLowerCase();
     const d = s.replace(/[٠-٩]/g, (x) => String(x.charCodeAt(0) - 0x660)).replace(/\s+/g, "");
-    return (s ? items.filter((i) => { const t = (i.name + " " + i.label + " " + i.sku + " " + (i.barcode ?? "")).toLowerCase(); return t.includes(s) || (d.length >= 4 && t.includes(d)); }) : items).slice(0, 60);
+    return (s ? items.filter((i) => { const t = (i.name + " " + i.label + " " + i.sku + " " + (i.barcode ?? "")).toLowerCase(); return t.includes(s) || (d.length >= 4 && t.includes(d)); }) : items);
   }, [q, items]);
   const count = cart.reduce((s, l) => s + l.qty, 0);
   const sub = cart.reduce((s, l) => s + l.qty * l.price, 0);
