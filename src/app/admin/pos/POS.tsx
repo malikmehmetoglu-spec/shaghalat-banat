@@ -5,6 +5,7 @@ import { lookupCustomer, posSale } from "../actions";
 import { openShift } from "../finance/actions";
 import { ShiftCard } from "../finance/cash/ShiftCard";
 import { placeholder, price, timeHM } from "@/lib/format";
+import { CashInput } from "./CashInput";
 import { toEnglishKeys } from "@/lib/kbd";
 import { code128 } from "../barcodes/code128";
 
@@ -51,10 +52,7 @@ function OpenGate({ storeName, cashier, suggested, onOpened }: { storeName: stri
         <h1 className="pos-gate-title">افتحي الصندوق لبدء البيع</h1>
         <p className="pos-gate-sub">عدّي النقود الموجودة في الدرج الآن واكتبي المبلغ.</p>
         <label className="sr" htmlFor="open-amt">المبلغ في الدرج</label>
-        <div className="pos-gate-in">
-          <input id="open-amt" type="number" inputMode="numeric" min="0" autoFocus value={amount} onChange={(e) => { setAmount(e.target.value); setMsg(null); }} placeholder="0" />
-          <span>ل.س</span>
-        </div>
+        <CashInput id="open-amt" big autoFocus value={amount} expected={suggested} onChange={(v) => { setAmount(v); setMsg(null); }} />
         {suggested != null && <span className="caption">بقي في الدرج عند إغلاق آخر مرة: {price(suggested)}</span>}
         {msg && <span className="a-flash tone-danger">{msg}</span>}
         <button className="btn pos-big" disabled={pending}>{pending ? "جارٍ الفتح…" : "فتح الصندوق"}</button>

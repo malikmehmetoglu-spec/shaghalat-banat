@@ -3,6 +3,7 @@ import { timeHM } from "@/lib/format";
 import { useState, useTransition } from "react";
 import { closeShift, openShift } from "../actions";
 import { price } from "@/lib/format";
+import { CashInput } from "../../pos/CashInput";
 
 type Shift = { openedAt: string; by: string | null; opening: number; sales: number; expenses: number; draws: number; expected: number };
 
@@ -38,7 +39,7 @@ export function ShiftCard({ shift, onDone, title = "إغلاق وردية الم
       <div className="acard" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <h2 className="adm-h2">وردية المحل</h2>
         <span className="caption">لا توجد وردية مفتوحة. افتحي وردية بالمبلغ الموجود في الدرج.</span>
-        <label className="a-field">رصيد بداية الوردية (ل.س)<input className="a-in" type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
+        <div className="a-field">رصيد بداية الوردية<CashInput value={amount} onChange={setAmount} /></div>
         {msg && <span className={`a-flash ${msg.ok ? "tone-success" : "tone-danger"}`}>{msg.message}</span>}
         <button className="btn" disabled={pending} onClick={() => start(async () => { setMsg(await openShift(Number(amount || 0))); setAmount(""); })}>فتح وردية</button>
       </div>
@@ -55,7 +56,7 @@ export function ShiftCard({ shift, onDone, title = "إغلاق وردية الم
       <div className="kv"><span className="adm-sub">مصاريف من الصندوق</span><span style={{ color: "var(--magenta)" }}>- {price(shift.expenses)}</span></div>
       {shift.draws > 0 && <div className="kv"><span className="adm-sub">مسحوبات المالك</span><span style={{ color: "var(--magenta)" }}>- {price(shift.draws)}</span></div>}
       <div className="kv" style={{ borderTop: "1px solid var(--border-row)", paddingTop: 10 }}><b>المتوقع في الدرج</b><b>{price(shift.expected)}</b></div>
-      <label className="a-field">المبلغ المعدود فعلياً<input className="a-in" type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
+      <div className="a-field">المبلغ المعدود فعلياً في الدرج<CashInput value={amount} onChange={setAmount} expected={shift.expected} autoFocus /></div>
       {diff !== null && <span className={`a-flash ${diff === 0 ? "tone-success" : "tone-warning"}`}>{diff === 0 ? "مطابق" : diff > 0 ? `فائض ${price(diff)}` : `عجز ${price(-diff)}`}</span>}
       <label className="a-field">ملاحظة<input className="a-in" value={note} onChange={(e) => setNote(e.target.value)} /></label>
       {msg && <span className={`a-flash ${msg.ok ? "tone-success" : "tone-danger"}`}>{msg.message}</span>}

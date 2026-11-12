@@ -759,3 +759,12 @@ a.ob-addr { color: #1D5FA8; font-weight: 600; justify-content: flex-end; }
 .ve-newq { display: flex; gap: 6px; justify-content: center; }
 .ve-newq .a-in { height: 38px; width: auto; max-width: 140px; }
 .ve-ren:hover { border-color: var(--magenta); color: var(--magenta); background: #FFF0F6; }
+
+/* خانة مبلغ الصندوق مع الكتابة بالكلمات */
+.cash-in { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.cash-box { display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 14px; border-radius: 16px; border: 1.5px solid var(--rosy-gray); background: #fff; }
+.cash-box:focus-within { border-color: var(--magenta); }
+.cash-box input, .cash-in .pos-gate-in input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: inherit; font-size: 22px; font-weight: 800; letter-spacing: 1px; font-variant-numeric: tabular-nums; text-align: left; }
+.cash-box span { font-weight: 700; color: var(--text-label); }
+.cash-words { font-size: 15px; font-weight: 800; color: var(--deep-berry); text-align: center; }
+.cash-words.empty { font-size: 12.5px; font-weight: 600; color: var(--text-label); }
