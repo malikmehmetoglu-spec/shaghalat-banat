@@ -1,5 +1,5 @@
 import { getLocations, requireStaff } from "@/lib/admin";
-import { date } from "@/lib/format";
+import { date, price } from "@/lib/format";
 import { loadVariants, variantLabel } from "@/lib/inventory";
 import { TransferForm } from "./TransferForm";
 
@@ -12,7 +12,7 @@ const KIND: Record<string, [string, string]> = {
 export default async function MovesPage({ searchParams }: { searchParams: Promise<{ kind?: string; from?: string }> }) {
   const { kind, from } = await searchParams;
   const { sb } = await requireStaff();
-  let q = sb.from("stock_movements").select("id,qty,kind,reference,note,created_at,from_location,to_location,variant:product_variants(sku,size,color_name,product:products(name)),by:profiles(full_name)").order("created_at", { ascending: false }).limit(150);
+  let q = sb.from("stock_movements").select("id,qty,kind,reference,note,created_at,from_location,to_location,variant:product_variants(sku,size,color_name,price_override,product:products(name,price)),by:profiles(full_name)").order("created_at", { ascending: false }).limit(150);
   if (kind) q = q.eq("kind", kind);
   const [{ data }, locs, variants] = await Promise.all([q, getLocations(), loadVariants(sb)]);
   const ln = Object.fromEntries(locs.map((l) => [l.id, l.name]));
@@ -28,19 +28,23 @@ export default async function MovesPage({ searchParams }: { searchParams: Promis
         <div className="acard flush wide">
           <div className="tw">
             <table className="tbl">
-              <thead><tr><th>التاريخ</th><th>النوع</th><th>المنتج</th><th style={{ textAlign: "center" }}>الكمية</th><th>من ← إلى</th><th>المرجع</th></tr></thead>
+              <thead><tr><th>التاريخ</th><th>النوع</th><th>المنتج</th><th>السعر</th><th style={{ textAlign: "center" }}>الكمية</th><th>من ← إلى</th><th>المرجع</th></tr></thead>
               <tbody>
-                {(data ?? []).map((m: any) => (
+                {(data ?? []).map((m: any) => {
+                  const unitPrice = m.variant?.price_override ?? m.variant?.product?.price;
+                  return (
                   <tr key={m.id}>
                     <td className="caption">{date(m.created_at)}</td>
                     <td><span className={`pill ${KIND[m.kind]?.[1]}`}>{KIND[m.kind]?.[0]}</span></td>
                     <td>{m.variant?.product?.name}<div className="caption">{variantLabel(m.variant ?? {})}</div></td>
+                    <td style={{ whiteSpace: "nowrap" }}>{unitPrice != null ? price(unitPrice) : "—"}</td>
                     <td style={{ textAlign: "center", fontWeight: 700 }}>{m.qty}</td>
                     <td className="caption">{ln[m.from_location] ?? "—"} ← {ln[m.to_location] ?? "—"}</td>
                     <td className="caption">{m.reference || m.note || "—"}{m.by?.full_name ? ` · ${m.by.full_name}` : ""}</td>
                   </tr>
-                ))}
-                {!data?.length && <tr><td colSpan={6} className="caption" style={{ textAlign: "center", padding: 24 }}>لا توجد حركات</td></tr>}
+                  );
+                })}
+                {!data?.length && <tr><td colSpan={7} className="caption" style={{ textAlign: "center", padding: 24 }}>لا توجد حركات</td></tr>}
               </tbody>
             </table>
           </div>
