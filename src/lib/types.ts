@@ -30,7 +30,7 @@ export type Product = {
   images: string[];
   rating: number;
   rating_count: number;
-  sold_count?: number;
+  sold_count: number;
   is_featured: boolean;
   is_active: boolean;
 };
