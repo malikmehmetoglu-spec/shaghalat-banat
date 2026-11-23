@@ -1,0 +1,10 @@
+/* المعلومات تحت الصورة بدل أن تغطي نصفها */
+.pc .pc-glass { position: static; padding: 10px 4px 0; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; border: 0; box-shadow: none; color: var(--dark-plum); gap: 2px; }
+.pc .pc-glass .pc-name { color: var(--dark-plum); text-shadow: none; font-size: 14px; }
+.pc .pc-glass .pc-sub { color: var(--text-muted); font-size: 12px; }
+.pc .pc-glass .pc-price b { color: var(--magenta); text-shadow: none; font-size: 15px; }
+.pc .pc-glass .pc-price s { color: var(--text-label); }
+@media (min-width: 1024px) {
+  .pc .pc-glass .pc-name { font-size: 15px; }
+  .pc .pc-glass .pc-price b { font-size: 16px; }
+}
