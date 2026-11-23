@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { useT } from "@/components/LangProvider";
+import "./scrollrow.css";
 
 /** صف أفقي يُسحب على الهاتف، ومع أسهم تنقّل على الكمبيوتر */
 export function ScrollRow({ title, className, children }: { title: string; className: string; children: React.ReactNode }) {
@@ -36,7 +37,15 @@ export function ScrollRow({ title, className, children }: { title: string; class
           </div>
         )}
       </div>
-      <div ref={ref} className={`${className} scr`}>{children}</div>
+      <div className="sr-wrap">
+        <div ref={ref} className={`${className} scr`}>{children}</div>
+        {className.includes("cat-row") && !(edge.start && edge.end) && (
+          <>
+            <button type="button" className="sr-edge sr-edge-start" aria-label="prev" disabled={edge.start} onClick={() => go(-1)}><Icon name="back" size={18} stroke={2.4} /></button>
+            <button type="button" className="sr-edge sr-edge-end" aria-label="next" disabled={edge.end} onClick={() => go(1)}><Icon name="forward" size={18} stroke={2.4} /></button>
+          </>
+        )}
+      </div>
     </>
   );
 }

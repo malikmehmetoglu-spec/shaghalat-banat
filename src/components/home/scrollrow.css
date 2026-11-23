@@ -1,0 +1,7 @@
+.sr-wrap { position: relative; }
+.sr-edge { position: absolute; top: 62px; z-index: 3; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--rosy-gray); background: rgba(255,255,255,.95); color: var(--dark-plum); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(142,2,84,.18); cursor: pointer; }
+.sr-edge-start { inset-inline-start: 2px; }
+.sr-edge-end { inset-inline-end: 2px; }
+.sr-edge:disabled { opacity: 0; pointer-events: none; }
+.sr-edge:hover:not(:disabled) { background: var(--magenta); border-color: var(--magenta); color: #fff; }
+@media (min-width: 1024px) { .sr-edge { top: 95px; width: 44px; height: 44px; } }
