@@ -2,9 +2,10 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addStock, deleteVariant, deleteVariantGroup, renameVariantGroup, quickAddVariant, setStock, updateVariant, type ActionResult } from "../../actions";
+import { setColorImage } from "./colorImageAction";
 import { Icon } from "@/components/Icon";
 
-type V = { id: string; sku: string; barcode: string | null; size: string | null; color_name: string | null; color_hex: string | null; stock_levels: { location_id: string; on_hand: number; reserved: number }[] };
+type V = { id: string; sku: string; barcode: string | null; size: string | null; color_name: string | null; color_hex: string | null; image_url?: string | null; stock_levels: { location_id: string; on_hand: number; reserved: number }[] };
 type L = { id: string; name: string };
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "Free Size", "34", "36", "38", "40", "42", "44", "46", "48", "50", "52", "54", "56", "58", "60", "1", "2", "3", "4", "5", "6"];
 const SWATCHES = ["#000000", "#FFFFFF", "#F5E6D3", "#C8A27A", "#8B5A2B", "#E85FA8", "#D6037F", "#8E0254", "#C1121F", "#F4A3B4", "#7B2CBF", "#1D4ED8", "#87CEEB", "#2D6A4F", "#9CA3AF", "#D4AF37"];
@@ -13,7 +14,7 @@ const SWATCHES = ["#000000", "#FFFFFF", "#F5E6D3", "#C8A27A", "#8B5A2B", "#E85FA
  * محرّر الألوان والمقاسات والكميات — كل شيء قابل للتعديل مباشرة:
  * اسم اللون ولونه، المقاس، الكمية (− / +) في كل موقع، حذف لون أو مقاس أو سطر، وإضافة سطر جديد.
  */
-export function VariantsEditor({ productId, variants, locations }: { productId: string; slug?: string; variants: V[]; locations: L[] }) {
+export function VariantsEditor({ productId, variants, locations, images = [] }: { productId: string; slug?: string; variants: V[]; locations: L[]; images?: string[] }) {
   const router = useRouter();
   const [msg, setMsgRaw] = useState<ActionResult | null>(null);
   const [busy, start] = useTransition();
@@ -53,6 +54,28 @@ export function VariantsEditor({ productId, variants, locations }: { productId: 
           <div className="ve-gl"><span>تغيير مقاس في كل الألوان (حروف أو أرقام، مثلاً L ← 42):</span>{sizes.map((s) => (
             <button key={s} type="button" className="ve-chip ve-ren ltr" disabled={busy} onClick={() => { const to = prompt(`المقاس الجديد بدلاً من «${s}» (مثلاً 42 أو XL):`, s); if (to && to.trim() !== s) run(() => renameVariantGroup(productId, "size", s, to)); }}>{s} ✎</button>
           ))}</div>
+        </div>
+      )}
+      {images.length > 0 && colors.filter(Boolean).length > 0 && (
+        <div className="ve-groups" style={{ flexDirection: "column", alignItems: "stretch", gap: 10 }}>
+          <span className="caption" style={{ fontWeight: 700 }}>صورة كل لون (تظهر عند اختيار اللون في المتجر):</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
+            {colors.filter(Boolean).map((c) => {
+              const cur = variants.find((v) => v.color_name === c)?.image_url ?? null;
+              return (
+                <div key={c} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 12, border: "1px solid var(--border-soft)", background: "#fff" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>{c}:</span>
+                  {images.map((u, i) => (
+                    <button key={u} type="button" disabled={busy} onClick={() => run(() => setColorImage(productId, c, cur === u ? null : u))}
+                      title={cur === u ? "إلغاء ربط الصورة" : `اختيار صورة ${i + 1}`}
+                      style={{ width: 34, height: 34, padding: 0, borderRadius: 8, overflow: "hidden", border: cur === u ? "2.5px solid var(--magenta)" : "1px solid var(--border-soft)", cursor: "pointer", opacity: cur && cur !== u ? 0.45 : 1 }}>
+                      <img src={u} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    </button>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
       {(colors.filter(Boolean).length > 1 || sizes.length > 1) && (

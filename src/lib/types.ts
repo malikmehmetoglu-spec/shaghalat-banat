@@ -14,6 +14,7 @@ export type Variant = {
   color_name: string | null;
   color_hex: string | null;
   price_override: number | null;
+  image_url?: string | null;
 };
 
 export type Product = {
@@ -29,24 +30,21 @@ export type Product = {
   images: string[];
   rating: number;
   rating_count: number;
-  category_id: string | null;
-  created_at: string;
-  sold_count: number;
+  is_featured: boolean;
+  is_active: boolean;
 };
 
 export type ProductWithVariants = Product & {
   product_variants: (Variant & { available: number })[];
 };
 
-export type CartLine = {
+export type CartItem = {
   variantId: string;
   productSlug: string;
   name: string;
-  name_en?: string | null;
   label: string;
   unitPrice: number;
   qty: number;
-  image?: string | null;
-  /** أقصى كمية متوفرة (تُحدَّث من قاعدة البيانات) */
-  max?: number;
+  image: string | null;
+  max: number;
 };
