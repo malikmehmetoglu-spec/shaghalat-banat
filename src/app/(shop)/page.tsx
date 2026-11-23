@@ -177,22 +177,6 @@ export default async function Home() {
           </div>
         </section>
       )}
-
-      <section className="promise">
-        {[
-          { icon: "shield" as const, title: t("تغليف محايد"), text: t("لا شيء على الطرد يكشف ما بداخله") },
-          { icon: "truck" as const, title: t("توصيل لباب البيت"), text: t("خلال 2 إلى 4 أيام داخل سوريا، والدفع عند الاستلام") },
-          { icon: "return" as const, title: t("استبدال خلال 7 أيام"), text: t("بحالة المنتج الأصلية") },
-        ].map((x) => (
-          <div key={x.title} className="promise-item">
-            <span className="promise-ic"><Icon name={x.icon} size={22} stroke={1.8} /></span>
-            <span style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <b>{x.title}</b>
-              <span>{x.text}</span>
-            </span>
-          </div>
-        ))}
-      </section>
     </main>
   );
 }
