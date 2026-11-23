@@ -12,11 +12,7 @@ import { FREE_SHIPPING_THRESHOLD } from "@/lib/shop";
 import { useT } from "@/components/LangProvider";
 
 type Ship = { code: string; name: string; description: string | null; price: number };
-const PAYMENTS = [
-  { code: "shamcash", title: "شام كاش", line: "امسحي رمز الدفع بعد تأكيد الطلب وحوّلي المبلغ من هاتفك", icon: "card" as const },
-  { code: "support", title: "الدفع عبر خدمة العملاء", line: "تتواصل معك مسؤولة خدمة العملاء وترشدك لإتمام الدفع", icon: "chat" as const },
-];
-const STEPS = ["العنوان", "الدفع"];
+const STEPS = ["العنوان", "تأكيد الطلب"];
 
 const GKEY = "sb-guest-info";
 type Guest = { name: string; phone: string; city: string; street: string };
@@ -30,7 +26,7 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
   const [step, setStep] = useState(0);
   const [addr, setAddr] = useState(initial[0]?.id ?? "");
   const [ship] = useState(shipping.find((s) => s.code === "standard")?.code ?? shipping[0]?.code ?? "standard");
-  const [pay, setPay] = useState("shamcash");
+  const [pay] = useState("support");
   const [adding, setAdding] = useState(initial.length === 0);
   const [coupon, setCoupon] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -159,17 +155,7 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
 
       {step === 1 && (
         <section style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <h2 className="h-section">{t("طريقة الدفع")}</h2>
-          {PAYMENTS.map((p) => (
-            <button key={p.code} type="button" className={`option${pay === p.code ? " on" : ""}`} onClick={() => setPay(p.code)}>
-              <span className="icon-tile"><Icon name={p.icon} /></span>
-              <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-                <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>{t(p.title)}</span>
-                <span className="caption" style={{ fontSize: 13 }}>{t(p.line)}</span>
-              </span>
-              <span className="radio" />
-            </button>
-          ))}
+          <h2 className="h-section">{t("تأكيد الطلب")}</h2>
           <div className="soft-card">
             <span style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.5 }}>{t("ملخّص الطلب")}</span>
             <div className="kv"><span className="muted">{t("المنتجات (")}{lines.reduce((s, l) => s + l.qty, 0)})</span><span>{price(subtotal, t)}</span></div>
@@ -178,6 +164,7 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
             <hr className="divider" />
             <div className="kv" style={{ fontSize: 16, fontWeight: 700 }}><span>{t("الإجمالي")}{coupon ? t(" قبل الخصم") : ""}</span><span style={{ color: "var(--magenta)" }}>{price(subtotal + shipCost, t)}</span></div>
           </div>
+          <p className="caption" style={{ lineHeight: 1.7 }}>{t("بعد إتمام الطلب، سيظهر لك زر تواصل مباشر على واتساب برقم طلبك لإتمام الدفع مع خدمة العملاء.")}</p>
         </section>
       )}
 
