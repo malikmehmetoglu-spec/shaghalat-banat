@@ -1,17 +1,17 @@
 /* المعلومات تحت الصورة بدل أن تغطي نصفها */
 /* كل منتج داخل بطاقة بيضاء لتتضح الصلة بين الصورة ونصها */
-.pc { background: #fff; border-radius: 28px; padding: 6px 6px 10px; box-shadow: 0 6px 18px rgba(142, 2, 84, .10); border: 1px solid rgba(142, 2, 84, .06); }
+.pc { background: #fff; border-radius: 28px; padding: 6px 6px 10px; box-shadow: 0 6px 18px rgba(142, 2, 84, .10); border: 1px solid rgba(142, 2, 84, .06); min-width: 0; max-width: 100%; }
 .pc .pc-img { border-radius: 22px; box-shadow: none; }
 .pc .pc-link { border-radius: 28px; }
-.pc .pc-glass { position: static; padding: 10px 8px 0; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; border: 0; box-shadow: none; color: var(--dark-plum); gap: 1px; }
+/* مهم: نص الوصف لا يجب أن يوسّع البطاقة مهما طال */
+.prow-item, .pc-glass, .pc-row { min-width: 0; }
+.prow-item { max-width: 100%; }
+.pc .pc-glass { position: static; overflow: hidden; width: 100%; box-sizing: border-box; padding: 10px 8px 0; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; border: 0; box-shadow: none; color: var(--dark-plum); gap: 1px; }
+.pc .pc-glass .pc-name, .pc .pc-glass .pc-sub { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pc .pc-glass .pc-name { color: var(--dark-plum); text-shadow: none; font-size: 13px; }
 .pc .pc-glass .pc-sub { color: var(--text-muted); font-size: 11px; }
 .pc .pc-glass .pc-price b { color: var(--magenta); text-shadow: none; font-size: 14px; }
 .pc .pc-glass .pc-price s { color: var(--text-label); font-size: 11px; }
-/* صفوف الأكثر مبيعاً وعروض اليوم على الموبايل: بطاقات أصغر */
-@media (max-width: 1023px) {
-  .prow .prow-item { flex-basis: 42%; }
-}
 @media (min-width: 1024px) {
   .pc .pc-glass .pc-name { font-size: 15px; }
   .pc .pc-glass .pc-sub { font-size: 12px; }
