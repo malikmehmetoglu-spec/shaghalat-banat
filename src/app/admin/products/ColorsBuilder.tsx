@@ -15,7 +15,7 @@ const SIZE_TYPES: { key: string; label: string; sizes: string[] }[] = [
 ];
 const NO_COLOR = "";
 
-type Color = { name: string; hex: string; sizes: Record<string, string> };
+type Color = { name: string; hex: string; image_url?: string | null; sizes: Record<string, string> };
 
 /**
  * إدخال المنتج بأبسط شكل: كم لون ← من كل لون كم مقاس ← من كل مقاس كم قطعة.
@@ -30,7 +30,7 @@ function inferShape(existing: { size: string | null; color_name: string | null }
   return { withColors, sizeType };
 }
 
-export function ColorsBuilder({ locations, title = "الألوان والمقاسات والكميات", existing = [] }: { locations: { id: string; name: string; kind: string }[]; title?: string; existing?: { size: string | null; color_name: string | null }[] }) {
+export function ColorsBuilder({ locations, title = "الألوان والمقاسات والكميات", existing = [], images = [] }: { locations: { id: string; name: string; kind: string }[]; title?: string; existing?: { size: string | null; color_name: string | null }[]; images?: string[] }) {
   const shape = inferShape(existing);
   const [colors, setColors] = useState<Color[]>([]);
   const [custom, setCustom] = useState<string>("");
@@ -60,8 +60,8 @@ export function ColorsBuilder({ locations, title = "الألوان والمقا�
     ? (noSize ? (plainQty !== "" ? [{ color: NO_COLOR, hex: "", sizes: [{ size: "", qty: n(plainQty) }] }] : [])
               : [{ color: NO_COLOR, hex: "", sizes: Object.entries(plainSizes).map(([size, qty]) => ({ size, qty: n(qty) })) }].filter((c) => c.sizes.length))
     : noSize
-      ? colors.map((c) => ({ color: c.name, hex: c.hex, sizes: [{ size: "", qty: n(plainColorsQty[c.name] ?? "") }] }))
-      : colors.map((c) => ({ color: c.name, hex: c.hex, sizes: Object.entries(c.sizes).map(([size, qty]) => ({ size, qty: n(qty) })) })).filter((c) => c.sizes.length);
+      ? colors.map((c) => ({ color: c.name, hex: c.hex, image_url: c.image_url ?? null, sizes: [{ size: "", qty: n(plainColorsQty[c.name] ?? "") }] }))
+      : colors.map((c) => ({ color: c.name, hex: c.hex, image_url: c.image_url ?? null, sizes: Object.entries(c.sizes).map(([size, qty]) => ({ size, qty: n(qty) })) })).filter((c) => c.sizes.length);
   const total = payload.reduce((t, c) => t + c.sizes.reduce((a, x) => a + x.qty, 0), 0);
   const seg = (on: boolean): React.CSSProperties => ({ height: 38, padding: "0 16px" });
 
@@ -135,6 +135,18 @@ export function ColorsBuilder({ locations, title = "الألوان والمقا�
             </span>
             <button type="button" className="link-btn" onClick={() => setColors((cs) => cs.filter((_, j) => j !== i))}>حذف اللون</button>
           </div>
+          {images.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span className="caption">صورة اللون:</span>
+              {images.map((u, k) => (
+                <button key={u} type="button" onClick={() => upd(i, (x) => ({ ...x, image_url: x.image_url === u ? null : u }))}
+                  title={c.image_url === u ? "إلغاء ربط الصورة" : `اختيار صورة ${k + 1}`}
+                  style={{ width: 34, height: 34, padding: 0, borderRadius: 8, overflow: "hidden", border: c.image_url === u ? "2.5px solid var(--magenta)" : "1px solid var(--border-soft)", cursor: "pointer", opacity: c.image_url && c.image_url !== u ? 0.45 : 1 }}>
+                  <img src={u} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                </button>
+              ))}
+            </div>
+          )}
           {noSize
             ? <input className="a-in" type="number" min="0" inputMode="numeric" placeholder="عدد القطع" value={plainColorsQty[c.name] ?? ""} onChange={(e) => setPlainColorsQty((x) => ({ ...x, [c.name]: e.target.value }))} style={{ maxWidth: 180, textAlign: "center" }} aria-label={`عدد القطع ${c.name}`} />
             : <SizePicker sizes={SIZES} value={c.sizes} onChange={(sizes) => upd(i, (x) => ({ ...x, sizes }))} />}
@@ -165,11 +177,12 @@ function SizePicker({ sizes, value, onChange }: { sizes: string[]; value: Record
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addExtra(); } }} onBlur={addExtra} />
       </div>
       {Object.keys(value).length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 8 }}>
-          {Object.entries(value).map(([s, q]) => (
-            <label key={s} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px 6px 6px", borderRadius: 14, background: "var(--light-blush)" }}>
-              <span style={{ minWidth: 38, fontSize: 13, fontWeight: 700, textAlign: "center", color: "var(--deep-berry)", lineHeight: 1.4 }}>{s}</span>
-              <input className="a-in" type="number" min="0" inputMode="numeric" placeholder="العدد" value={q} onChange={(e) => onChange({ ...value, [s]: e.target.value })} style={{ height: 36, flex: 1, minWidth: 0, textAlign: "center", background: "#fff" }} aria-label={`عدد القطع ${s}`} />
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+          {Object.keys(value).map((s) => (
+            <label key={s} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600 }}>
+              <span>{s}:</span>
+              <input className="a-in" type="number" min="0" inputMode="numeric" placeholder="0" value={value[s]}
+                onChange={(e) => onChange({ ...value, [s]: e.target.value })} style={{ width: 82, textAlign: "center" }} aria-label={`عدد القطع مقاس ${s}`} />
             </label>
           ))}
         </div>
