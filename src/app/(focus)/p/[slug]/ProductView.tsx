@@ -47,17 +47,24 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
   const current = ofColor(color).find((v) => (v.size ?? "") === size) ?? ofColor(color)[0];
   const sizeAvailable = (sz: string) => ofColor(color).some((v) => (v.size ?? "") === sz && v.available > 0);
   const pickColor = (c: string) => {
-    setColor(c); setQty(1);
+    setColor(c); setQty(1); setUseColorImg(true);
     const list = ofColor(c);
+    const cImg = list.find((v) => v.image_url)?.image_url;
+    if (cImg) {
+      const idx = imgs.indexOf(cImg);
+      if (idx >= 0) setShot(idx);
+    }
     const keep = list.find((v) => (v.size ?? "") === size && v.available > 0);
     setSize((keep ?? list.find((v) => v.available > 0) ?? list[0])?.size ?? "");
   };
   const unit = Number(current?.price_override ?? p.price);
   const stock = current?.available ?? 0;
   const imgs = p.images ?? [];
+  const colorImg = ofColor(color).find((v) => v.image_url)?.image_url ?? null;
   const [shot, setShot] = useState(0);
+  const [useColorImg, setUseColorImg] = useState(true);
   const img = imgs[0];
-  const shown = imgs[shot] ?? img;
+  const shown = (useColorImg && colorImg) ? colorImg : (imgs[shot] ?? colorImg ?? img);
 
   function addToCart(buyNow = false) {
     if (!current || stock <= 0) return;
@@ -68,7 +75,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
       label: [current.size, current.color_name].filter(Boolean).join(" · "),
       unitPrice: unit,
       qty: Math.min(qty, stock),
-      image: img ?? null,
+      image: shown ?? img ?? null,
       max: stock,
     });
     // «شراء المنتج»: يضيف القطعة وينقل مباشرة لإتمام الطلب
@@ -89,7 +96,7 @@ export function ProductView({ p, isFav }: { p: ProductWithVariants; isFav: boole
         {shown && <img src={shown} alt={p.name} className="pv-img" />}
         {imgs.length > 1 && (
           <div className="pv-thumbs">
-            {imgs.map((u, i) => <button key={u} type="button" className={`pv-thumb${i === shot ? " on" : ""}`} onClick={() => setShot(i)} aria-label={t("صورة {n}", { n: i + 1 })}><img src={u} alt="" /></button>)}
+            {imgs.map((u, i) => <button key={u} type="button" className={`pv-thumb${(useColorImg && colorImg ? u === colorImg : i === shot) ? " on" : ""}`} onClick={() => { setShot(i); setUseColorImg(false); }} aria-label={t("صورة {n}", { n: i + 1 })}><img src={u} alt="" /></button>)}
           </div>
         )}
         {!img && <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "rgba(255,255,255,.75)" }}>{t("[صورة المنتج]")}</div>}
