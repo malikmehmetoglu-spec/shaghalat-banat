@@ -31,6 +31,7 @@ export type Product = {
   rating: number;
   rating_count: number;
   sold_count: number;
+  category_id?: string | null;
   is_featured: boolean;
   is_active: boolean;
 };
