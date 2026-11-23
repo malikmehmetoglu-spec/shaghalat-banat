@@ -1,20 +1,23 @@
 "use client";
+import Link from "next/link";
+import { useActionState, useState } from "react";
+import { saveProduct, type ActionResult } from "../actions";
 import { ImageUpload } from "../ImageUpload";
 import { ColorsBuilder } from "./ColorsBuilder";
 import { PriceFields } from "./PriceFields";
-import { useActionState } from "react";
-import { saveProduct, type ActionResult } from "../actions";
 
 type P = {
   id?: string; name?: string; name_en?: string | null; subtitle?: string | null; description?: string | null;
-  price?: number; compare_at_price?: number | null; cost?: number | null; tag?: string | null; category_id?: string | null; category_ids?: string[];
+  price?: number; compare_at_price?: number | null; cost?: number | null;
+  currency?: string | null; price_usd?: number | null; compare_usd?: number | null; cost_usd?: number | null;
+  tag?: string | null; category_id?: string | null; category_ids?: string[]; consignor_id?: string | null;
   images?: string[]; is_online?: boolean; is_in_store?: boolean;
   product_variants?: { size: string | null; color_name: string | null }[];
-  currency?: string; price_usd?: number | null; compare_usd?: number | null; cost_usd?: number | null; consignor_id?: string | null;
 };
 
 export function ProductForm({ p = {}, categories, locations = [], rate, consignors = [] }: { p?: P; categories: { id: string; name: string }[]; locations?: { id: string; name: string; kind: string }[]; rate: number; consignors?: { id: string; name: string; mode: string; commission_pct: number }[] }) {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(saveProduct, null);
+  const [images, setImages] = useState<string[]>(p.images ?? []);
   return (
     <form action={action} className="acard" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {p.id && <input type="hidden" name="id" value={p.id} />}
@@ -48,8 +51,8 @@ export function ProductForm({ p = {}, categories, locations = [], rate, consigno
       <div className="a-grid">
         <label className="a-field">شارة<input name="tag" className="a-in" defaultValue={p.tag ?? ""} placeholder="جديد، الأكثر مبيعاً…" /></label>
       </div>
-      <ImageUpload name="images" folder="products" multiple label="صور المنتج" initial={p.images ?? []} />
-      <ColorsBuilder key={state?.message ?? "c"} locations={locations} existing={p.product_variants ?? []} title={p.id ? "إضافة ألوان أو كميات جديدة" : "الألوان والمقاسات والكميات"} />
+      <ImageUpload name="images" folder="products" multiple label="صور المنتج" initial={p.images ?? []} onChange={setImages} />
+      <ColorsBuilder key={state?.message ?? "c"} locations={locations} existing={p.product_variants ?? []} images={images} title={p.id ? "إضافة ألوان أو كميات جديدة" : "الألوان والمقاسات والكميات"} />
       <label className="a-field">ثمن الكميات الجديدة أعلاه دُفع من
         <select name="paid_from" className="a-in" defaultValue="none">
           <option value="none">لم يُدفع شيء الآن (بضاعة موجودة سابقاً، أو أمانة، أو لا كميات جديدة)</option>
