@@ -16,7 +16,7 @@ const PAYMENTS = [
   { code: "shamcash", title: "شام كاش", line: "امسحي رمز الدفع بعد تأكيد الطلب وحوّلي المبلغ من هاتفك", icon: "card" as const },
   { code: "support", title: "الدفع عبر خدمة العملاء", line: "تتواصل معك مسؤولة خدمة العملاء وترشدك لإتمام الدفع", icon: "chat" as const },
 ];
-const STEPS = ["العنوان", "الشحن", "الدفع"];
+const STEPS = ["العنوان", "الدفع"];
 
 const GKEY = "sb-guest-info";
 type Guest = { name: string; phone: string; city: string; street: string };
@@ -29,7 +29,7 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
   const [addresses, setAddresses] = useState(initial);
   const [step, setStep] = useState(0);
   const [addr, setAddr] = useState(initial[0]?.id ?? "");
-  const [ship, setShip] = useState(shipping[0]?.code ?? "standard");
+  const [ship] = useState(shipping.find((s) => s.code === "standard")?.code ?? shipping[0]?.code ?? "standard");
   const [pay, setPay] = useState("shamcash");
   const [adding, setAdding] = useState(initial.length === 0);
   const [coupon, setCoupon] = useState<string | null>(null);
@@ -91,7 +91,7 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
       setErr(""); setStep(1); return;
     }
     if (step === 0 && !addr) { setErr(t("اختاري عنوان التوصيل أو أضيفي عنواناً")); return; }
-    setErr(""); setStep((s) => Math.min(2, s + 1));
+    setErr(""); setStep((s) => Math.min(1, s + 1));
   };
 
   return (
@@ -159,26 +159,6 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
 
       {step === 1 && (
         <section style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <h2 className="h-section">{t("طريقة الشحن")}</h2>
-          {shipping.map((s) => {
-            const free = s.code === "standard" && subtotal >= FREE_SHIPPING_THRESHOLD;
-            return (
-              <button key={s.code} type="button" className={`option${ship === s.code ? " on" : ""}`} onClick={() => setShip(s.code)}>
-                <span className="icon-tile"><Icon name="truck" /></span>
-                <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>{s.name}</span>
-                  <span className="caption" style={{ fontSize: 13 }}>{s.description}</span>
-                </span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--magenta)", flexShrink: 0 }}>{free || Number(s.price) === 0 ? t("مجاني") : price(s.price, t)}</span>
-                <span className="radio" />
-              </button>
-            );
-          })}
-        </section>
-      )}
-
-      {step === 2 && (
-        <section style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <h2 className="h-section">{t("طريقة الدفع")}</h2>
           {PAYMENTS.map((p) => (
             <button key={p.code} type="button" className={`option${pay === p.code ? " on" : ""}`} onClick={() => setPay(p.code)}>
@@ -205,7 +185,7 @@ export function CheckoutFlow({ addresses: initial, shipping, guest = false }: { 
 
       <div className="action-bar co-bar">
         <Link href="/" className="btn secondary co-more">{t("تابعي التسوّق")}</Link>
-        {step < 2
+        {step < 1
           ? <button type="button" className="btn cta block co-main" onClick={next}>{t("إتمام الطلب")}</button>
           : <button type="button" className="btn cta block co-main" onClick={placeOrder} disabled={busy}>{busy ? t("جارٍ إرسال الطلب…") : `${t("إتمام الطلب")} · ${price(subtotal + shipCost, t)}`}</button>}
       </div>
