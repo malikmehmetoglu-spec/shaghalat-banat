@@ -9,7 +9,7 @@ import { PriceFields } from "./PriceFields";
 type P = {
   id?: string; name?: string; name_en?: string | null; subtitle?: string | null; description?: string | null;
   price?: number; compare_at_price?: number | null; cost?: number | null;
-  currency?: string | null; price_usd?: number | null; compare_usd?: number | null; cost_usd?: number | null;
+  currency?: string; price_usd?: number | null; compare_usd?: number | null; cost_usd?: number | null;
   tag?: string | null; category_id?: string | null; category_ids?: string[]; consignor_id?: string | null;
   images?: string[]; is_online?: boolean; is_in_store?: boolean;
   product_variants?: { size: string | null; color_name: string | null }[];
