@@ -1,5 +1,9 @@
 /* المعلومات تحت الصورة بدل أن تغطي نصفها */
-.pc .pc-glass { position: static; padding: 8px 4px 0; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; border: 0; box-shadow: none; color: var(--dark-plum); gap: 1px; }
+/* كل منتج داخل بطاقة بيضاء لتتضح الصلة بين الصورة ونصها */
+.pc { background: #fff; border-radius: 28px; padding: 6px 6px 10px; box-shadow: 0 6px 18px rgba(142, 2, 84, .10); border: 1px solid rgba(142, 2, 84, .06); }
+.pc .pc-img { border-radius: 22px; box-shadow: none; }
+.pc .pc-link { border-radius: 28px; }
+.pc .pc-glass { position: static; padding: 10px 8px 0; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; border: 0; box-shadow: none; color: var(--dark-plum); gap: 1px; }
 .pc .pc-glass .pc-name { color: var(--dark-plum); text-shadow: none; font-size: 13px; }
 .pc .pc-glass .pc-sub { color: var(--text-muted); font-size: 11px; }
 .pc .pc-glass .pc-price b { color: var(--magenta); text-shadow: none; font-size: 14px; }
