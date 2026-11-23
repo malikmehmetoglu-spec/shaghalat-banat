@@ -39,7 +39,7 @@ export type ProductWithVariants = Product & {
   product_variants: (Variant & { available: number })[];
 };
 
-export type CartItem = {
+export type CartLine = {
   variantId: string;
   productSlug: string;
   name: string;
@@ -49,3 +49,5 @@ export type CartItem = {
   image: string | null;
   max: number;
 };
+
+export type CartItem = CartLine;
